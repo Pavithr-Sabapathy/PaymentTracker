@@ -1,0 +1,78 @@
+package com.mashreq.paymentTracker.serviceImpl;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
+import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.repository.DataSourceConfigRepository;
+import com.mashreq.paymentTracker.service.DataSourceConfigService;
+
+@Component
+public class DataSourceConfigServiceImpl implements DataSourceConfigService {
+
+	private static final Logger log = LoggerFactory.getLogger(DataSourceConfigServiceImpl.class);
+	private static final String FILENAME = "DataSourceConfigServiceImpl";
+
+	@Autowired
+	private DataSourceConfigRepository dataSourceConfigRepository;
+
+	@Override
+	public DataSourceConfig saveDataSourceConfiguration(DataSourceConfig dataSourceConfigurationRequest) {
+		DataSourceConfig dataSourceResponse = dataSourceConfigRepository.save(dataSourceConfigurationRequest);
+		return dataSourceResponse;
+	}
+
+	@Override
+	public DataSourceConfig getDataSourceConfigById(long dataSourceId) {
+		DataSourceConfig dataSourceConfigResponse = new DataSourceConfig();
+		Optional<DataSourceConfig> dataSourceConfigurationOptional = dataSourceConfigRepository.findById(dataSourceId);
+		if (dataSourceConfigurationOptional.isEmpty()) {
+			log.error(FILENAME + "[getDataSourceConfigById] " + ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS
+					+ dataSourceId);
+			throw new ResourceNotFoundException(ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceId);
+		} else {
+			dataSourceConfigResponse = dataSourceConfigurationOptional.get();
+		}
+		return dataSourceConfigResponse;
+	}
+
+	@Override
+	public void deleteDataSourceConfigById(long dataSourceId) {
+		if (dataSourceConfigRepository.existsById(dataSourceId)) {
+			dataSourceConfigRepository.deleteById(dataSourceId);
+		} else {
+			log.error(FILENAME + "[deleteDataSourceConfigById] "
+					+ ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceId);
+
+			throw new ResourceNotFoundException(ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceId);
+		}
+	}
+
+	@Override
+	public List<DataSourceConfig> allDataSourceConfig() {
+		List<DataSourceConfig> dataSourceConfigurationResponse = dataSourceConfigRepository.findAll();
+		return dataSourceConfigurationResponse;
+	}
+
+	@Override
+	public void updateDataSourceConfigById(DataSourceConfig dataSourceupdateRequest) {
+		Optional<DataSourceConfig> dataSourceOptional = dataSourceConfigRepository
+				.findById(dataSourceupdateRequest.getId());
+		if (dataSourceOptional.isEmpty()) {
+			log.error(FILENAME + "[updateDataSourceConfigById] "
+					+ ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceupdateRequest.getId());
+
+			throw new ResourceNotFoundException(
+					ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceupdateRequest.getId());
+		}
+		dataSourceConfigRepository.save(dataSourceupdateRequest);
+	}
+
+}
