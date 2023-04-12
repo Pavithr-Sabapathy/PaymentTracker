@@ -10,12 +10,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,28 +47,33 @@ public class PromptServiceTest {
 	ReportConfigurationRepository mockreportConfigurationRepo;
 
 	@Test
-	public void testSavePrompt() throws JsonMappingException, JsonProcessingException {
-		/*
-		 * ObjectMapper mapper = new ObjectMapper(); PromptDTO mockpromptDTORequest =
-		 * new PromptDTO("Refernce_Number", "Reference Number", BigInteger.ONE, "y", 1,
-		 * BigInteger.ZERO); Reports mockReportsOptionalResponse = new Reports(1L,
-		 * "Advanced_Search", "Advanced Search", "Search", "Searching Category", "y",
-		 * "y"); String mockPromptRequestString =
-		 * "{\"displayName\": \"Advanced Search\",\"entityId\": 0,\"promptKey\": \"1\",\"promptOrder\": 1,\"promptRequired\": \"y\",\"report\": {\"active\": \"y\",\"displayName\": \"sample\",\"id\": 5,\"reportCategory\": \"string\",\"reportDescription\": \"string\", \"reportName\": \"string\",\"valid\": \"y\"}}"
-		 * ; Prompts mockpromptRequest = mapper.readValue(mockPromptRequestString,
-		 * Prompts.class);
-		 * 
-		 * 
-		 * when(mockreportConfigurationRepo.findById(1L)).thenReturn(Optional.of(
-		 * mockReportsOptionalResponse));
-		 * 
-		 * when(mockpromptsRepository.save(mockpromptRequest)).thenReturn(
-		 * mockpromptRequest);
-		 * 
-		 * Prompts prompts = promptService.savePrompt(mockpromptDTORequest);
-		 * //assertEquals(prompts.getDisplayName(), "Refernce_Number");
-		 * verify(mockpromptsRepository, times(1)).save(mockpromptRequest);
-		 */}
+	public void testSavePrompt() {
+		long reportId = 1L;
+		Reports report = new Reports();
+		report.setId(reportId);
+		report.setActive("y");
+		report.setDisplayName("Reference Number");
+		report.setModuleId(1);
+		report.setReportCategory("Reference");
+		report.setReportDescription("Search");
+		report.setReportName("Refernce_No");
+		report.setValid("y");
+		
+		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
+		PromptDTO mockPromptDto = new PromptDTO("promptKey", "displaynm", BigInteger.ONE, "y", reportId, BigInteger.ONE);
+		when(mockpromptsRepository.findPromptOrderByReportId(reportId)).thenReturn(null);
+//		Prompts mockPrompt = new Prompts(2, "promptKey", "displaynm", "y", BigInteger.ONE, BigInteger.TWO, report);
+//		doNothing().when(mockpromptsRepository.save(mockPrompt));
+		
+		promptService.savePrompt(mockPromptDto);
+		
+		ArgumentCaptor<Prompts> promptCaptor = ArgumentCaptor.forClass(Prompts.class);
+		verify(mockpromptsRepository).save(promptCaptor.capture());
+		Prompts result = promptCaptor.getValue();
+		assertEquals("displaynm",result.getDisplayName());
+		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
+		
+		}
 
 	@Test
 	public void testfetchAllReports() throws JsonMappingException, JsonProcessingException {
@@ -149,6 +156,58 @@ public class PromptServiceTest {
 				"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");
 		assertNotNull(thrown);
 		assertTrue(thrown.getMessage().contains("Report Configuration not exist with this id :1"));
+	}
+	
+	@Test
+	public void testFetchPromptByReportIdExist() {
+		long reportId = 1L;
+		Reports report = new Reports();
+		report.setId(reportId);
+		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
+		
+		List<Prompts> mockPromptList = new ArrayList<Prompts>();
+		Prompts prompt1 = new Prompts(1, "promptKey-1", "display-1", "y", BigInteger.ONE, BigInteger.ONE , report);
+		Prompts prompt2 = new Prompts(2, "promptKey-2", "display-2", "y", BigInteger.ONE, BigInteger.ONE , report);
+		mockPromptList.add(prompt1);
+		mockPromptList.add(prompt2);
+		
+		when(mockpromptsRepository.findPromptByReportId(reportId)).thenReturn(mockPromptList);
+		
+		List<PromptDTO> result = promptService.fetchPromptsByReportId(reportId);
+		assertEquals(2,result.size());
+		assertEquals(result.get(0).getDisplayName(),"display-1");
+		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
+		verify(mockpromptsRepository, times(1)).findPromptByReportId(reportId);
+	}
+	
+	@Test
+	public void testFetchPromptByReportIdNotExist() {
+		long reportId = 1L;
+		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.empty());
+		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
+				()-> promptService.fetchPromptsByReportId(reportId)
+		,"Expected ResourceNotFoundException But It was not");
+		assertNotNull(thrown);
+		assertTrue(thrown.getMessage().contains("Report Configuration not exist with this id :1"));
+		verify(mockreportConfigurationRepo, times(1)).findById(reportId);		
+	}
+	
+	@Test
+	public void testSavePromptIfReportNotExist() {
+		
+		PromptDTO mockPromptDto = new PromptDTO("promptKey", "displaynm", BigInteger.ONE, "y", 1L, BigInteger.ONE);
+		when(mockreportConfigurationRepo.findById(1L)).thenReturn(Optional.empty());
+		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
+						()-> promptService.savePrompt(mockPromptDto),
+						"Report Configuration not exist with this id :1");
+		assertNotNull(thrown);
+		
+		
+		
+		
+		
+		
+		
 	}
 
 }

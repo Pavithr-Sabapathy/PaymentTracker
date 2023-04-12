@@ -53,7 +53,7 @@ public class DataSourceConfigControllerTest {
 		when(dataSourceConfigService.saveDataSourceConfiguration(any(DataSourceConfig.class)))
 				.thenReturn(mockDataSourceConfig);
 		// execute
-		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/dataSource/saveDataSourceConfig")
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/dataSource/save")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
 				.content(TestUtils.objectToJson(mockDataSourceConfig))).andReturn();
 
@@ -77,7 +77,7 @@ public class DataSourceConfigControllerTest {
 
 		Mockito.when(dataSourceConfigService.allDataSourceConfig()).thenReturn(mockDatasourceConfigList);
 
-		mockMvc.perform(get("/dataSource/allDataSourceConfig")).andExpect(status().isOk())
+		mockMvc.perform(get("/dataSource/allDataSource")).andExpect(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(1)))
 				.andExpect(jsonPath("$[0].dataSourceName", Matchers.is("Oracle")));
 	}
@@ -90,7 +90,7 @@ public class DataSourceConfigControllerTest {
 		Mockito.when(dataSourceConfigService.getDataSourceConfigById(dataSourceId))
 				.thenReturn(mockDataSourceConfigValue);
 
-		mockMvc.perform(get("/dataSource/getDataSourceConfig/1")).andExpect(status().isOk())
+		mockMvc.perform(get("/dataSource/1")).andExpect(status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.dataSourceName").value("Oracle"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1));
 	}
@@ -98,7 +98,7 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testDeleteDataSourceConfig() throws Exception {
 		long dataSourceId = 1L;
-		mockMvc.perform(MockMvcRequestBuilders.delete("/dataSource/deleteDataSource/{dataSourceId}", dataSourceId))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/dataSource/{dataSourceId}", dataSourceId))
 				.andExpect(status().isAccepted());
 
 	}
@@ -106,7 +106,8 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testUpdateDataSourceConfig() throws Exception {
 		long dataSourceId = 1L;
-		mockMvc.perform(MockMvcRequestBuilders.put("/dataSource/updateDataSourceConfig/{dataSourceId}", dataSourceId)
+	//	mockMvc.perform(MockMvcRequestBuilders.put("/dataSource/updateDataSourceConfig/{dataSourceId}", dataSourceId)       --->  to be check
+		mockMvc.perform(MockMvcRequestBuilders.put("/dataSource", dataSourceId)
 				.content(asJsonString(new DataSourceConfig(1L, "Oracle1", "ReadValue", BigInteger.ZERO, "Oracle",
 						"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE")))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))

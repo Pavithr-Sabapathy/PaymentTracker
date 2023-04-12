@@ -25,6 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
@@ -59,6 +60,26 @@ public class PromptsControllerTest {
 		mockMvc.perform(get("/prompt")).andExpect(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(1)))
 				.andExpect(jsonPath("$[0].reports.reportName", Matchers.is("search")));
+	}
+	
+	@Test
+	public void testFetchPromptByReportId() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		String responseString = "[{\"promptKey\":\"prkey001\",\"displayName\":\"prdspl001\",\"promptOrder\":1001,\"promptRequired\":\"y\",\"reportId\":1,\"entityId\":1},{\"promptKey\":\"prkey002\",\"displayName\":\"prdspl002\",\"promptOrder\":1002,\"promptRequired\":\"y\",\"reportId\":1,\"entityId\":2}]";
+		
+		PromptDTO[] mockPromptDto = mapper.readValue(responseString, PromptDTO[].class);
+		
+		List<PromptDTO> mockPromptDtoList = Arrays.asList(mockPromptDto);
+		
+		long reportId = 1L;
+		
+		Mockito.when(promptService.fetchPromptsByReportId(reportId)).thenReturn(mockPromptDtoList);
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/prompt/{reportId}",reportId)
+				.param("reportId", Long.toString(reportId)))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
+				.andExpect(MockMvcResultMatchers.jsonPath("$[0].displayName", Matchers.is("prdspl001")));
 	}
 	
 	@Test

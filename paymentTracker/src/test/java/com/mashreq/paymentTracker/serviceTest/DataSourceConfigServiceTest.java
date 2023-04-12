@@ -84,9 +84,13 @@ public class DataSourceConfigServiceTest {
 	@Test
 	public void testUpdateDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
 		long dataSourceId = 1L;
-		DataSourceConfig mockdataSourceConfigValue = null;
-		when(mockdataSourceConfigRepository.findById(dataSourceId))
-				.thenReturn(Optional.ofNullable(mockdataSourceConfigValue));
+		//DataSourceConfig mockdataSourceConfigValue = null;
+		DataSourceConfig mockdataSourceConfigValue = new DataSourceConfig(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
+		
+		
+		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.empty());
+				//.thenReturn(Optional.ofNullable(mockdataSourceConfigValue));
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> dataSourceConfigService.updateDataSourceConfigById(mockdataSourceConfigValue),
 				"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");

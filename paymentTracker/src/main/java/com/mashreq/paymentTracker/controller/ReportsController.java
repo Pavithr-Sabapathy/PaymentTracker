@@ -1,9 +1,7 @@
 package com.mashreq.paymentTracker.controller;
 
-import java.io.IOException;
 import java.util.List;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.dto.ReportDTO;
+import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.model.Reports;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 
@@ -45,7 +43,7 @@ public class ReportsController {
 	
 	@PostMapping("/saveReport")
 	public ResponseEntity<String> saveReportConfiguration(
-			@Valid @RequestBody ReportDTO reportDTORequest) {
+			@Valid @RequestBody ReportDTORequest reportDTORequest) {
 		try {
 			reportConfigurationService.saveReportConfiguration(reportDTORequest);
 			return new ResponseEntity<String>(ApplicationConstants.REPORT_CREATION_MSG, HttpStatus.CREATED);
@@ -56,7 +54,7 @@ public class ReportsController {
 	}
 	
 	@PutMapping("/updateReport/{reportId}")
-	public ResponseEntity<String> updateReport(@Valid @RequestBody ReportDTO reportUpdateRequest,
+	public ResponseEntity<String> updateReport(@Valid @RequestBody ReportDTORequest reportUpdateRequest,
 			@PathVariable long reportId) {
 		reportConfigurationService.updateReportById(reportUpdateRequest, reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_UPDATE_MSG, HttpStatus.ACCEPTED);
@@ -67,12 +65,6 @@ public class ReportsController {
 		reportConfigurationService.deleteReportById(reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
 
-	}
-	
-	@GetMapping("/asExcel")
-	public ResponseEntity<List<Reports>> fetchReportsAsExcel() {
-		List<Reports> reportListResponse = reportConfigurationService.fetchReportsAsExcel();
-		return ResponseEntity.ok(reportListResponse);
 	}
 	
 }

@@ -17,6 +17,7 @@ import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.MetricsDTO;
 import com.mashreq.paymentTracker.dto.PromptDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
+import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
@@ -38,7 +39,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	private ModelMapper modelMapper;
 
 	@Override
-	public Reports saveReportConfiguration(ReportDTO reportDTORequest) {
+	public Reports saveReportConfiguration(ReportDTORequest reportDTORequest) {
 		Reports reportConfigurationRequest = modelMapper.map(reportDTORequest, Reports.class);
 		Reports reportsConfigurationResponse = reportConfigurationRepo.save(reportConfigurationRequest);
 		return reportsConfigurationResponse;
@@ -52,7 +53,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	}
 
 	@Override
-	public void updateReportById(ReportDTO reportUpdateRequest, long reportId) {
+	public void updateReportById(ReportDTORequest reportUpdateRequest, long reportId) {
 		Optional<Reports> reportReponseOptional = reportConfigurationRepo.findById(reportId);
 		if (reportReponseOptional.isEmpty()) {
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);

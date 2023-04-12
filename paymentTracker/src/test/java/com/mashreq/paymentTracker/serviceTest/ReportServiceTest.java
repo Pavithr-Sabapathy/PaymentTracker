@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -34,11 +35,13 @@ public class ReportServiceTest {
 
 	@Mock
 	ReportConfigurationRepository mockreportConfigurationRepo;
+	
+	@Mock
+    private ModelMapper modelMapper;
 
 	@Test
 	public void testSaveReports() {
 		Reports mockReportsResponse = new Reports();
-		
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -47,8 +50,20 @@ public class ReportServiceTest {
 		mockReportsResponse.setReportName("Refernce_No");
 		mockReportsResponse.setValid("N");
 		
+		ReportDTORequest mockReportDTORequest = new ReportDTORequest();
+		mockReportDTORequest.setActive("y");
+		mockReportDTORequest.setDisplayName("Reference Number");
+		mockReportDTORequest.setReportCategory("Reference");
+		mockReportDTORequest.setReportDescription("Search");
+		mockReportDTORequest.setReportName("Refernce_No");
+		mockReportDTORequest.setValid("N");
+		mockReportDTORequest.setModuleId(0);
+		//Reports reportsResponse = modelMapper.map(mockReportDTORequest, Reports.class);
+		
+		when(modelMapper.map(mockReportDTORequest, Reports.class)).thenReturn(mockReportsResponse);
 		when(mockreportConfigurationRepo.save(mockReportsResponse)).thenReturn(mockReportsResponse);
-		Reports reports = reportConfigurationService.saveReportConfiguration(any(ReportDTORequest.class));
+		
+		Reports reports = reportConfigurationService.saveReportConfiguration(mockReportDTORequest);
 		assertEquals(reports.getDisplayName(), "Reference Number");
 		verify(mockreportConfigurationRepo, times(1)).save(mockReportsResponse);
 	}
@@ -108,7 +123,7 @@ public class ReportServiceTest {
 		long reportId = 1L;
 		Reports mockReportsResponse = new Reports();
 		mockReportsResponse.setActive("y");
-		mockReportsResponse.setDisplayName("Reference Number");
+		mockReportsResponse.setDisplayName("Old DisplayName");
 		mockReportsResponse.setId(1L);
 		mockReportsResponse.setReportCategory("Reference");
 		mockReportsResponse.setReportDescription("Search");
@@ -116,8 +131,14 @@ public class ReportServiceTest {
 		mockReportsResponse.setValid("N");
 		
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(mockReportsResponse));
-		reportConfigurationService.updateReportById(any(ReportDTORequest.class), reportId);
+		
+		ReportDTORequest reportDtoRequest = new ReportDTORequest();
+		when(modelMapper.map(reportDtoRequest, Reports.class)).thenReturn(mockReportsResponse);
+		
+		//reportConfigurationService.updateReportById(any(ReportDTORequest.class), reportId);
+		reportConfigurationService.updateReportById(reportDtoRequest, reportId);
 		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
+		verify(mockreportConfigurationRepo, times(1)).save(mockReportsResponse);
 	}
 
 	@Test
