@@ -31,7 +31,7 @@ public class ReportsController {
 
 	private static final Logger log = LoggerFactory.getLogger(ReportsController.class);
 	private static final String FILENAME = "ReportsController";
-	
+
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
 
@@ -40,10 +40,15 @@ public class ReportsController {
 		List<Reports> reportListResponse = reportConfigurationService.fetchAllReports();
 		return ResponseEntity.ok(reportListResponse);
 	}
-	
+
+	@GetMapping("/{reportname}/execute")
+	public ResponseEntity<List<Reports>> fetchReportsByName(@PathVariable("reportname") String reportName) {
+		List<Reports> reportListResponse = reportConfigurationService.fetchAllReportsByName(reportName);
+		return ResponseEntity.ok(reportListResponse);
+	}
+
 	@PostMapping("/saveReport")
-	public ResponseEntity<String> saveReportConfiguration(
-			@Valid @RequestBody ReportDTORequest reportDTORequest) {
+	public ResponseEntity<String> saveReportConfiguration(@Valid @RequestBody ReportDTORequest reportDTORequest) {
 		try {
 			reportConfigurationService.saveReportConfiguration(reportDTORequest);
 			return new ResponseEntity<String>(ApplicationConstants.REPORT_CREATION_MSG, HttpStatus.CREATED);
@@ -52,19 +57,19 @@ public class ReportsController {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	@PutMapping("/updateReport/{reportId}")
 	public ResponseEntity<String> updateReport(@Valid @RequestBody ReportDTORequest reportUpdateRequest,
 			@PathVariable long reportId) {
 		reportConfigurationService.updateReportById(reportUpdateRequest, reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_UPDATE_MSG, HttpStatus.ACCEPTED);
 	}
-	
+
 	@DeleteMapping("deleteReport/{reportId}")
 	public ResponseEntity<String> deleteReport(@PathVariable long reportId) {
 		reportConfigurationService.deleteReportById(reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
 
 	}
-	
+
 }
