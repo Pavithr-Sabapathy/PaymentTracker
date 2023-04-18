@@ -11,7 +11,7 @@ public interface ReportConfigurationService {
 
 	List<Reports> fetchAllReports();
 
-	List<Reports> fetchAllReportsByName(String reportName);
+	Reports fetchReportByName(String reportName);
 	
 	void deleteReportById(long reportId);
 

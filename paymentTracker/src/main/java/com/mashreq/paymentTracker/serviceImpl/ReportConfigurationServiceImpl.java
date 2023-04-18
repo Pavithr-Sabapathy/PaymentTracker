@@ -53,9 +53,9 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	}
 	
 	@Override
-	public List<Reports> fetchAllReportsByName(String reportName) {
-		List<Reports> reportsList = reportConfigurationRepo.findByReportName(reportName);
-		return reportsList;
+	public Reports fetchReportByName(String reportName) {
+		Reports report = reportConfigurationRepo.findByReportName(reportName);
+		return report;
 	}
 
 	@Override

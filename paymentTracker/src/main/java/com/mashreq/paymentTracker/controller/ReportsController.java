@@ -41,10 +41,11 @@ public class ReportsController {
 		return ResponseEntity.ok(reportListResponse);
 	}
 
+	
 	@GetMapping("/{reportname}/execute")
-	public ResponseEntity<List<Reports>> fetchReportsByName(@PathVariable("reportname") String reportName) {
-		List<Reports> reportListResponse = reportConfigurationService.fetchAllReportsByName(reportName);
-		return ResponseEntity.ok(reportListResponse);
+	public ResponseEntity<Reports> fetchReportByName(@PathVariable("reportname") String reportName) {
+		Reports reportResponse = reportConfigurationService.fetchReportByName(reportName);
+		return ResponseEntity.ok(reportResponse);
 	}
 
 	@PostMapping("/saveReport")
