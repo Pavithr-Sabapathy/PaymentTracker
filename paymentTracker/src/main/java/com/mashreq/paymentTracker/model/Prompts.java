@@ -4,6 +4,8 @@ import java.math.BigInteger;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -43,6 +45,7 @@ public class Prompts {
 	private BigInteger entityId;
 
 	@ManyToOne(targetEntity = Reports.class)
+	@JsonBackReference
 	@JoinColumn(name = "report_id")
 	private Reports report;
 
