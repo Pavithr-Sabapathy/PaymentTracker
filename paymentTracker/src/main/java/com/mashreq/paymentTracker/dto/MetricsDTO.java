@@ -9,6 +9,10 @@ public class MetricsDTO implements Serializable {
 	/**
 	 * 
 	 */
+	private static final long serialVersionUID = -2260273551352016731L;
+	/**
+	 * 
+	 */
 
 	@NotEmpty
 	private String displayName;

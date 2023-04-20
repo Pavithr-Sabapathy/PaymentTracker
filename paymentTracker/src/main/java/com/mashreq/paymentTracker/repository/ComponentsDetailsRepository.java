@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 
 @Repository
-public interface ComponentsDetailsRepository extends JpaRepository<ComponentDetails, Long>{
+public interface ComponentsDetailsRepository extends JpaRepository<ComponentDetails, Long>,ComponentsDetailsCustomizedRepository{
+	
 
 }
