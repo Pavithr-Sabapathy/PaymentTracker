@@ -8,7 +8,7 @@ import com.mashreq.paymentTracker.model.ComponentDetails;
 @Repository
 public interface ComponentsDetailsCustomizedRepository {
 
-	@Query("select reportComponent.* from conf_rpt_comp_det reportComponent join conf_rpt_comp component on reportComponent.report_comp_id = component.report_id where component.report_id =?1")
+	@Query("select reportComponent.id,reportComponent.query,reportComponent.queryKey,reportComponent.components from ComponentDetails reportComponent join Components component on reportComponent.components = component.report where component.report =1")
 	ComponentDetails findQueryByReportId(Long reportId);
 
 }
