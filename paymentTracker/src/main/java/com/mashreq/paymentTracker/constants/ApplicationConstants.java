@@ -50,4 +50,6 @@ public class ApplicationConstants {
 	/**Metrics and prompts constant**/
 	public static final String METRIC = "M";
 	public static final String PROMPT = "P";
+	public static final String ACCOUNTINGSOURCEPROMPTS= "AccountingSource";
 }
+

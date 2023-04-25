@@ -8,8 +8,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,9 +25,11 @@ import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
+import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Reports;
 import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
+import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportsExecuteService;
 
@@ -37,6 +42,9 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	@Autowired
 	private ComponentsDetailsRepository componentDetailsRepo;
 
+	@Autowired
+	private ComponentsRepository componentRepository;
+
 	@Override
 	public void executeReport(String reportName, ReportProcessingRequest reportProcessingRequest)
 			throws ReportException {
@@ -48,9 +56,34 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			throw new ReportException("Report instance creation failed for the report" + reportName);
 		}
 		ReportInstanceDTO reportInstanceDTO = populateReportPromptsInstance(reportProcessingRequest, reportObject);
-		/*** check with deena* what is query key **/
-		ComponentDetails componentObject = executeReportQuery(reportInstanceDTO.getReportId());
-		populateQueryKeyString(componentObject, reportInstanceDTO.getPromptsList());
+		/** get the component info based on report id **/
+		Optional<Components> componentsOptional = componentRepository.findById(reportObject.getId());
+		Components componentObject;
+		if (componentsOptional.isEmpty()) {
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportObject.getId());
+		} else {
+			componentObject = componentsOptional.get();
+			List<ComponentDetails> componentDetailsList = componentObject.getComponentDetailsList();
+			if (componentDetailsList.isEmpty()) {
+				throw new ResourceNotFoundException(
+						ApplicationConstants.COMPONENT_DETAILS_DOES_NOT_EXISTS + componentObject.getId());
+			} else {
+				List<ReportPromptsInstanceDTO> promptsMappedList = reportInstanceDTO.getPromptsList();
+				Map<String, List<String>> promptsRequestMapping = promptsMappedList.stream().collect(Collectors
+						.toMap(ReportPromptsInstanceDTO::getKey, ReportPromptsInstanceDTO::getPromptsValueList));
+
+				String sourceQueryValue = promptsRequestMapping.entrySet().stream()
+						.filter(promptsRequest -> ApplicationConstants.ACCOUNTINGSOURCEPROMPTS
+								.contains(promptsRequest.getKey()))
+						.map(map -> map.getValue().toString()).collect(Collectors.joining());
+				List<ComponentDetails> componentSourceDetails = componentDetailsList.stream()
+						.filter(componentDetail -> componentDetail.getQuery().equals(sourceQueryValue))
+						.collect(Collectors.toList());
+				ComponentDetails componentDetails = componentSourceDetails.get(0);
+				populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
+			}
+		}
+
 	}
 
 	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
@@ -114,6 +147,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	private List<ReportPromptsInstanceDTO> populatePromptsValue(List<PromptsProcessingRequest> promptsExcecutionRequest,
 			List<Prompts> promptsList) {
 		Map<String, PromptsProcessingRequest> promptsRequestMapping = new HashMap<String, PromptsProcessingRequest>();
+
 		List<ReportPromptsInstanceDTO> reportPromptsInstanceList = new ArrayList<ReportPromptsInstanceDTO>();
 
 		promptsRequestMapping = promptsExcecutionRequest.stream()
