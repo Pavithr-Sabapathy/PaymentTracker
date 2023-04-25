@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,7 +26,6 @@ import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Reports;
-import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportsExecuteService;
@@ -40,15 +37,11 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	ReportConfigurationService reportConfigurationService;
 
 	@Autowired
-	private ComponentsDetailsRepository componentDetailsRepo;
-
-	@Autowired
 	private ComponentsRepository componentRepository;
 
 	@Override
 	public void executeReport(String reportName, ReportProcessingRequest reportProcessingRequest)
 			throws ReportException {
-		// TODO Auto-generated method stub
 		Reports reportObject = new Reports();
 		try {
 			reportObject = reportConfigurationService.fetchReportByName(reportName);
@@ -91,24 +84,12 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 		String queryString = componentObject.getQuery();
 		try {
 			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryString);
-			populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);
+		//	populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-	}
-
-	private void populatePreparedStatementWithPromptValue(PreparedStatement executePreparedStatementquery,
-			List<ReportPromptsInstanceDTO> promptsList) {
-		Map<String, ReportPromptsInstanceDTO> promptsRequestMapping = promptsList.stream()
-				.collect(Collectors.toMap(ReportPromptsInstanceDTO::getKey, Function.identity()));
-
-	}
-
-	private ComponentDetails executeReportQuery(long reportId) {
-		ComponentDetails componentDetailsObject = componentDetailsRepo.findQueryByReportId(reportId);
-		return componentDetailsObject;
 	}
 
 	private ReportInstanceDTO populateReportPromptsInstance(ReportProcessingRequest reportProcessingRequest,
