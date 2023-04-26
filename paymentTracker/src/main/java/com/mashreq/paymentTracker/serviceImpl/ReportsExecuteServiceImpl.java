@@ -119,7 +119,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 					ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + reportObject.getReportName());
 		} else {
 			List<PromptsProcessingRequest> promptsExcecutionRequest = reportProcessingRequest
-					.getPromptsProcessingList();
+					.getPrompts();
 			reportPromptsInstanceDTOList = populatePromptsValue(promptsExcecutionRequest, promptsList);
 		}
 		return reportPromptsInstanceDTOList;

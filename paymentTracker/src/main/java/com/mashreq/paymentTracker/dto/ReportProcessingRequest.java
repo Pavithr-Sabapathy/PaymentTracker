@@ -13,7 +13,7 @@ public class ReportProcessingRequest implements Serializable {
 	private String role;
 	private long userId;
 	private String userName;
-	private List<PromptsProcessingRequest> promptsProcessingList;
+	private List<PromptsProcessingRequest> prompts;
 	private long linkInstanceId;
 	private String linkReference;
 	private Boolean isMapLinked = false;
@@ -43,12 +43,12 @@ public class ReportProcessingRequest implements Serializable {
 		this.userName = userName;
 	}
 
-	public List<PromptsProcessingRequest> getPromptsProcessingList() {
-		return promptsProcessingList;
+	public List<PromptsProcessingRequest> getPrompts() {
+		return prompts;
 	}
 
-	public void setPromptsProcessingList(List<PromptsProcessingRequest> promptsProcessingList) {
-		this.promptsProcessingList = promptsProcessingList;
+	public void setPrompts(List<PromptsProcessingRequest> prompts) {
+		this.prompts = prompts;
 	}
 
 	public long getLinkInstanceId() {
@@ -86,8 +86,8 @@ public class ReportProcessingRequest implements Serializable {
 	@Override
 	public String toString() {
 		return "ReportProcessingRequest [role=" + role + ", userId=" + userId + ", userName=" + userName
-				+ ", promptsProcessingList=" + promptsProcessingList + ", linkInstanceId=" + linkInstanceId
-				+ ", linkReference=" + linkReference + ", isMapLinked=" + isMapLinked + "]";
+				+ ", promptsProcessingList=" + prompts + ", linkInstanceId=" + linkInstanceId + ", linkReference="
+				+ linkReference + ", isMapLinked=" + isMapLinked + "]";
 	}
 
 }
