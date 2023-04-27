@@ -1,6 +1,7 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -80,11 +81,20 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	}
 
 	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
-		Connection connection = null;
 		String queryString = componentObject.getQuery();
 		try {
+
+			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+			Connection connection = DriverManager.getConnection(
+					"jdbc:sqlserver://localhost:1433;databaseName=PaymentTracker;encrypt=true;trustServerCertificate=true;",
+					"TestLogin", "Sample");
 			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryString);
-		//	populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);
+			executePreparedStatementquery.execute();
+//			populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);
+
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -118,8 +128,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			throw new ResourceNotFoundException(
 					ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + reportObject.getReportName());
 		} else {
-			List<PromptsProcessingRequest> promptsExcecutionRequest = reportProcessingRequest
-					.getPrompts();
+			List<PromptsProcessingRequest> promptsExcecutionRequest = reportProcessingRequest.getPrompts();
 			reportPromptsInstanceDTOList = populatePromptsValue(promptsExcecutionRequest, promptsList);
 		}
 		return reportPromptsInstanceDTOList;
