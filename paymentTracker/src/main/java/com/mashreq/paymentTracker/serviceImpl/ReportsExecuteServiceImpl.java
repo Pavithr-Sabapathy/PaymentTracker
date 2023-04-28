@@ -81,17 +81,17 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	}
 
 	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
-		String queryString = componentObject.getQuery();
-		try {
 
-			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-			Connection connection = DriverManager.getConnection(
-					"jdbc:sqlserver://localhost:1433;databaseName=PaymentTracker;encrypt=true;trustServerCertificate=true;",
-					"TestLogin", "Sample");
-			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryString);
+		String promptValue = promptsList.get(0).getPromptValue().toString();
+		String queryString = componentObject.getQuery();
+		String replacedQueryString = queryString.replace("~ReferenceNum~", promptValue);
+		try {
+			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
+			Connection connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
+					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+			PreparedStatement executePreparedStatementquery = connection.prepareStatement(replacedQueryString);
 			executePreparedStatementquery.execute();
 //			populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);
-
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

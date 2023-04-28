@@ -51,5 +51,11 @@ public class ApplicationConstants {
 	public static final String METRIC = "M";
 	public static final String PROMPT = "P";
 	public static final String ACCOUNTINGSOURCEPROMPTS= "AccountingSource";
+	
+	/**	Prepared Statement Constants	**/
+	public static final String DRIVER_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+	public static final String DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=PaymentTracker;encrypt=true;trustServerCertificate=true";
+	public static final String DATABASE_USERNAME = "TestLogin";
+	public static final String DATABASE_PASSWORD = "Sample";
 }
 
