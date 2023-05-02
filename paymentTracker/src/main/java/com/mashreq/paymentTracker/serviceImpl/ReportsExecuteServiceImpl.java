@@ -51,7 +51,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 		}
 		ReportInstanceDTO reportInstanceDTO = populateReportPromptsInstance(reportProcessingRequest, reportObject);
 		/** get the component info based on report id **/
-		Optional<Components> componentsOptional = componentRepository.findById(reportObject.getId());
+		Optional<Components> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
 		Components componentObject;
 		if (componentsOptional.isEmpty()) {
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportObject.getId());
@@ -71,26 +71,53 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 								.contains(promptsRequest.getKey()))
 						.map(map -> map.getValue().toString()).collect(Collectors.joining());
 				List<ComponentDetails> componentSourceDetails = componentDetailsList.stream()
-						.filter(componentDetail -> componentDetail.getQuery().equals(sourceQueryValue))
+						.filter(componentDetail -> componentDetail.getQueryKey().equalsIgnoreCase(sourceQueryValue))
 						.collect(Collectors.toList());
 				ComponentDetails componentDetails = componentSourceDetails.get(0);
-				populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
+				// populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
+				populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
 			}
 		}
 
 	}
 
+	private void populateDynamicQuery(ComponentDetails componentDetails, List<ReportPromptsInstanceDTO> promptsList) {
+		// TODO Auto-generated method stub
+		String queryString = componentDetails.getQuery();
+		List<String> promptsValueList = new ArrayList<String>();
+		promptsList.forEach(prompts -> {
+			// check whether the prompt key present in the query and not null
+			if (null != prompts.getKey() && queryString.indexOf(prompts.getKey()) > 0) {
+				if (null != prompts.getPromptsValueList()) {
+					promptsValueList.addAll(prompts.getPromptsValueList());
+				}
+				if (null != prompts.getPromptValue()) {
+					promptsValueList.add(prompts.getPromptValue());
+				}
+			}
+			String promptsValue = String.join(",", promptsValueList);
+			queryString.replaceAll(prompts.getKey(), promptsValue);
+			try {
+				Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
+				Connection connection;
+				connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
+						ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+				PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryString);
+				executePreparedStatementquery.execute();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+	}
+
 	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
 
-		String promptKey = promptsList.get(0).getKey().toString();
 		String promptValue = promptsList.get(0).getPromptValue().toString();
 		String queryString = componentObject.getQuery();
-
-		String replacedQueryString = replacePromptValue(promptKey, promptValue, queryString);
-		if (replacedQueryString.isEmpty()) {
-			throw new ResourceNotFoundException("Invalid Replaced_Query_String");
-		}
-
+		String replacedQueryString = queryString.replace("~ReferenceNum~", promptValue);
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
@@ -106,18 +133,6 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			e.printStackTrace();
 		}
 
-	}
-
-	private String replacePromptValue(String promptKey, String promptValue, String queryString) {
-
-		if (promptKey == ApplicationConstants.ACCOUNTINGSOURCEPROMPTS) {
-			return queryString.replace("~AccountingSource~", promptValue);
-		} else if (promptKey == ApplicationConstants.REFERENCENUMPROMPTS) {
-			return queryString.replace("~ReferenceNum~", promptValue);
-		} else if (promptKey == ApplicationConstants.RELATEDACCOUNTPROMPTS) {
-			return queryString.replace("~RelatedAccount~", promptValue);
-		}
-		return "";
 	}
 
 	private ReportInstanceDTO populateReportPromptsInstance(ReportProcessingRequest reportProcessingRequest,
@@ -163,6 +178,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 
 		promptsRequestMapping.forEach((promptKey, promptValue) -> {
 			ReportPromptsInstanceDTO reportPromptsIntanceDTO = new ReportPromptsInstanceDTO();
+			reportPromptsIntanceDTO.setKey(promptKey);
 			reportPromptsIntanceDTO.setPromptsValueList(promptValue.getPromptsValueList());
 			reportPromptsIntanceDTO.setPromptValue(promptValue.getPromptValue());
 			reportPromptsInstanceList.add(reportPromptsIntanceDTO);
