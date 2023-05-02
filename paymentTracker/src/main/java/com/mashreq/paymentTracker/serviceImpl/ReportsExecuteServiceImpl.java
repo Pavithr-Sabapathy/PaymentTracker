@@ -80,8 +80,8 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	}
 
 	private void populateDynamicQuery(ComponentDetails componentDetails, List<ReportPromptsInstanceDTO> promptsList) {
-		// TODO Auto-generated method stub
 		String queryString = componentDetails.getQuery();
+		StringBuilder queryBuilder = new StringBuilder();
 		List<String> promptsValueList = new ArrayList<String>();
 		promptsList.forEach(prompts -> {
 			// check whether the prompt key present in the query and not null
@@ -92,16 +92,17 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 				if (null != prompts.getPromptValue()) {
 					promptsValueList.add(prompts.getPromptValue());
 				}
+				String promptsValue = String.join(",", promptsValueList);
+				queryBuilder.append(queryString.replace(prompts.getKey(), promptsValue));
 			}
-			String promptsValue = String.join(",", promptsValueList);
-			queryString.replaceAll(prompts.getKey(), promptsValue);
+			
 		});
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection;
 			connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
 					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
-			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryString);
+			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryBuilder.toString());
 			executePreparedStatementquery.execute();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
