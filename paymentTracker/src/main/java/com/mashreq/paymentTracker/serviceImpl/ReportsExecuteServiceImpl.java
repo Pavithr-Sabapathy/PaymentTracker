@@ -63,15 +63,13 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 						ApplicationConstants.COMPONENT_DETAILS_DOES_NOT_EXISTS + componentObject.getId());
 			} else {
 				List<ReportPromptsInstanceDTO> promptsMappedList = reportInstanceDTO.getPromptsList();
-				Map<String, List<String>> promptsRequestMapping = promptsMappedList.stream().collect(Collectors
-						.toMap(ReportPromptsInstanceDTO::getKey, ReportPromptsInstanceDTO::getPromptsValueList));
 
-				String sourceQueryValue = promptsRequestMapping.entrySet().stream()
-						.filter(promptsRequest -> ApplicationConstants.ACCOUNTINGSOURCEPROMPTS
-								.contains(promptsRequest.getKey()))
-						.map(map -> map.getValue().toString()).collect(Collectors.joining());
+				List<ReportPromptsInstanceDTO> promptsFilterObj = promptsMappedList.stream().filter(
+						prompts -> prompts.getKey().equalsIgnoreCase(ApplicationConstants.ACCOUNTINGSOURCEPROMPTS))
+						.collect(Collectors.toList());
+				ReportPromptsInstanceDTO promptObj = promptsFilterObj.get(0);
 				List<ComponentDetails> componentSourceDetails = componentDetailsList.stream()
-						.filter(componentDetail -> componentDetail.getQueryKey().equalsIgnoreCase(sourceQueryValue))
+						.filter(componentDetail -> componentDetail.getQueryKey().equalsIgnoreCase(promptObj.getPromptsValueList().get(0)))
 						.collect(Collectors.toList());
 				ComponentDetails componentDetails = componentSourceDetails.get(0);
 				// populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
@@ -97,20 +95,20 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			}
 			String promptsValue = String.join(",", promptsValueList);
 			queryString.replaceAll(prompts.getKey(), promptsValue);
-			try {
-				Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
-				Connection connection;
-				connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
-						ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
-				PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryString);
-				executePreparedStatementquery.execute();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		});
+		try {
+			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
+			Connection connection;
+			connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
+					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryString);
+			executePreparedStatementquery.execute();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
