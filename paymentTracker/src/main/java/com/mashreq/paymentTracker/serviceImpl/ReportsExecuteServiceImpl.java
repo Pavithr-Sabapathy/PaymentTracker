@@ -82,9 +82,15 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 
 	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
 
+		String promptKey = promptsList.get(0).getKey().toString();
 		String promptValue = promptsList.get(0).getPromptValue().toString();
 		String queryString = componentObject.getQuery();
-		String replacedQueryString = queryString.replace("~ReferenceNum~", promptValue);
+
+		String replacedQueryString = replacePromptValue(promptKey, promptValue, queryString);
+		if (replacedQueryString.isEmpty()) {
+			throw new ResourceNotFoundException("Invalid Replaced_Query_String");
+		}
+
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
@@ -100,6 +106,18 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			e.printStackTrace();
 		}
 
+	}
+
+	private String replacePromptValue(String promptKey, String promptValue, String queryString) {
+
+		if (promptKey == ApplicationConstants.ACCOUNTINGSOURCEPROMPTS) {
+			return queryString.replace("~AccountingSource~", promptValue);
+		} else if (promptKey == ApplicationConstants.REFERENCENUMPROMPTS) {
+			return queryString.replace("~ReferenceNum~", promptValue);
+		} else if (promptKey == ApplicationConstants.RELATEDACCOUNTPROMPTS) {
+			return queryString.replace("~RelatedAccount~", promptValue);
+		}
+		return "";
 	}
 
 	private ReportInstanceDTO populateReportPromptsInstance(ReportProcessingRequest reportProcessingRequest,
