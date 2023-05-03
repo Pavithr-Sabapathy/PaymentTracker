@@ -64,16 +64,19 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			} else {
 				List<ReportPromptsInstanceDTO> promptsMappedList = reportInstanceDTO.getPromptsList();
 
-				List<ReportPromptsInstanceDTO> promptsFilterObj = promptsMappedList.stream().filter(
+				ReportPromptsInstanceDTO promptsAccountingFilter = promptsMappedList.stream().filter(
 						prompts -> prompts.getKey().equalsIgnoreCase(ApplicationConstants.ACCOUNTINGSOURCEPROMPTS))
-						.collect(Collectors.toList());
-				ReportPromptsInstanceDTO promptObj = promptsFilterObj.get(0);
-				List<ComponentDetails> componentSourceDetails = componentDetailsList.stream()
-						.filter(componentDetail -> componentDetail.getQueryKey().equalsIgnoreCase(promptObj.getPromptsValueList().get(0)))
-						.collect(Collectors.toList());
-				ComponentDetails componentDetails = componentSourceDetails.get(0);
-				// populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
-				populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
+						.findFirst().orElse(null);
+				if (null != promptsAccountingFilter && null != promptsAccountingFilter.getKey()) {
+					List<ComponentDetails> componentSourceDetails = componentDetailsList.stream()
+							.filter(componentDetail -> componentDetail.getQueryKey()
+									.equalsIgnoreCase(promptsAccountingFilter.getPromptsValueList().get(0)))
+							.collect(Collectors.toList());
+					ComponentDetails componentDetails = componentSourceDetails.get(0);
+					// populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
+					populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
+				}
+
 			}
 		}
 
@@ -95,7 +98,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 				String promptsValue = String.join(",", promptsValueList);
 				queryBuilder.append(queryString.replace(prompts.getKey(), promptsValue));
 			}
-			
+
 		});
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
