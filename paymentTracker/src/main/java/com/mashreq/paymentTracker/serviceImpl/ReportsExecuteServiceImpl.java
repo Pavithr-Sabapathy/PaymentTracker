@@ -83,7 +83,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	}
 
 	private void populateDynamicQuery(ComponentDetails componentDetails, List<ReportPromptsInstanceDTO> promptsList) {
-		String queryString = componentDetails.getQuery();
+		String queryString = componentDetails.getQuery().replaceAll("~", "");
 		StringBuilder queryBuilder = new StringBuilder();
 		List<String> promptsValueList = new ArrayList<String>();
 		promptsList.forEach(prompts -> {
@@ -107,6 +107,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
 			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryBuilder.toString());
 			executePreparedStatementquery.execute();
+			connection.close();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
