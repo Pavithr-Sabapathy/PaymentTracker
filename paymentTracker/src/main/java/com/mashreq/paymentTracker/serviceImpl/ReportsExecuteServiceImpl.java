@@ -48,7 +48,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	public List<FlexReportDefaultOutput> executeReport(String reportName, ReportProcessingRequest reportProcessingRequest)
 			throws ReportException {
 		Reports reportObject = new Reports();
-		List<FlexReportDefaultOutput> flexReportList = new List<FlexReportDefaultOutput>();
+		List<FlexReportDefaultOutput> flexReportList = new ArrayList<FlexReportDefaultOutput>();
 		try {
 			reportObject = reportConfigurationService.fetchReportByName(reportName);
 		} catch (Exception exception) {
@@ -109,8 +109,8 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection;
-			connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
-					ApplicationConstants.TEST_LOGIN_DATABASE_USERNAME, ApplicationConstants.FLEX_LOGIN_DATABASE_PASSWORD);
+			connection = DriverManager.getConnection(ApplicationConstants.FLEX_DATABASE_URL,
+					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(queryBuilder.toString());
 			
@@ -150,8 +150,8 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 		String replacedQueryString = queryString.replace("~ReferenceNum~", promptValue);
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
-			Connection connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
-					ApplicationConstants.FLEX_DATABASE_USERNAME, ApplicationConstants.FLEX_LOGIN_DATABASE_PASSWORD);
+			Connection connection = DriverManager.getConnection(ApplicationConstants.FLEX_DATABASE_URL,
+					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
 			PreparedStatement executePreparedStatementquery = connection.prepareStatement(replacedQueryString);
 			executePreparedStatementquery.execute();
 //			populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);

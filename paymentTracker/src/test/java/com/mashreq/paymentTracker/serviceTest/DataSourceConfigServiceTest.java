@@ -35,7 +35,7 @@ public class DataSourceConfigServiceTest {
 	DataSourceConfigRepository mockdataSourceConfigRepository;
 
 	@Test
-	public void testSaveDataSourceConfig() {
+	public void testSaveDataSourceConfig() throws Exception {
 		DataSourceConfig mockdataSourceConfigValue = new DataSourceConfig(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
 		when(mockdataSourceConfigRepository.save(mockdataSourceConfigValue)).thenReturn(mockdataSourceConfigValue);
