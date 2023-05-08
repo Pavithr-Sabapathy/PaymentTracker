@@ -1,11 +1,17 @@
 package com.mashreq.paymentTracker.controller;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -72,5 +78,19 @@ public class ReportsController {
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
 
 	}
+	
+	@GetMapping("/allReports/pdf")
+	 public ResponseEntity<byte[]> getTeacherPdf() throws IOException {
+		 ByteArrayOutputStream baos = reportConfigurationService.generateReportPDF();
+		 
+		 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
+		 Date date = new Date();
+		 String currentDate = dateFormat.format(date);
+		 HttpHeaders headers = new HttpHeaders();
+	     headers.setContentType(MediaType.APPLICATION_PDF);
+	     headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=REPORT_DATA"+currentDate+".pdf");
+	     headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+	     return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+	 }
 
 }

@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.service;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
@@ -18,5 +19,7 @@ public interface ReportConfigurationService {
 	List<Reports> fetchReportsAsExcel();
 
 	void updateReportById(ReportDTORequest reportUpdateRequest, long reportId);
+	
+	ByteArrayOutputStream generateReportPDF();
 
 }
