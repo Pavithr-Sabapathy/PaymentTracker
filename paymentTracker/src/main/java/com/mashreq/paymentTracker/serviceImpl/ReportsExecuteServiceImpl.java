@@ -3,7 +3,10 @@ package com.mashreq.paymentTracker.serviceImpl;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dto.FlexReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportProcessingRequest;
@@ -41,9 +45,10 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	private ComponentsRepository componentRepository;
 
 	@Override
-	public void executeReport(String reportName, ReportProcessingRequest reportProcessingRequest)
+	public List<FlexReportDefaultOutput> executeReport(String reportName, ReportProcessingRequest reportProcessingRequest)
 			throws ReportException {
 		Reports reportObject = new Reports();
+		List<FlexReportDefaultOutput> flexReportList = new List<FlexReportDefaultOutput>();
 		try {
 			reportObject = reportConfigurationService.fetchReportByName(reportName);
 		} catch (Exception exception) {
@@ -74,18 +79,19 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 							.collect(Collectors.toList());
 					ComponentDetails componentDetails = componentSourceDetails.get(0);
 					// populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
-					populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
+					 flexReportList = populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
 				}
 
 			}
 		}
-
+		return flexReportList;
 	}
 
-	private void populateDynamicQuery(ComponentDetails componentDetails, List<ReportPromptsInstanceDTO> promptsList) {
+	private List<FlexReportDefaultOutput> populateDynamicQuery(ComponentDetails componentDetails, List<ReportPromptsInstanceDTO> promptsList) {
 		String queryString = componentDetails.getQuery().replaceAll("~", "");
 		StringBuilder queryBuilder = new StringBuilder();
 		List<String> promptsValueList = new ArrayList<String>();
+		List<FlexReportDefaultOutput> flexReportDefaultOutputList = new ArrayList<FlexReportDefaultOutput>();
 		promptsList.forEach(prompts -> {
 			// check whether the prompt key present in the query and not null
 			if (null != prompts.getKey() && queryString.indexOf(prompts.getKey()) > 0) {
@@ -104,16 +110,37 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection;
 			connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
-					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
-			PreparedStatement executePreparedStatementquery = connection.prepareStatement(queryBuilder.toString());
-			executePreparedStatementquery.execute();
+					ApplicationConstants.TEST_LOGIN_DATABASE_USERNAME, ApplicationConstants.FLEX_LOGIN_DATABASE_PASSWORD);
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(queryBuilder.toString());
+			
+			if (resultSet != null) {
+				ResultSetMetaData metaData = resultSet.getMetaData();
+				int columnCount = metaData.getColumnCount();
+				while (resultSet.next()) {
+					FlexReportDefaultOutput flexReportOutput = new FlexReportDefaultOutput();
+					List<Object> rowData = new ArrayList<Object>();
+					List<String> columnDef = new ArrayList<String>();
+					for (int index = 1; index < columnCount; index++) {
+						Object colValue = resultSet.getObject(index);
+						String column = metaData.getColumnName(index);
+						rowData.add(colValue);
+						columnDef.add(column);
+					}
+					flexReportOutput.setRowData(rowData);
+					flexReportOutput.setColumnLabels(columnDef);
+					flexReportDefaultOutputList.add(flexReportOutput);
+				}
+			}
 			connection.close();
+			return flexReportDefaultOutputList;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return flexReportDefaultOutputList;
 	}
 
 	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
@@ -124,7 +151,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection = DriverManager.getConnection(ApplicationConstants.DATABASE_URL,
-					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+					ApplicationConstants.FLEX_DATABASE_USERNAME, ApplicationConstants.FLEX_LOGIN_DATABASE_PASSWORD);
 			PreparedStatement executePreparedStatementquery = connection.prepareStatement(replacedQueryString);
 			executePreparedStatementquery.execute();
 //			populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);

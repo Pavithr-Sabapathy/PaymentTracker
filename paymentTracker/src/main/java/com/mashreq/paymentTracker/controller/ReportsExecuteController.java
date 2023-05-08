@@ -1,5 +1,7 @@
 package com.mashreq.paymentTracker.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mashreq.paymentTracker.dto.FlexReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportProcessingRequest;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.service.ReportsExecuteService;
@@ -22,10 +25,10 @@ public class ReportsExecuteController {
 	ReportsExecuteService reporsExecuteService;
 	
 	@PostMapping("/{reportName}/execute")
-	public ResponseEntity<Object> executeReport(@PathVariable String reportName,
+	public List<FlexReportDefaultOutput> executeReport(@PathVariable String reportName,
 			@RequestBody ReportProcessingRequest reportProcessingRequest) throws ReportException {
-		reporsExecuteService.executeReport(reportName,reportProcessingRequest);
-		return null;
+		List<FlexReportDefaultOutput> flexList = reporsExecuteService.executeReport(reportName,reportProcessingRequest);
+		return flexList;
 
 	}
 

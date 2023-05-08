@@ -6,7 +6,7 @@ import com.mashreq.paymentTracker.model.DataSourceConfig;
 
 public interface DataSourceConfigService {
 
-	DataSourceConfig saveDataSourceConfiguration(DataSourceConfig dataSourceConfigurationRequest);
+	DataSourceConfig saveDataSourceConfiguration(DataSourceConfig dataSourceConfigurationRequest) throws Exception;
 
 	DataSourceConfig getDataSourceConfigById(long dataSourceId);
 

@@ -24,8 +24,15 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	private DataSourceConfigRepository dataSourceConfigRepository;
 
 	@Override
-	public DataSourceConfig saveDataSourceConfiguration(DataSourceConfig dataSourceConfigurationRequest) {
-		DataSourceConfig dataSourceResponse = dataSourceConfigRepository.save(dataSourceConfigurationRequest);
+	public DataSourceConfig saveDataSourceConfiguration(DataSourceConfig dataSourceConfigurationRequest)
+			throws Exception {
+		DataSourceConfig dataSourceResponse = new DataSourceConfig();
+		try {
+			dataSourceResponse = dataSourceConfigRepository.save(dataSourceConfigurationRequest);
+		} catch (Exception exception) {
+			throw new Exception("Exception throw at [saveDataSourceConfiguration]-->" + exception);
+
+		}
 		return dataSourceResponse;
 	}
 
