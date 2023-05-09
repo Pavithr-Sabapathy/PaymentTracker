@@ -21,9 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseMetaDTO;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
@@ -52,45 +54,53 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			ReportProcessingRequest reportProcessingRequest) throws ReportException {
 		Reports reportObject = new Reports();
 		FlexReportExecuteResponseData flexReportExecuteResponseData = new FlexReportExecuteResponseData();
+		ReportExecuteResponseMetaDTO reportExecutionMetaDTO = new ReportExecuteResponseMetaDTO();
 		try {
+			Date startTime = new Date();
 			reportObject = reportConfigurationService.fetchReportByName(reportName);
+			ReportInstanceDTO reportInstanceDTO = populateReportPromptsInstance(reportProcessingRequest, reportObject);
+			/** get the component info based on report id **/
+			Optional<Components> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
+			Components componentObject;
+			if (componentsOptional.isEmpty()) {
+				throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportObject.getId());
+			} else {
+				componentObject = componentsOptional.get();
+				List<ComponentDetails> componentDetailsList = componentObject.getComponentDetailsList();
+				if (componentDetailsList.isEmpty()) {
+					throw new ResourceNotFoundException(
+							ApplicationConstants.COMPONENT_DETAILS_DOES_NOT_EXISTS + componentObject.getId());
+				} else {
+					List<ReportPromptsInstanceDTO> promptsMappedList = reportInstanceDTO.getPromptsList();
+
+					ReportPromptsInstanceDTO promptsAccountingFilter = promptsMappedList.stream().filter(
+							prompts -> prompts.getKey().equalsIgnoreCase(ApplicationConstants.ACCOUNTINGSOURCEPROMPTS))
+							.findFirst().orElse(null);
+					if (null != promptsAccountingFilter && null != promptsAccountingFilter.getKey()) {
+						List<ComponentDetails> componentSourceDetails = componentDetailsList.stream()
+								.filter(componentDetail -> componentDetail.getQueryKey()
+										.equalsIgnoreCase(promptsAccountingFilter.getPromptsValueList().get(0)))
+								.collect(Collectors.toList());
+						ComponentDetails componentDetails = componentSourceDetails.get(0);
+						List<FlexReportExecuteResponseData> flexReportList = populateDynamicQuery(componentDetails,
+								reportInstanceDTO.getPromptsList());
+						List<Map<String, Object>> rowDataMapList = populateRowData(flexReportList, reportObject);
+						List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = populateColumnDef(
+								flexReportList, reportObject);
+						flexReportExecuteResponseData.setColumnDefs(reportExecuteResponseCloumnDefList);
+						flexReportExecuteResponseData.setData(rowDataMapList);
+					}
+					Date endTime = new Date();
+					reportExecutionMetaDTO.setStartTime(startTime.toString());
+					reportExecutionMetaDTO.setEndTime(endTime.toString());
+					reportExecutionMetaDTO.setReportId(reportName);
+					flexReportExecuteResponseData.setMeta(reportExecutionMetaDTO);
+				}
+			}
 		} catch (Exception exception) {
 			throw new ReportException("Report instance creation failed for the report" + reportName);
 		}
-		ReportInstanceDTO reportInstanceDTO = populateReportPromptsInstance(reportProcessingRequest, reportObject);
-		/** get the component info based on report id **/
-		Optional<Components> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
-		Components componentObject;
-		if (componentsOptional.isEmpty()) {
-			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportObject.getId());
-		} else {
-			componentObject = componentsOptional.get();
-			List<ComponentDetails> componentDetailsList = componentObject.getComponentDetailsList();
-			if (componentDetailsList.isEmpty()) {
-				throw new ResourceNotFoundException(
-						ApplicationConstants.COMPONENT_DETAILS_DOES_NOT_EXISTS + componentObject.getId());
-			} else {
-				List<ReportPromptsInstanceDTO> promptsMappedList = reportInstanceDTO.getPromptsList();
 
-				ReportPromptsInstanceDTO promptsAccountingFilter = promptsMappedList.stream().filter(
-						prompts -> prompts.getKey().equalsIgnoreCase(ApplicationConstants.ACCOUNTINGSOURCEPROMPTS))
-						.findFirst().orElse(null);
-				if (null != promptsAccountingFilter && null != promptsAccountingFilter.getKey()) {
-					List<ComponentDetails> componentSourceDetails = componentDetailsList.stream()
-							.filter(componentDetail -> componentDetail.getQueryKey()
-									.equalsIgnoreCase(promptsAccountingFilter.getPromptsValueList().get(0)))
-							.collect(Collectors.toList());
-					ComponentDetails componentDetails = componentSourceDetails.get(0);
-					List<FlexReportExecuteResponseData> flexReportList = populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
-					List<Map<String, Object>> rowDataMapList = populateRowData(flexReportList, reportObject);
-					List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = populateColumnDef(
-							flexReportList, reportObject);
-					flexReportExecuteResponseData.setColumnDefs(reportExecuteResponseCloumnDefList);
-					flexReportExecuteResponseData.setData(rowDataMapList);
-				}
-
-			}
-		}
 		return flexReportExecuteResponseData;
 	}
 
@@ -112,19 +122,19 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 		List<Metrics> reportMetricsList = reportObject.getMetricsList();
 		List<String> metricsDisplayNameList = reportMetricsList.stream().map(Metrics::getDisplayName)
 				.collect(Collectors.toList());
-		Map<String, Object> rowMap  = new HashMap<String,Object>();
+		Map<String, Object> rowMap = new HashMap<String, Object>();
 		flexReportList.stream().forEach(flexReport -> {
 			List<Object> dataList = flexReport.getRowData();
-			
+
 			Iterator<Object> ik = dataList.iterator();
 			Iterator<String> iv = metricsDisplayNameList.iterator();
-			
+
 			while (ik.hasNext() && iv.hasNext()) {
-				rowMap.put(iv.next(),ik.next());
+				rowMap.put(iv.next(), ik.next());
 			}
-			
-			 rowDataList.add(rowMap);
-			
+
+			rowDataList.add(rowMap);
+
 		});
 		return rowDataList;
 	}
@@ -231,5 +241,14 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			reportPromptsInstanceList.add(reportPromptsIntanceDTO);
 		});
 		return reportPromptsInstanceList;
+	}
+
+	@Override
+	public APIResponse populateSuccessAPIRespone(FlexReportExecuteResponseData flexList) {
+		APIResponse reportExecutionApiResponse = new APIResponse();
+		reportExecutionApiResponse.setData(flexList);
+		reportExecutionApiResponse.setMessage("Report Execution Success");
+		reportExecutionApiResponse.setStatus(Boolean.TRUE);
+		return reportExecutionApiResponse;
 	}
 };
