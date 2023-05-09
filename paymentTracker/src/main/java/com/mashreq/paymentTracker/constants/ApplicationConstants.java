@@ -58,7 +58,6 @@ public class ApplicationConstants {
 	public static final String DRIVER_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 	public static final String DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=PaymentTracker;encrypt=true;trustServerCertificate=true";
 	public static final String FLEX_DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=Flex;encrypt=true;trustServerCertificate=true";
-	
 	public static final String DATABASE_USERNAME = "TestLogin";
 	public static final String DATABASE_PASSWORD = "Sample";
 }

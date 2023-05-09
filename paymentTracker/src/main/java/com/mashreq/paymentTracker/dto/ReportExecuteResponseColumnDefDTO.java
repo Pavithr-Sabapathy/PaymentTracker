@@ -2,7 +2,7 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
-public class FlexReportExecuteResponseColumnDef implements Serializable {
+public class ReportExecuteResponseColumnDefDTO implements Serializable {
 
 	/**
 	 * 

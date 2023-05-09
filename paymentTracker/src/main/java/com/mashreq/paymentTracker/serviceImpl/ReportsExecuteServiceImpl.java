@@ -2,7 +2,6 @@ package com.mashreq.paymentTracker.serviceImpl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -10,18 +9,21 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.dto.FlexReportDefaultOutput;
+import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
@@ -29,6 +31,7 @@ import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
+import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Reports;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
@@ -45,10 +48,10 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	private ComponentsRepository componentRepository;
 
 	@Override
-	public List<FlexReportDefaultOutput> executeReport(String reportName, ReportProcessingRequest reportProcessingRequest)
-			throws ReportException {
+	public FlexReportExecuteResponseData executeReport(String reportName,
+			ReportProcessingRequest reportProcessingRequest) throws ReportException {
 		Reports reportObject = new Reports();
-		List<FlexReportDefaultOutput> flexReportList = new ArrayList<FlexReportDefaultOutput>();
+		FlexReportExecuteResponseData flexReportExecuteResponseData = new FlexReportExecuteResponseData();
 		try {
 			reportObject = reportConfigurationService.fetchReportByName(reportName);
 		} catch (Exception exception) {
@@ -78,20 +81,60 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 									.equalsIgnoreCase(promptsAccountingFilter.getPromptsValueList().get(0)))
 							.collect(Collectors.toList());
 					ComponentDetails componentDetails = componentSourceDetails.get(0);
-					// populateQueryKeyString(componentDetails, reportInstanceDTO.getPromptsList());
-					 flexReportList = populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
+					List<FlexReportExecuteResponseData> flexReportList = populateDynamicQuery(componentDetails, reportInstanceDTO.getPromptsList());
+					List<Map<String, Object>> rowDataMapList = populateRowData(flexReportList, reportObject);
+					List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = populateColumnDef(
+							flexReportList, reportObject);
+					flexReportExecuteResponseData.setColumnDefs(reportExecuteResponseCloumnDefList);
+					flexReportExecuteResponseData.setData(rowDataMapList);
 				}
 
 			}
 		}
-		return flexReportList;
+		return flexReportExecuteResponseData;
 	}
 
-	private List<FlexReportDefaultOutput> populateDynamicQuery(ComponentDetails componentDetails, List<ReportPromptsInstanceDTO> promptsList) {
+	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(
+			List<FlexReportExecuteResponseData> flexReportList, Reports reportObject) {
+		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
+		List<Metrics> metricsList = reportObject.getMetricsList();
+		metricsList.stream().forEach(metrics -> {
+			ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
+			reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
+			reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
+		});
+		return reportExecuteResponseCloumnDefList;
+	}
+
+	private List<Map<String, Object>> populateRowData(List<FlexReportExecuteResponseData> flexReportList,
+			Reports reportObject) {
+		List<Map<String, Object>> rowDataList = new ArrayList<Map<String, Object>>();
+		List<Metrics> reportMetricsList = reportObject.getMetricsList();
+		List<String> metricsDisplayNameList = reportMetricsList.stream().map(Metrics::getDisplayName)
+				.collect(Collectors.toList());
+		Map<String, Object> rowMap  = new HashMap<String,Object>();
+		flexReportList.stream().forEach(flexReport -> {
+			List<Object> dataList = flexReport.getRowData();
+			
+			Iterator<Object> ik = dataList.iterator();
+			Iterator<String> iv = metricsDisplayNameList.iterator();
+			
+			while (ik.hasNext() && iv.hasNext()) {
+				rowMap.put(iv.next(),ik.next());
+			}
+			
+			 rowDataList.add(rowMap);
+			
+		});
+		return rowDataList;
+	}
+
+	private List<FlexReportExecuteResponseData> populateDynamicQuery(ComponentDetails componentDetails,
+			List<ReportPromptsInstanceDTO> promptsList) {
 		String queryString = componentDetails.getQuery().replaceAll("~", "");
 		StringBuilder queryBuilder = new StringBuilder();
 		List<String> promptsValueList = new ArrayList<String>();
-		List<FlexReportDefaultOutput> flexReportDefaultOutputList = new ArrayList<FlexReportDefaultOutput>();
+		List<FlexReportExecuteResponseData> flexReportDefaultOutputList = new ArrayList<FlexReportExecuteResponseData>();
 		promptsList.forEach(prompts -> {
 			// check whether the prompt key present in the query and not null
 			if (null != prompts.getKey() && queryString.indexOf(prompts.getKey()) > 0) {
@@ -113,22 +156,18 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(queryBuilder.toString());
-			
+
 			if (resultSet != null) {
 				ResultSetMetaData metaData = resultSet.getMetaData();
 				int columnCount = metaData.getColumnCount();
 				while (resultSet.next()) {
-					FlexReportDefaultOutput flexReportOutput = new FlexReportDefaultOutput();
+					FlexReportExecuteResponseData flexReportOutput = new FlexReportExecuteResponseData();
 					List<Object> rowData = new ArrayList<Object>();
-					List<String> columnDef = new ArrayList<String>();
 					for (int index = 1; index < columnCount; index++) {
 						Object colValue = resultSet.getObject(index);
-						String column = metaData.getColumnName(index);
 						rowData.add(colValue);
-						columnDef.add(column);
 					}
 					flexReportOutput.setRowData(rowData);
-					flexReportOutput.setColumnLabels(columnDef);
 					flexReportDefaultOutputList.add(flexReportOutput);
 				}
 			}
@@ -141,28 +180,6 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			e.printStackTrace();
 		}
 		return flexReportDefaultOutputList;
-	}
-
-	private void populateQueryKeyString(ComponentDetails componentObject, List<ReportPromptsInstanceDTO> promptsList) {
-
-		String promptValue = promptsList.get(0).getPromptValue().toString();
-		String queryString = componentObject.getQuery();
-		String replacedQueryString = queryString.replace("~ReferenceNum~", promptValue);
-		try {
-			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
-			Connection connection = DriverManager.getConnection(ApplicationConstants.FLEX_DATABASE_URL,
-					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
-			PreparedStatement executePreparedStatementquery = connection.prepareStatement(replacedQueryString);
-			executePreparedStatementquery.execute();
-//			populatePreparedStatementWithPromptValue(executePreparedStatementquery, promptsList);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 	}
 
 	private ReportInstanceDTO populateReportPromptsInstance(ReportProcessingRequest reportProcessingRequest,
