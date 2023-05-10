@@ -35,21 +35,25 @@ public class MetricsController {
 
 	@GetMapping
 	public ResponseEntity<List<MetricsResponseDTO>> fetchAllMetrics() {
-		List<MetricsResponseDTO> metricsListResponse = metricsService.fetchAllMetrics();
-		log.info(FILENAME + "[fetchMetrics Reponse]--->" + metricsListResponse.toString());
-		return ResponseEntity.ok(metricsListResponse);
+	
+		List<MetricsResponseDTO> metrics = metricsService.fetchAllMetrics();
+		log.info(FILENAME + "[fetchMetrics Reponse]--->" + metrics.toString());
+		return ResponseEntity.ok(metrics);
+		
 	}
 	
 	@GetMapping("/{reportId}")
 	public ResponseEntity<List<MetricsDTO>> fetchMetricsByReportId(long reportId) {
-		List<MetricsDTO> metricsListResponse = metricsService.fetchMetricsByReportId(reportId);
-		return ResponseEntity.ok(metricsListResponse);
+		
+		List<MetricsDTO> metricsRIdResponse = metricsService.fetchMetricsByReportId(reportId);
+		return ResponseEntity.ok(metricsRIdResponse);
 	}
 
 	@PostMapping("/saveMetrics")
 	public ResponseEntity<String> saveMetrics(@RequestBody MetricsDTO metricsRequest) {
+		
 		try {
-			log.info(FILENAME + "[saveDataSsaveMetricsourceConfig Request]--->" + metricsRequest.toString());
+			log.info(FILENAME + "[saveMetrics Request]--->" + metricsRequest.toString());
 			metricsService.saveMetrics(metricsRequest);
 			return new ResponseEntity<String>(ApplicationConstants.METRICS_CREATION_MSG, HttpStatus.CREATED);
 		} catch (Exception e) {

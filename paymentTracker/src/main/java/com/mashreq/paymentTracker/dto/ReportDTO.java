@@ -2,10 +2,9 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
-public class ReportDTO implements Serializable {
-	/**
-	 * 
-	 */
+public class ReportDTO implements Serializable{
+	private static final long serialVersionUID = 1L;
+	private long id;
 	private String reportName;
 	private String displayName;
 	private String reportDescription;
@@ -13,6 +12,33 @@ public class ReportDTO implements Serializable {
 	private String active;
 	private String valid;
 	private long moduleId;
+	
+	public  ReportDTO () {
+		
+	}
+
+	public ReportDTO(long id, String reportName, String displayName, String reportDescription, String reportCategory,
+			String active, String valid, long moduleId) {
+		super();
+		this.id=id;
+		this.reportName = reportName;
+		this.displayName = displayName;
+		this.reportDescription = reportDescription;
+		this.reportCategory = reportCategory;
+		this.active = active;
+		this.valid = valid;
+		this.moduleId = moduleId;
+	}
+
+
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
 
 	public String getReportName() {
 		return reportName;
@@ -70,28 +96,14 @@ public class ReportDTO implements Serializable {
 		this.moduleId = moduleId;
 	}
 
-	public ReportDTO(String reportName, String displayName, String reportDescription, String reportCategory,
-			String active, String valid, long moduleId) {
-		super();
-		this.reportName = reportName;
-		this.displayName = displayName;
-		this.reportDescription = reportDescription;
-		this.reportCategory = reportCategory;
-		this.active = active;
-		this.valid = valid;
-		this.moduleId = moduleId;
-	}
-
-	public ReportDTO() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
 	@Override
 	public String toString() {
-		return "ReportDTORequest [reportName=" + reportName + ", displayName=" + displayName + ", reportDescription="
-				+ reportDescription + ", reportCategory=" + reportCategory + ", active=" + active + ", valid=" + valid
-				+ ", moduleId=" + moduleId + "]";
+		return "ReportDTO [id=" + id + ", reportName=" + reportName + ", displayName=" + displayName
+				+ ", reportDescription=" + reportDescription + ", reportCategory=" + reportCategory + ", active="
+				+ active + ", valid=" + valid + ", moduleId=" + moduleId + "]";
 	}
 
+	
+	
+	
 }
