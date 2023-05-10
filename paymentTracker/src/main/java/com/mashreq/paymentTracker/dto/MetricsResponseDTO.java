@@ -2,24 +2,21 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 import java.util.List;
-
-import com.mashreq.paymentTracker.model.Reports;
-
 public class MetricsResponseDTO implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 4335098696343647066L;
-	private Reports reports;
+	private ReportDTO reports;
 	private List<MetricsDTO> metricsList;
 
-	public Reports getReports() {
+	public ReportDTO getReports() {
 		return reports;
 	}
 
-	public void setReports(Reports reports) {
-		this.reports = reports;
+	public void setReports(ReportDTO reportResponseDto) {
+		this.reports = reportResponseDto;
 	}
 
 	public List<MetricsDTO> getMetricsList() {
