@@ -54,6 +54,28 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	}
 
 	@Override
+	public LinkedReportRequestDTO fetchLinkedReportByReportId(long reportId) {
+		LinkedReportRequestDTO linkedReportDTOrequest = new LinkedReportRequestDTO();
+		Optional<LinkedReportInfo> linkedReportOptionalResponse = linkedReportRepo.findAllByReportId(reportId);
+		if (linkedReportOptionalResponse.isEmpty()) {
+			log.error(FILENAME + "[fetchLinkedReportByReportId] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS
+					+ reportId);
+			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + reportId);
+		} else {
+			LinkedReportInfo linkedReportResponse = linkedReportOptionalResponse.get();
+			linkedReportDTOrequest.setId(linkedReportResponse.getId());
+
+			linkedReportDTOrequest.setLinkedReportId(linkedReportResponse.getLinkedReportId());
+			linkedReportDTOrequest.setReportId(linkedReportResponse.getReportId());
+			linkedReportDTOrequest.setSourceMetricId(linkedReportResponse.getSourceMetricId());
+			linkedReportDTOrequest.setActive(linkedReportResponse.getActive());
+			linkedReportDTOrequest.setLinkDescription(linkedReportResponse.getLinkDescription());
+			linkedReportDTOrequest.setLinkName(linkedReportResponse.getLinkName());
+		}
+		return linkedReportDTOrequest;
+	}
+
+	@Override
 	public LinkedReportResponseDTO fetchLinkedReportById(long linkedReportId) {
 		LinkedReportResponseDTO linkedReportDTOresponse = new LinkedReportResponseDTO();
 		Optional<LinkedReportInfo> linkedReportOptionalResponse = linkedReportRepo.findById(linkedReportId);

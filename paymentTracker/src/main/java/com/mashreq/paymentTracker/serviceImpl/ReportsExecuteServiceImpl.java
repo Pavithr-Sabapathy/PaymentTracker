@@ -15,14 +15,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.controller.ReportsExecuteController;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
+import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseMetaDTO;
@@ -37,6 +41,8 @@ import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Reports;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
+import com.mashreq.paymentTracker.repository.LinkedReportRepository;
+import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportsExecuteService;
 
@@ -48,6 +54,15 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 
 	@Autowired
 	private ComponentsRepository componentRepository;
+
+	@Autowired
+	private LinkedReportRepository linkedReportRepository;
+
+	@Autowired
+	LinkReportService linkReportService;
+
+	private static final Logger log = LoggerFactory.getLogger(ReportsExecuteServiceImpl.class);
+	private static final String FILENAME = "ReportsExecuteServiceImpl";
 
 	@Override
 	public FlexReportExecuteResponseData executeReport(String reportName,
@@ -107,12 +122,23 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(
 			List<FlexReportExecuteResponseData> flexReportList, Reports reportObject) {
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
+		ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
 		List<Metrics> metricsList = reportObject.getMetricsList();
 		metricsList.stream().forEach(metrics -> {
-			ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
 			reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
 			reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
 		});
+		try {
+			LinkedReportRequestDTO linkedReportRequestDTO = linkReportService
+					.fetchLinkedReportByReportId(reportObject.getId());
+
+			if (null != linkedReportRequestDTO) {
+				Long sourceMetricValue = linkedReportRequestDTO.getSourceMetricId();
+				reportExecuteResponseCloumnDef.setLinkExists(null != sourceMetricValue ? true : false);
+			}
+		} catch (JpaSystemException exception) {
+			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
+		}
 		return reportExecuteResponseCloumnDefList;
 	}
 

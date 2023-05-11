@@ -9,4 +9,6 @@ public interface LinkReportService {
 
 	LinkedReportResponseDTO fetchLinkedReportById(long linkedReportId);
 
+	LinkedReportRequestDTO fetchLinkedReportByReportId(long reportId);	
+	
 }
