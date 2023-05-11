@@ -42,6 +42,10 @@ public class ComponentDetailsRequestDTO implements Serializable {
 		this.compReportId = compReportId;
 	}
 
+	public ComponentDetailsRequestDTO(){
+
+	}
+	
 	public ComponentDetailsRequestDTO(@NotEmpty String query, @NotEmpty String queryKey, @NotEmpty long compReportId) {
 		super();
 		this.query = query;

@@ -9,11 +9,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import java.util.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
@@ -55,7 +54,8 @@ public class ReportsControllerTest {
 		mockReportsResponse.setReportName("Refernce_No");
 		mockReportsResponse.setValid("N");
 
-		when(reportConfigurationService.saveReportConfiguration(any(ReportDTORequest.class))).thenReturn(mockReportsResponse);
+		when(reportConfigurationService.saveReportConfiguration(any(ReportDTORequest.class)))
+				.thenReturn(mockReportsResponse);
 		// execute
 		MvcResult result = mockMvc
 				.perform(MockMvcRequestBuilders.post("/reports/saveReport").contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +93,31 @@ public class ReportsControllerTest {
 				.andExpect(jsonPath("$", Matchers.hasSize(1)))
 				.andExpect(jsonPath("$[0].reportName", Matchers.is("Refernce_No")));
 	}
-	
+
+	@Test
+	public void testFetchReportByName() throws Exception {
+
+		// Create a sample report
+		Reports report = new Reports();
+		report.setReportName("Test Report");
+
+		Mockito.when(reportConfigurationService.fetchReportByName("Test Report")).thenReturn(report);
+
+		// Send a GET request to the endpoint with the "Test Report" name in the URL
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/reports/Test Report/execute"))
+				.andExpect(MockMvcResultMatchers.status().isOk())
+				.andReturn();
+
+		// Check
+		String response = result.getResponse().getContentAsString();
+		Reports responseReport = new ObjectMapper().readValue(response, Reports.class);
+		assertEquals(report.getReportName(), responseReport.getReportName());
+
+		// verify
+		Mockito.verify(reportConfigurationService).fetchReportByName("Test Report");
+
+	}
+
 	@Test
 	public void testdeleteReport() throws Exception {
 		long reportId = 1L;
@@ -114,13 +138,12 @@ public class ReportsControllerTest {
 		mockReportsResponse.setReportName("Refernce_No");
 		mockReportsResponse.setValid("N");
 
-		
 		mockMvc.perform(MockMvcRequestBuilders.put("/reports/updateReport/{reportId}", reportId)
 				.content(asJsonString(mockReportsResponse))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isAccepted());
 	}
-	
+
 	public static String asJsonString(final Object obj) {
 		try {
 			return new ObjectMapper().writeValueAsString(obj);
@@ -128,5 +151,4 @@ public class ReportsControllerTest {
 			throw new RuntimeException(e);
 		}
 	}
-
 }

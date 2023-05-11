@@ -8,8 +8,8 @@ import com.mashreq.paymentTracker.model.Metrics;
 
 public interface MetricsService {
 
-	Metrics saveMetrics(MetricsDTO metricsRequest);
-
+	void saveMetrics(MetricsDTO metricsRequest);
+	
 	void deleteMetricsById(long metricsId);
 
 	void updateMetricsById(MetricsDTO metricsDTORequest, long metricsId);

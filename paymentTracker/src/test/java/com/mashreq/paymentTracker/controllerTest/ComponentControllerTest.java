@@ -36,8 +36,7 @@ public class ComponentControllerTest {
 
 	@Test
 	public void testSaveComponents() throws Exception {
-		ComponentsRequestDTO componentRequestDTO = new ComponentsRequestDTO("sample_Tracker", "Sample Tracker", "Y", 1,
-				5);
+		ComponentsRequestDTO componentRequestDTO = new ComponentsRequestDTO("sample_Tracker", "Sample Tracker", "Y", 1,5);
 
 		componentService.saveComponents(componentRequestDTO);
 		// execute
@@ -50,17 +49,17 @@ public class ComponentControllerTest {
 		int status = result.getResponse().getStatus();
 		assertEquals(HttpStatus.CREATED.value(), status, "Incorrect Response Status");
 
-		// verify that service method was called once
+		// verify that service method 
 		verify(componentService).saveComponents(componentRequestDTO);
 		String componetCreationMsg = result.getResponse().getContentAsString();
 		assertNotNull(componetCreationMsg);
 		assertEquals(ApplicationConstants.COMPONENT_CREATION_MSG, componetCreationMsg);
 	}
+   
 
 	@Test
 	public void testSaveComponentsDetails() throws Exception {
-		ComponentDetailsRequestDTO mockcomponentDetailsDTO = new ComponentDetailsRequestDTO("rsMesg", "sampleEquery",
-				1);
+		ComponentDetailsRequestDTO mockcomponentDetailsDTO = new ComponentDetailsRequestDTO("rsMesg", "sampleEquery",1);
 
 		componentService.saveComponentsDetails(mockcomponentDetailsDTO);
 		// execute
