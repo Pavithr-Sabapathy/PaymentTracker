@@ -91,6 +91,20 @@ public class ReportServiceTest {
 		assertEquals(1, reportsResponse.size());
 		verify(mockreportConfigurationRepo, times(1)).findAll();
 	}
+	@Test
+	public void fetchReportByName() {
+		String name = "report name";
+		
+		Reports mockReportsResponse = new Reports();
+		mockReportsResponse.setReportName("Report_Name");
+	
+		when(mockreportConfigurationRepo.findByReportName(name)).thenReturn(mockReportsResponse);
+
+		reportConfigurationService.fetchReportByName(name);
+
+		verify(mockreportConfigurationRepo).findByReportName(name);
+
+	}
 
 	@Test
 	public void testdeleteReportById() {
@@ -152,5 +166,4 @@ public class ReportServiceTest {
 		assertNotNull(thrown);
 		assertTrue(thrown.getMessage().contains("Report Configuration not exist with this id :1"));
 	}
-
 }

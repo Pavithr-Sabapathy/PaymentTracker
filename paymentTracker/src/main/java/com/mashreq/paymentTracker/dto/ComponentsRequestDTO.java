@@ -20,6 +20,9 @@ public class ComponentsRequestDTO implements Serializable {
 	private long dataSourceId;
 	@NotEmpty
 	private long reportId;
+	public ComponentsRequestDTO(){
+		
+	}
 	
 	public ComponentsRequestDTO(@NotEmpty String componentName, @NotEmpty String componentKey,
 			@NotEmpty String active, @NotEmpty long dataSourceId, @NotEmpty long reportId) {

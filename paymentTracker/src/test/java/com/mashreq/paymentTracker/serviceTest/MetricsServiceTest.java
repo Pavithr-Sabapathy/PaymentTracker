@@ -10,18 +10,21 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.MetricsDTO;
 import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -42,39 +45,116 @@ public class MetricsServiceTest {
 	@Mock
 	ReportConfigurationRepository mockreportConfigurationRepo;
 
-	@Test
-	public void testsaveMetrics() {
-		/*
-		 * MetricsDTO mockMetricsDTO = new MetricsDTO(); Metrics metricsMockObject = new
-		 * Metrics();
-		 * 
-		 * Reports mockReportsResponseOptional = new Reports(1L, "Advanced_Search",
-		 * "Advanced Search", "Search", "Searching Category", "y", "y");
-		 * 
-		 * mockMetricsDTO.setDisplay("y");
-		 * mockMetricsDTO.setDisplayName("SampleMetrics");
-		 * mockMetricsDTO.setEntityId(BigInteger.ZERO);
-		 * mockMetricsDTO.setMetricsOrder(BigInteger.ONE);
-		 * mockMetricsDTO.setReportId(1L);
-		 * 
-		 * metricsMockObject.setDisplay("y");
-		 * metricsMockObject.setDisplayName("sampleMetrics");
-		 * metricsMockObject.setEntityId(BigInteger.ZERO); metricsMockObject.setId(1L);
-		 * metricsMockObject.setMetricsOrder(BigInteger.ONE);
-		 * metricsMockObject.setReport(mockReportsResponseOptional);
-		 * 
-		 * 
-		 * when(mockreportConfigurationRepo.findById(1L)).thenReturn(Optional.of(
-		 * mockReportsResponseOptional));
-		 * when(mockMetricsRepository.findMetricsOrderByReportId(1L)).thenReturn(
-		 * BigInteger.ONE);
-		 * when(mockMetricsRepository.save(metricsMockObject)).thenReturn(
-		 * metricsMockObject); Metrics metricsResponse =
-		 * metricsService.saveMetrics(mockMetricsDTO);
-		 * assertEquals(metricsResponse.getDisplayName(), "sampleMetrics Search");
-		 * verify(mockMetricsRepository, times(1)).save(metricsMockObject);
-		 */}
+		@Test
+	    public void testSaveMetrics() {
+	        // Create a MetricsDTO instance for the test
+	        MetricsDTO metricsDto = new MetricsDTO();
+	        metricsDto.setDisplayName("Test Metrics");
+	        metricsDto.setDisplay("y");
+	        metricsDto.setEntityId(BigInteger.ZERO);
+	        metricsDto.setMetricsOrder(BigInteger.ONE);
+	        metricsDto.setReportId(1L);
 
+	        // Configure the reportConfigurationRepo.findById() 
+
+	        Reports report = new Reports();
+	        when(mockreportConfigurationRepo.findById(metricsDto.getReportId())).thenReturn(Optional.of(report));
+
+	        // Configure the metricsRepository.findMetricsOrderByReportId()ss
+	        when(mockMetricsRepository.findMetricsOrderByReportId(metricsDto.getReportId())).thenReturn(metricsDto.getReportId());
+
+	        // Call the metricsService.saveMetrics() method 
+	        metricsService.saveMetrics(metricsDto);
+
+	        // Verify 
+	        verify(mockreportConfigurationRepo).findById(metricsDto.getReportId());
+
+	        // Verify 
+	        verify(mockMetricsRepository).findMetricsOrderByReportId(metricsDto.getReportId());
+
+	        // Verify that the metricsRepository.save() method was called with the correct Metrics instance
+	        ArgumentCaptor<Metrics> argumentCaptor = ArgumentCaptor.forClass(Metrics.class);
+	        verify(mockMetricsRepository).save(argumentCaptor.capture());
+	        Metrics savedMetrics = argumentCaptor.getValue();
+	        assertEquals(report, savedMetrics.getReport());
+	        assertEquals(metricsDto.getDisplayName(), savedMetrics.getDisplayName());
+	        assertEquals(metricsDto.getDisplay(), savedMetrics.getDisplay());
+	    }
+
+		@Test()
+	    public void testSaveMetricsReportNotFound() {
+			
+	        // Create a MetricsDTO instance for the test
+	        MetricsDTO metricsDto = new MetricsDTO();
+	        metricsDto.setReportId(1L);
+	        metricsDto.setDisplayName("Test Metrics");
+	        metricsDto.setDisplay("y");
+	        metricsDto.setEntityId(BigInteger.ZERO);
+	        metricsDto.setMetricsOrder(BigInteger.ONE);
+	        metricsDto.setReportId(1L);
+	        // Configure the reportConfigurationRepo.findById() method 
+	        when(mockreportConfigurationRepo.findById(metricsDto.getReportId())).thenReturn(Optional.empty());
+	        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
+					() -> metricsService.saveMetrics(metricsDto),
+					"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");
+			assertNotNull(thrown);
+			assertTrue(thrown.getMessage().contains(ApplicationConstants.METRICS_DOES_NOT_EXISTS));
+		
+	        
+	    }
+		@Test
+		public void testfetchMetricsByReportId() throws JsonMappingException, JsonProcessingException{
+	        // Setup
+	        Long reportId = 1L;
+	        Reports report = new Reports();
+	        report.setId(reportId);
+	        Metrics metric = new Metrics();
+	        metric.setDisplay("y");
+	        metric.setDisplayName("sampleMetrics");
+	        metric.setEntityId(BigInteger.ZERO);
+	        metric.setId(1L);
+			metric.setMetricsOrder(BigInteger.ONE);
+			metric.setReport(report);
+
+			List<Metrics> metricsList = new ArrayList<>();
+	        metricsList.add(metric);
+	        Mockito.when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
+	        Mockito.when(mockMetricsRepository.findMetricsByReportId(reportId)).thenReturn(metricsList);
+
+	        // Execution
+	        List<MetricsDTO> result = metricsService.fetchMetricsByReportId(reportId);
+
+	        // Verification
+	        assertEquals(1, result.size());
+	        MetricsDTO metricsDto = result.get(0);
+	        assertEquals(metric.getDisplayName(), metricsDto.getDisplayName());
+	        assertEquals(metric.getMetricsOrder(), metricsDto.getMetricsOrder());
+	        assertEquals(metric.getDisplay(), metricsDto.getDisplay());
+	        assertEquals(metric.getReport().getId(), metricsDto.getReportId());
+	        assertEquals(metric.getEntityId(), metricsDto.getEntityId());
+
+		}
+		@Test
+	    public void testFetchMetricsByReportIdNotExist() {
+	        // Setup
+	        Long reportId = 1L;
+	        Reports mockReportsResponse = new Reports();
+			mockReportsResponse.setActive("y");
+			mockReportsResponse.setDisplayName("Reference Number");
+			mockReportsResponse.setId(1L);
+			mockReportsResponse.setReportCategory("Reference");
+			mockReportsResponse.setReportDescription("Search");
+			mockReportsResponse.setReportName("Refernce_No");
+			mockReportsResponse.setValid("N");
+	        Mockito.when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.empty());
+	        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
+					() -> metricsService.fetchMetricsByReportId(reportId),
+					"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");
+			assertNotNull(thrown);
+			assertTrue(thrown.getMessage().contains(ApplicationConstants.METRICS_DOES_NOT_EXISTS));
+		
+	        
+	    }
 	@Test
 	public void testFetchAllMetrics() throws JsonMappingException, JsonProcessingException {
 
