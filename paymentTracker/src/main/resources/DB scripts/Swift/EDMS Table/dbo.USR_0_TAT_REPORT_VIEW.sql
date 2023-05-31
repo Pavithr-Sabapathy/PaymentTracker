@@ -1,0 +1,13 @@
+CREATE TABLE [dbo].[USR_0_TAT_REPORT_VIEW](
+	[PROCESSDEFID] [float] NULL,
+	[PROCESS_INSTANCE_ID] [nvarchar](255) NULL,
+	[ACTIVITY_NAME] [nvarchar](255) NULL,
+	[ENTRY_DATE_TIME] [nvarchar](255) NULL,
+	[EXIT_DATE_TIME] [nvarchar](255) NULL,
+	[PROCESSED_BY] [nvarchar](255) NULL,
+	[TIME_DELAY] [nvarchar](255) NULL,
+	[LATEST_RECORD] [nvarchar](255) NULL,
+	[PICKUPTIME] [nvarchar](255) NULL
+) ON [PRIMARY]
+GO
+

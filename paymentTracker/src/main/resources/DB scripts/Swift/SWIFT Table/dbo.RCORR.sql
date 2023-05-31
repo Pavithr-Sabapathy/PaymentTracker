@@ -1,0 +1,33 @@
+CREATE TABLE [dbo].[RCORR](
+	[corr_type] [varchar](255) NULL,
+	[corr_X1] [varchar](255) NULL,
+	[corr_X2] [varchar](255) NULL,
+	[corr_X3] [varchar](255) NULL,
+	[corr_X4] [varchar](255) NULL,
+	[corr_nature] [varchar](255) NULL,
+	[corr_BIC_can_be_updated] [varchar](255) NULL,
+	[corr_inheritance] [varchar](255) NULL,
+	[corr_language] [varchar](255) NULL,
+	[corr_information] [varchar](255) NULL,
+	[corr_institution_name] [varchar](255) NULL,
+	[corr_branch_info] [varchar](255) NULL,
+	[corr_location] [varchar](255) NULL,
+	[corr_city_name] [varchar](255) NULL,
+	[corr_physical_address] [varchar](255) NULL,
+	[corr_ctry_code] [varchar](255) NULL,
+	[corr_ctry_name] [varchar](255) NULL,
+	[corr_subtype] [varchar](255) NULL,
+	[corr_pob_number] [varchar](255) NULL,
+	[corr_pob_location] [varchar](255) NULL,
+	[corr_pob_ctry_code] [varchar](255) NULL,
+	[corr_pob_ctry_name] [varchar](255) NULL,
+	[corr_status] [varchar](255) NULL,
+	[corr_crea_oper_nickname] [varchar](255) NULL,
+	[corr_crea_date_time] [varchar](255) NULL,
+	[corr_mod_oper_nickname] [varchar](255) NULL,
+	[corr_mod_date_time] [datetime] NULL,
+	[corr_token] [varchar](255) NULL,
+	[corr_data_last] [datetime] NULL
+) ON [PRIMARY]
+GO
+

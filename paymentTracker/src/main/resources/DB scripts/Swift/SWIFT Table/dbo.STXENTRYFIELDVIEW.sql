@@ -1,0 +1,20 @@
+CREATE TABLE [dbo].[STXENTRYFIELDVIEW](
+	[idx] [bigint] NULL,
+	[type_idx] [bigint] NULL,
+	[field_cnt] [bigint] NULL,
+	[code] [bigint] NULL,
+	[code_id] [bigint] NULL,
+	[loop_id] [bigint] NULL,
+	[sequence_id] [varchar](255) NULL,
+	[entry_option] [varchar](255) NULL,
+	[entry_alternate] [varchar](255) NULL,
+	[entry_alternate_choice] [varchar](255) NULL,
+	[entry_id] [varchar](255) NULL,
+	[tag] [varchar](255) NULL,
+	[patt_id] [varchar](255) NULL,
+	[expansion] [varchar](255) NULL,
+	[is_optional] [varchar](255) NULL,
+	[type] [varchar](255) NULL,
+	[version_idx] [varchar](255) NULL
+) ON [PRIMARY]
+GO
