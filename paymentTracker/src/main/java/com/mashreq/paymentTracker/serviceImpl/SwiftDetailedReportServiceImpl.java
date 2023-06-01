@@ -1,5 +1,11 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.CannedReportInstance;
 import com.mashreq.paymentTracker.dto.CannedReportInstanceComponent;
+import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
@@ -113,10 +120,56 @@ public class SwiftDetailedReportServiceImpl {
 		  processComponentDetail(component,componentDetails,promptsList);
 	}
 
-	private void processComponentDetail(Components component, ComponentDetails componentDetails,
+	private List<FederatedReportOutput> processComponentDetail(Components component, ComponentDetails componentDetails,
 			List<FederatedReportPromptDTO> promptsList) {
 		// TODO Auto-generated method stub
-		//Ramalashmi - Common for logic... Establish connection replace the promtps value and execute the query
+		// Ramalashmi - Common for logic... Establish connection replace the promtps value and execute the query
+		String query = componentDetails.getQuery();
+		StringBuilder queryBuilder = new StringBuilder();
+		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
+		promptsList.forEach(prompts -> {
+			if (null != prompts.getPromptKey() && query.indexOf(prompts.getPromptKey()) > 0) {
+				if (null != prompts.getPromptValue()) {
+					String promptsValue = prompts.getPromptValue();
+					queryBuilder.append(query.replace(prompts.getPromptKey(), promptsValue));
+				}
+			}
+
+		});
+
+		try {
+			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
+			Connection connection;
+			connection = DriverManager.getConnection(ApplicationConstants.FLEX_DATABASE_URL,
+					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(queryBuilder.toString());
+			if (resultSet != null) {
+				ResultSetMetaData metaData = resultSet.getMetaData();
+				int columnCount = metaData.getColumnCount();
+				while (resultSet.next()) {
+					FederatedReportOutput federatedReportOutput = new FederatedReportOutput();
+					List<Object> rowData = new ArrayList<Object>();
+					List<String> columnLabelList = new ArrayList<String>();
+					for (int index = 1; index < columnCount; index++) {
+						Object colValue = resultSet.getObject(index);
+						rowData.add(colValue);
+						String columnLabel = metaData.getColumnLabel(index);
+						columnLabelList.add(columnLabel);
+					}
+					federatedReportOutput.setRowData(rowData);
+					federatedReportOutput.setColumnLabels(columnLabelList);
+					federatedReportOutputList.add(federatedReportOutput);
+				}
+			}
+			connection.close();
+			return federatedReportOutputList;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return federatedReportOutputList;
 	}
 
 	private SWIFTDetailedFederatedReportDTO populateBaseInputContext(List<Prompts> reportInstancePromptsList,
