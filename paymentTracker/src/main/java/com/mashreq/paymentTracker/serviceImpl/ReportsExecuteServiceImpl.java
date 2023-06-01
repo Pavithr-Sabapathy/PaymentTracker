@@ -23,7 +23,6 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.controller.ReportsExecuteController;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
@@ -41,7 +40,6 @@ import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Reports;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
-import com.mashreq.paymentTracker.repository.LinkedReportRepository;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportsExecuteService;
@@ -54,9 +52,6 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 
 	@Autowired
 	private ComponentsRepository componentRepository;
-
-	@Autowired
-	private LinkedReportRepository linkedReportRepository;
 
 	@Autowired
 	LinkReportService linkReportService;

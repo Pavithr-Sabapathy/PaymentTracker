@@ -47,18 +47,32 @@ public class ApplicationConstants {
 	public static final String LINK_MAPPING_REPORT_DELETION_MSG = "Linked Mapping Deleted Successfully";
 	public static final String LINK_MAPPING_DOES_NOT_EXISTS = "Link Mapping not exist with this id";
 
-	/**Metrics and prompts constant**/
+	/** Metrics and prompts constant **/
 	public static final String METRIC = "M";
 	public static final String PROMPT = "P";
-	public static final String ACCOUNTINGSOURCEPROMPTS= "AccountingSource";
-	public static final String REFERENCENUMPROMPTS= "ReferenceNum";
-	public static final String RELATEDACCOUNTPROMPTS= "RelatedAccount";
-	
-	/**	Prepared Statement Constants	**/
+	public static final String ACCOUNTINGSOURCEPROMPTS = "AccountingSource";
+	public static final String REFERENCENUMPROMPTS = "ReferenceNum";
+	public static final String RELATEDACCOUNTPROMPTS = "RelatedAccount";
+
+	/** Prepared Statement Constants **/
 	public static final String DRIVER_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 	public static final String DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=PaymentTracker;encrypt=true;trustServerCertificate=true";
 	public static final String FLEX_DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=Flex;encrypt=true;trustServerCertificate=true";
 	public static final String DATABASE_USERNAME = "TestLogin";
 	public static final String DATABASE_PASSWORD = "Sample";
-}
 
+	/** Swift detail prompts constants **/
+	public static final String AID_PROMPT_KEY = "aid";
+	public static final String S_UMIDH_PROMPT_KEY = "s-umidh";
+	public static final String S_UMIDL_PROMPT_KEY = "s-umidl";
+	public static final String SWIFT_DETAILED_REPORT_TYPE_PROMPT_KEY = "swift-detailed-type";
+	public static final String MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY = "reference-num";
+	public static final String MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY = "message-type";
+	public static final String MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY = "message-sub-format";
+
+	public static final String MESSAGE_DETAILS_SWIFT_MSG_RMESG = "msg-rmesg";
+	public static final String MESSAGE_DETAILS_SWIFT_MSG_RINTV = "msg-rintv";
+	public static final String MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD = "msg-rtextfield";
+	public static final String MESSAGE_DETAILS_SWIFT_MSG_STX_MESSAGE = "msg-stx-message";
+
+}

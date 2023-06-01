@@ -1,6 +1,6 @@
 package com.mashreq.paymentTracker.dto;
 
-public class FlexReportInputDTO {
+public class FederatedReportPromptDTO {
 	private String promptKey;
 	private String promptValue;
 
