@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
@@ -24,11 +25,13 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Component;
 
+import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.model.Reports;
 
 @Component
 public class UtilityClass {
-	/***static code****/
+	/*** static code ****/
 	public void writeToMasterExcel(List<Reports> reportsList) throws IOException, InvalidFormatException {
 
 		String[] columns = { "reportName", "displayName", "reportDescription", "reportCategory", "active", "valid" };
@@ -84,7 +87,7 @@ public class UtilityClass {
 		workbook.close();
 	}
 
-	/***Dynamic content based on sheet****/
+	/*** Dynamic content based on sheet ****/
 	public static void writeDataSheetWise(final String excelFileName, Map<String, List<?>> sheetRowDataList)
 			throws IOException, InvalidFormatException, IllegalArgumentException, IllegalAccessException {
 		HSSFWorkbook workbook = new HSSFWorkbook();
@@ -110,8 +113,7 @@ public class UtilityClass {
 		}
 	}
 
-	public static boolean writeData(final String excelFileName, final String sheetName, 
-			List<?> rowDataList)
+	public static boolean writeData(final String excelFileName, final String sheetName, List<?> rowDataList)
 			throws IOException, InvalidFormatException, IllegalArgumentException, IllegalAccessException {
 
 		boolean isWritten = false;
@@ -136,8 +138,8 @@ public class UtilityClass {
 	}
 
 	@SuppressWarnings("deprecation")
-	private static void createSheet(final HSSFWorkbook workbook, final String sheetName,
-			final List<?> rowDataList) throws IllegalArgumentException, IllegalAccessException {
+	private static void createSheet(final HSSFWorkbook workbook, final String sheetName, final List<?> rowDataList)
+			throws IllegalArgumentException, IllegalAccessException {
 
 		HSSFSheet sheet = workbook.createSheet(sheetName);
 		List<String> headerList = new ArrayList<String>();
@@ -187,5 +189,82 @@ public class UtilityClass {
 					cell.setCellValue((Double) value);
 			}
 		}
+	}
+
+	public static String getStringRepresentation(Object colValue) {
+		String colString = null;
+		if (colValue != null) {
+			colString = colValue.toString().trim();
+		}
+		return colString;
+	}
+
+	public static boolean isOutgoingPaymentMessage(String messageFormat, String messageType) {
+		boolean outgoingPayment = false;
+		if (messageFormat.equalsIgnoreCase(ApplicationConstants.MESSAGE_INPUT_SUB_FORMAT)) {
+			List<String> outgoingCodes = MashreqFederatedReportConstants.OUTGOING_PAYMENT_CODES_LIST;
+			return outgoingCodes.stream().anyMatch(outgoingcode -> outgoingcode.equalsIgnoreCase(messageType));
+		}
+		return outgoingPayment;
+	}
+
+	public static Integer getNumberRepresentation(Object colValue) {
+		Integer colString = null;
+		if (colValue != null) {
+			colString = Integer.parseInt(colValue.toString().trim());
+		}
+		return colString;
+	}
+
+	public static boolean isGpiTrchEnabledMessage(String receiver, String sender) {
+		boolean isGpiTrchEnabledMessage = false;
+		if ((null != receiver) && (receiver.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_TRCH_CODE))
+				|| ((null != sender)
+						&& (sender.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_TRCH_CODE)))) {
+			isGpiTrchEnabledMessage = true;
+		}
+		return isGpiTrchEnabledMessage;
+	}
+
+	public static boolean isGpiIpalaEnabledMessage(String receiver, String sender) {
+		boolean isGpiIpalaEnabledMessage = false;
+		if (null != receiver && receiver.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_IPALA_CODE)
+				|| ((null != sender) && sender.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_IPALA_CODE))) {
+			isGpiIpalaEnabledMessage = true;
+		}
+		return isGpiIpalaEnabledMessage;
+	}
+
+	public static String combineValues(String... values) {
+		String combinedValue = "";
+		int index = 1;
+		for (String val : values) {
+			if (null == val) {
+				continue;
+			}
+			if (index == 1) {
+				combinedValue = val;
+			} else {
+				combinedValue += ApplicationConstants.SEMI_COLON + val;
+			}
+			index++;
+		}
+		return combinedValue;
+	}
+
+	public static String combineValuesWithBreakTag(String... values) {
+		String corrDetails = "";
+		List<String> tokens = new ArrayList<String>();
+
+		for (String value : values) {
+			if (null != value) {
+				tokens.add(value);
+			}
+		}
+
+		if (!tokens.isEmpty()) {
+			corrDetails = tokens.stream().collect(Collectors.joining(ApplicationConstants.BREAK_TAG));
+		}
+		return corrDetails;
 	}
 }

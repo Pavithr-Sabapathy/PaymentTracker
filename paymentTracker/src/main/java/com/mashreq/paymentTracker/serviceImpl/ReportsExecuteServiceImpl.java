@@ -70,16 +70,17 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 			reportObject = reportConfigurationService.fetchReportByName(reportName);
 			ReportInstanceDTO reportInstanceDTO = populateReportPromptsInstance(reportProcessingRequest, reportObject);
 			/** get the component info based on report id **/
-			Optional<Components> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
-			Components componentObject;
+			Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
+			 List<Components> componentObject = new ArrayList<Components>();
 			if (componentsOptional.isEmpty()) {
 				throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportObject.getId());
 			} else {
 				componentObject = componentsOptional.get();
-				List<ComponentDetails> componentDetailsList = componentObject.getComponentDetailsList();
+				Components component = componentObject.get(0);
+				List<ComponentDetails> componentDetailsList = component.getComponentDetailsList();
 				if (componentDetailsList.isEmpty()) {
 					throw new ResourceNotFoundException(
-							ApplicationConstants.COMPONENT_DETAILS_DOES_NOT_EXISTS + componentObject.getId());
+							ApplicationConstants.COMPONENT_DETAILS_DOES_NOT_EXISTS + component.getId());
 				} else {
 					List<ReportPromptsInstanceDTO> promptsMappedList = reportInstanceDTO.getPromptsList();
 
