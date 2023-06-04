@@ -7,6 +7,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,42 +15,67 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.dto.MessageField;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseMetaDTO;
 import com.mashreq.paymentTracker.dto.ReportProcessingRequest;
 import com.mashreq.paymentTracker.dto.SWIFTDetailedFederatedReportDTO;
 import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsFederatedReportOutput;
 import com.mashreq.paymentTracker.dto.StxEntryFieldViewInfo;
+import com.mashreq.paymentTracker.dto.SwiftDetailedReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.SwiftDetailsReportObjectDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
+import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Reports;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
+import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
+import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
-public class SwiftDetailedReportServiceImpl {
+@Component
+public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportService {
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
 
 	@Autowired
 	private ComponentsRepository componentRepository;
 
-	public void processSwiftDetailReport(String reportName, ReportProcessingRequest reportProcessingRequest) {
+	@Autowired
+	LinkReportService linkReportService;
+
+	private static final Logger log = LoggerFactory.getLogger(SwiftDetailedReportServiceImpl.class);
+	private static final String FILENAME = "SwiftDetailedReportServiceImpl";
+
+	public SwiftDetailedReportExecuteResponseData processSwiftDetailReport(String reportName,
+			ReportProcessingRequest reportProcessingRequest) {
+		SwiftDetailedReportExecuteResponseData responseData = new SwiftDetailedReportExecuteResponseData();
+		ReportExecuteResponseMetaDTO reportExecutionMetaDTO = new ReportExecuteResponseMetaDTO();
+		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
+		List<Map<String, Object>> swiftData = null ;
 		Reports reportObject = reportConfigurationService.fetchReportByName(reportName);
 		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
 		if (componentsOptional.isEmpty()) {
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportObject.getId());
 		} else {
+			Date startTime = new Date();
 			List<Components> componentsList = componentsOptional.get();
 			for (Components component : componentsList) {
 				if (component.getActive().equals(CheckType.YES.toString())) {
@@ -57,11 +83,22 @@ public class SwiftDetailedReportServiceImpl {
 							reportObject.getPromptList(), reportProcessingRequest.getPrompts());
 					// TODO
 					// swiftDetailedReportDTO.setComponent(component);
-					processSwiftDetailedReport(swiftDetailedReportDTO, component);
+					List<SWIFTMessageDetailsFederatedReportOutput> messageDetails = processSwiftDetailedReport(
+							swiftDetailedReportDTO, component);
+					swiftData = populateSwiftDetailedReportData(messageDetails);
+					reportExecuteResponseCloumnDefList = populateColumnDef(reportObject);
 				}
 
 			}
+			responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
+			responseData.setData(swiftData);
+			Date endTime = new Date();
+			reportExecutionMetaDTO.setStartTime(startTime.toString());
+			reportExecutionMetaDTO.setEndTime(endTime.toString());
+			reportExecutionMetaDTO.setReportId(reportName);
+			responseData.setMeta(reportExecutionMetaDTO);
 		}
+		return responseData;
 	}
 
 	private List<SWIFTMessageDetailsFederatedReportOutput> processSwiftDetailedReport(
@@ -305,7 +342,6 @@ public class SwiftDetailedReportServiceImpl {
 			}
 		}
 		return expression;
-
 	}
 
 	private void processMessageDetailsStxMessageQuery(Components component, ComponentDetails componentDetails,
@@ -553,25 +589,22 @@ public class SwiftDetailedReportServiceImpl {
 		// TODO Auto-generated method stub
 		// Ramalashmi - Common for logic... Establish connection replace the promtps
 		// value and execute the query
-		// Ramalashmi - Common for logic... Establish connection replace the promtps
-		// value and execute the query
-		String query = componentDetails.getQuery();
+		String queryString = component.getComponentDetailsList().get(0).getQuery().replaceAll("~", "");
 		StringBuilder queryBuilder = new StringBuilder();
 		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
 		promptsList.forEach(prompts -> {
-			if (null != prompts.getPromptKey() && query.indexOf(prompts.getPromptKey()) > 0) {
+			if (null != prompts.getPromptKey() && queryString.indexOf(prompts.getPromptKey()) > 0) {
 				if (null != prompts.getPromptValue()) {
 					String promptsValue = prompts.getPromptValue();
-					queryBuilder.append(query.replace(prompts.getPromptKey(), promptsValue));
+					queryBuilder.append(queryString.replace(prompts.getPromptKey(),promptsValue));
 				}
 			}
-
 		});
 
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection;
-			connection = DriverManager.getConnection(ApplicationConstants.FLEX_DATABASE_URL,
+			connection = DriverManager.getConnection(ApplicationConstants.SWIFT_DATABASE_URL,
 					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(queryBuilder.toString());
@@ -582,7 +615,7 @@ public class SwiftDetailedReportServiceImpl {
 					FederatedReportOutput federatedReportOutput = new FederatedReportOutput();
 					List<Object> rowData = new ArrayList<Object>();
 					List<String> columnLabelList = new ArrayList<String>();
-					for (int index = 1; index < columnCount; index++) {
+					for (int index = 1; index <= columnCount; index++) {
 						Object colValue = resultSet.getObject(index);
 						rowData.add(colValue);
 						String columnLabel = metaData.getColumnLabel(index);
@@ -638,6 +671,48 @@ public class SwiftDetailedReportServiceImpl {
 			}
 		});
 		return SWIFTDetailedFederatedReportDTO;
+	}
+
+	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(Reports reportObject) {
+		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
+		ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
+		List<Metrics> metricsList = reportObject.getMetricsList();
+		metricsList.stream().forEach(metrics -> {
+			reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
+			reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
+		});
+		try {
+			LinkedReportRequestDTO linkedReportRequestDTO = linkReportService
+					.fetchLinkedReportByReportId(reportObject.getId());
+
+			if (null != linkedReportRequestDTO) {
+				Long sourceMetricValue = linkedReportRequestDTO.getSourceMetricId();
+				reportExecuteResponseCloumnDef.setLinkExists(null != sourceMetricValue ? true : false);
+			}
+		} catch (JpaSystemException exception) {
+			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
+		}
+		return reportExecuteResponseCloumnDefList;
+	}
+
+	private List<Map<String, Object>> populateSwiftDetailedReportData(List<SWIFTMessageDetailsFederatedReportOutput> swiftDetailedReports) {
+		List<Map<String, Object>> swiftDetailedReportDataList = new ArrayList<Map<String, Object>>();
+		Map<String, Object> mapData = new HashMap<String, Object>();
+		swiftDetailedReports.stream().forEach(swiftReport -> {
+			mapData.put(swiftReport.getKey(), swiftReport.getValue());
+			
+		});
+		swiftDetailedReportDataList.add(mapData);
+		return swiftDetailedReportDataList;
+	}
+
+	@Override
+	public APIResponse populateSuccessAPIRespone(SwiftDetailedReportExecuteResponseData swiftDetailedReport) {
+		APIResponse swiftDetailedReportApiResponse = new APIResponse();
+		swiftDetailedReportApiResponse.setData(swiftDetailedReport);
+		swiftDetailedReportApiResponse.setMessage("Report Execution Success");
+		swiftDetailedReportApiResponse.setStatus(Boolean.TRUE);
+		return swiftDetailedReportApiResponse;
 	}
 
 }
