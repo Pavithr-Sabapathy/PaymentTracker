@@ -64,12 +64,12 @@ public class ApplicationConstants {
 
 	/** Swift detail prompts constants **/
 	public static final String AID_PROMPT_KEY = "aid";
-	public static final String S_UMIDH_PROMPT_KEY = "s-umidh";
-	public static final String S_UMIDL_PROMPT_KEY = "s-umidl";
-	public static final String SWIFT_DETAILED_REPORT_TYPE_PROMPT_KEY = "swift-detailed-type";
-	public static final String MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY = "reference-num";
-	public static final String MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY = "message-type";
-	public static final String MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY = "message-sub-format";
+	public static final String S_UMIDH_PROMPT_KEY = "s_umidh";
+	public static final String S_UMIDL_PROMPT_KEY = "s_umidl";
+	public static final String SWIFT_DETAILED_REPORT_TYPE_PROMPT_KEY = "SWIFTDetailedType";
+	public static final String MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY = "ReferenceNum";
+	public static final String MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY = "MessageType";
+	public static final String MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY = "MessageSubFormat";
 
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RMESG = "msg-rmesg";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RINTV = "msg-rintv";

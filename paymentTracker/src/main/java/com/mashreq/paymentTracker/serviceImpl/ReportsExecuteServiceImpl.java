@@ -258,7 +258,7 @@ public class ReportsExecuteServiceImpl implements ReportsExecuteService {
 		promptsRequestMapping.forEach((promptKey, promptValue) -> {
 			ReportPromptsInstanceDTO reportPromptsIntanceDTO = new ReportPromptsInstanceDTO();
 			reportPromptsIntanceDTO.setKey(promptKey);
-			reportPromptsIntanceDTO.setPromptsValueList(promptValue.getPromptsValueList());
+			reportPromptsIntanceDTO.setPromptsValueList(promptValue.getValue());
 			reportPromptsIntanceDTO.setPromptValue(promptValue.getPromptValue());
 			reportPromptsInstanceList.add(reportPromptsIntanceDTO);
 		});

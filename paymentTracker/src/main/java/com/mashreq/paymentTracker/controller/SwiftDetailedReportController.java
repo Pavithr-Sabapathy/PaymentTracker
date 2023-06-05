@@ -29,6 +29,7 @@ public class SwiftDetailedReportController {
 	private static final Logger log = LoggerFactory.getLogger(SwiftDetailedReportController.class);
 	private static final String FILENAME = "SwiftDetailedReportController";
 
+	
 	@PostMapping("/swift/{reportName}/execute")
 	public ResponseEntity<APIResponse> executeSwiftDetailedReport(@PathVariable String reportName,
 			@RequestBody ReportProcessingRequest reportProcessingRequest) throws ReportException {

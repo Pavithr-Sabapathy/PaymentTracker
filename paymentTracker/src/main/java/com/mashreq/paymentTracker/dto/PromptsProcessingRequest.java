@@ -11,7 +11,7 @@ public class PromptsProcessingRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private long id;
 	private String key;
-	private List<String> promptsValueList;
+	private List<String> value;
 	private String promptValue;
 
 	public long getId() {
@@ -30,12 +30,12 @@ public class PromptsProcessingRequest implements Serializable {
 		this.key = key;
 	}
 
-	public List<String> getPromptsValueList() {
-		return promptsValueList;
+	public List<String> getValue() {
+		return value;
 	}
 
-	public void setPromptsValueList(List<String> promptsValueList) {
-		this.promptsValueList = promptsValueList;
+	public void setValue(List<String> value) {
+		this.value = value;
 	}
 
 	public String getPromptValue() {
@@ -48,8 +48,8 @@ public class PromptsProcessingRequest implements Serializable {
 
 	@Override
 	public String toString() {
-		return "PromptsProcessingRequest [id=" + id + ", key=" + key + ", promptsValueList=" + promptsValueList
-				+ ", promptValue=" + promptValue + "]";
+		return "PromptsProcessingRequest [id=" + id + ", key=" + key + ", value=" + value + ", promptValue="
+				+ promptValue + "]";
 	}
 
 }

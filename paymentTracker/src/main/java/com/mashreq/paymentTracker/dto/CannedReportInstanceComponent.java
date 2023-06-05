@@ -25,9 +25,9 @@ public class CannedReportInstanceComponent implements Serializable {
 
 	private CheckType active = CheckType.YES;
 
-	private CannedReportInstance cannedReportInstance;
+	private CannedReportInstance report;
 
-	private Set<CannedReportInstanceComponentDetail> cannedReportInstanceComponentDetails;
+	private Set<CannedReportInstanceComponentDetail> componentDetailsList;
 
 	public Long getId() {
 		return id;
@@ -85,21 +85,28 @@ public class CannedReportInstanceComponent implements Serializable {
 		this.active = active;
 	}
 
-	public CannedReportInstance getCannedReportInstance() {
-		return cannedReportInstance;
+	public CannedReportInstance getReport() {
+		return report;
 	}
 
-	public void setCannedReportInstance(CannedReportInstance cannedReportInstance) {
-		this.cannedReportInstance = cannedReportInstance;
+	public void setReport(CannedReportInstance report) {
+		this.report = report;
 	}
 
-	public Set<CannedReportInstanceComponentDetail> getCannedReportInstanceComponentDetails() {
-		return cannedReportInstanceComponentDetails;
+	public Set<CannedReportInstanceComponentDetail> getComponentDetailsList() {
+		return componentDetailsList;
 	}
 
-	public void setCannedReportInstanceComponentDetails(
-			Set<CannedReportInstanceComponentDetail> cannedReportInstanceComponentDetails) {
-		this.cannedReportInstanceComponentDetails = cannedReportInstanceComponentDetails;
+	public void setComponentDetailsList(Set<CannedReportInstanceComponentDetail> componentDetailsList) {
+		this.componentDetailsList = componentDetailsList;
+	}
+
+	@Override
+	public String toString() {
+		return "CannedReportInstanceComponent [id=" + id + ", cannedReportComponentId=" + cannedReportComponentId
+				+ ", dataSourceId=" + dataSourceId + ", appId=" + appId + ", componentKey=" + componentKey
+				+ ", componentName=" + componentName + ", active=" + active + ", report=" + report
+				+ ", componentDetailsList=" + componentDetailsList + "]";
 	}
 
 }
