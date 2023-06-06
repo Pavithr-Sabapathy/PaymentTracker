@@ -77,7 +77,6 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
 		List<Map<String, Object>> swiftData = null;
 		Reports reportObject = reportConfigurationService.fetchReportByName(reportName);
-		List<Prompts> promptsList = reportObject.getPromptList();
 		if (null != reportObject) {
 			Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
 			if (componentsOptional.isEmpty()) {
@@ -224,40 +223,40 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			ComponentDetails componentDetails = getMatchedComponentDetails(componentDetailsList, componentDetailKey);
 			if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RMESG.equalsIgnoreCase(componentDetailKey)) {
 
-				processMessageDetailsRMesgQuery(component, componentDetails, messagingDetailsInput, componentDetailKey,
+				processMessageDetailsRMesgQuery(componentDetails, messagingDetailsInput, componentDetailKey,
 						swiftDetailsReportObjectDTO);
 			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RINTV.equalsIgnoreCase(componentDetailKey)) {
-				processMessageDetailsRIntvQuery(component, componentDetails, messagingDetailsInput, componentDetailKey,
+				processMessageDetailsRIntvQuery(componentDetails, messagingDetailsInput, componentDetailKey,
 						swiftDetailsReportObjectDTO);
 			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD.equalsIgnoreCase(componentDetailKey)) {
-				processMessageDetailsRTextFieldQuery(component, componentDetails, messagingDetailsInput,
-						componentDetailKey, swiftDetailsReportObjectDTO);
+				processMessageDetailsRTextFieldQuery(componentDetails, messagingDetailsInput, componentDetailKey,
+						swiftDetailsReportObjectDTO);
 			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RCORR.equalsIgnoreCase(componentDetailKey)) {
 				boolean sender = false;
 				if (null != swiftDetailsReportObjectDTO.getReceiver()) {
-					processMessageDetailsRCorrQuery(component, componentDetails, messagingDetailsInput,
-							componentDetailKey, swiftDetailsReportObjectDTO, sender);
+					processMessageDetailsRCorrQuery(componentDetails, messagingDetailsInput, componentDetailKey,
+							swiftDetailsReportObjectDTO, sender);
 				}
 				if (null != swiftDetailsReportObjectDTO.getSender()) {
 					sender = true;
-					processMessageDetailsRCorrQuery(component, componentDetails, messagingDetailsInput,
-							componentDetailKey, swiftDetailsReportObjectDTO, sender);
+					processMessageDetailsRCorrQuery(componentDetails, messagingDetailsInput, componentDetailKey,
+							swiftDetailsReportObjectDTO, sender);
 				}
 
 			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_MESSAGE
 					.equalsIgnoreCase(componentDetailKey)) {
-				processMessageDetailsStxMessageQuery(component, componentDetails, messagingDetailsInput,
-						componentDetailKey, swiftDetailsReportObjectDTO);
+				processMessageDetailsStxMessageQuery(componentDetails, messagingDetailsInput, componentDetailKey,
+						swiftDetailsReportObjectDTO);
 			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW
 					.equalsIgnoreCase(componentDetailKey)) {
-				processMessageDetailsStxEntryFieldViewQuery(component, componentDetails, messagingDetailsInput,
-						componentDetailKey, swiftDetailsReportObjectDTO);
+				processMessageDetailsStxEntryFieldViewQuery(componentDetails, messagingDetailsInput, componentDetailKey,
+						swiftDetailsReportObjectDTO);
 			}
 
 		}
 	}
 
-	private void processMessageDetailsStxEntryFieldViewQuery(Components component, ComponentDetails componentDetails,
+	private void processMessageDetailsStxEntryFieldViewQuery(ComponentDetails componentDetails,
 			MessageDetailsFederatedReportInput messagingDetailsInput, String componentDetailKey,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		List<FederatedReportPromptDTO> prompts = new ArrayList<FederatedReportPromptDTO>();
@@ -270,8 +269,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		messageCodesPrompt.setPromptKey(messageCodesPromptKey);
 		messageCodesPrompt.setPromptValue(promptValue);
 		prompts.add(messageCodesPrompt);
-		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(component, componentDetails,
-				prompts);
+		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(componentDetails, prompts);
 		processMessageDetailsStxFieldEntryViewData(federatedReportOutputList, swiftDetailsReportObjectDTO);
 	}
 
@@ -358,13 +356,12 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		return expression;
 	}
 
-	private void processMessageDetailsStxMessageQuery(Components component, ComponentDetails componentDetails,
+	private void processMessageDetailsStxMessageQuery(ComponentDetails componentDetails,
 			MessageDetailsFederatedReportInput messagingDetailsInput, String componentDetailKey,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		List<FederatedReportPromptDTO> prompts = new ArrayList<FederatedReportPromptDTO>();
 		prompts.add(messagingDetailsInput.getMessageTypePrompt());
-		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(component, componentDetails,
-				prompts);
+		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(componentDetails, prompts);
 		processMessageDetailsStxMessageData(federatedReportOutputList, swiftDetailsReportObjectDTO);
 	}
 
@@ -378,7 +375,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		}
 	}
 
-	private void processMessageDetailsRCorrQuery(Components component, ComponentDetails componentDetails,
+	private void processMessageDetailsRCorrQuery(ComponentDetails componentDetails,
 			MessageDetailsFederatedReportInput messagingDetailsInput, String componentDetailKey,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO, boolean sender) {
 		List<FederatedReportPromptDTO> prompts = new ArrayList<FederatedReportPromptDTO>();
@@ -390,8 +387,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			corrBankPrompt.setPromptValue(swiftDetailsReportObjectDTO.getReceiver());
 		}
 		prompts.add(corrBankPrompt);
-		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(component, componentDetails,
-				prompts);
+		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(componentDetails, prompts);
 		processMessageDetailsRCorrData(federatedReportOutputList, swiftDetailsReportObjectDTO, sender);
 	}
 
@@ -412,13 +408,12 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		}
 	}
 
-	private void processMessageDetailsRTextFieldQuery(Components component, ComponentDetails componentDetails,
+	private void processMessageDetailsRTextFieldQuery(ComponentDetails componentDetails,
 			MessageDetailsFederatedReportInput messagingDetailsInput, String componentDetailKey,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 		updateMessageDetailsInternalPrompts(messagingDetailsInput, promptsList, swiftDetailsReportObjectDTO);
-		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(component, componentDetails,
-				promptsList);
+		List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(componentDetails, promptsList);
 		processMessageDetailsRTextFieldData(federatedReportOutputList, swiftDetailsReportObjectDTO);
 
 	}
@@ -484,7 +479,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		return activityStatus;
 	}
 
-	private void processMessageDetailsRIntvQuery(Components component, ComponentDetails componentDetails,
+	private void processMessageDetailsRIntvQuery(ComponentDetails componentDetails,
 			MessageDetailsFederatedReportInput messagingDetailsInput, String componentDetailKey,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		String activityStatus = ApplicationConstants.COMPLETED_ACTIVITY_STATUS;
@@ -494,7 +489,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 				messagingDetailsInput.getMessageTypePrompt().getPromptValue())) {
 
 			updateMessageDetailsInternalPrompts(messagingDetailsInput, promptsList, swiftDetailsReportObjectDTO);
-			List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(component, componentDetails,
+			List<FederatedReportOutput> federatedReportOutputList = processComponentDetail(componentDetails,
 					promptsList);
 
 			activityStatus = processMessageDetailsRIntvData(federatedReportOutputList, swiftDetailsReportObjectDTO);
@@ -518,8 +513,8 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		sumidhPrompt.setPromptValue(swiftDetailsReportObjectDTO.getSumidh());
 		promptsList.add(sumidhPrompt);
 		FederatedReportPromptDTO sumidlPrompt = new FederatedReportPromptDTO();
-		sumidhPrompt.setPromptKey(ApplicationConstants.S_UMIDL_PROMPT_KEY);
-		sumidhPrompt.setPromptValue(swiftDetailsReportObjectDTO.getSumidl());
+		sumidlPrompt.setPromptKey(ApplicationConstants.S_UMIDL_PROMPT_KEY);
+		sumidlPrompt.setPromptValue(swiftDetailsReportObjectDTO.getSumidl());
 		promptsList.add(sumidlPrompt);
 		promptsList.add(messagingDetailsInput.getReferenceNumPrompt());
 		promptsList.add(messagingDetailsInput.getMessageSubFormatPrompt());
@@ -563,14 +558,14 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		return componentDetailsObject;
 	}
 
-	private void processMessageDetailsRMesgQuery(Components component, ComponentDetails componentDetails,
+	private void processMessageDetailsRMesgQuery(ComponentDetails componentDetails,
 			MessageDetailsFederatedReportInput messagingDetailsInput, String componentDetailKey,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
 		promptsList.add(messagingDetailsInput.getReferenceNumPrompt());
 		promptsList.add(messagingDetailsInput.getMessageSubFormatPrompt());
-		federatedReportOutputList = processComponentDetail(component, componentDetails, promptsList);
+		federatedReportOutputList = processComponentDetail(componentDetails, promptsList);
 		processMessageDetailsRMesgData(federatedReportOutputList, swiftDetailsReportObjectDTO);
 	}
 
@@ -595,19 +590,17 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		return swiftDetailsReportObjectDTO;
 	}
 
-	private List<FederatedReportOutput> processComponentDetail(Components component, ComponentDetails componentDetails,
+	private List<FederatedReportOutput> processComponentDetail(ComponentDetails componentDetails,
 			List<FederatedReportPromptDTO> promptsList) {
-		String queryString = component.getComponentDetailsList().get(0).getQuery().replaceAll("~", "");
-		StringBuilder queryBuilder = new StringBuilder();
+		String queryString = componentDetails.getQuery();
 		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
-		promptsList.forEach(prompts -> {
+		for (FederatedReportPromptDTO prompts : promptsList) {
 			if (null != prompts.getPromptKey() && queryString.indexOf(prompts.getPromptKey()) > 0) {
 				if (null != prompts.getPromptValue()) {
-					String promptsValue = prompts.getPromptValue();
-					queryBuilder.append(queryString.replace(prompts.getPromptKey(), promptsValue));
+					queryString = queryString.replace("~" + prompts.getPromptKey() + "~", prompts.getPromptValue());
 				}
 			}
-		});
+		}
 
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
@@ -615,7 +608,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			connection = DriverManager.getConnection(ApplicationConstants.SWIFT_DATABASE_URL,
 					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery(queryBuilder.toString());
+			ResultSet resultSet = statement.executeQuery(queryString);
 			if (resultSet != null) {
 				ResultSetMetaData metaData = resultSet.getMetaData();
 				int columnCount = metaData.getColumnCount();
@@ -648,12 +641,13 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			List<PromptsProcessingRequest> uiPromptsRequest) {
 
 		SWIFTDetailedFederatedReportDTO SWIFTDetailedFederatedReportDTO = new SWIFTDetailedFederatedReportDTO();
-		List<String> promptsDisplayList = reportInstancePromptsList.stream().map(Prompts :: getDisplayName).collect(Collectors.toList());
+		List<String> promptsDisplayList = reportInstancePromptsList.stream().map(Prompts::getDisplayName)
+				.collect(Collectors.toList());
 		Map<String, PromptsProcessingRequest> promptsRequestMapping = uiPromptsRequest.stream()
 				.collect(Collectors.toMap(PromptsProcessingRequest::getKey, Function.identity()));
 
 		promptsRequestMapping.forEach((promptKey, promptValue) -> {
-			if (UtilityClass.ignoreCaseContains(promptsDisplayList,promptKey)) {
+			if (UtilityClass.ignoreCaseContains(promptsDisplayList, promptKey)) {
 				FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
 				federatedReportPromptDTO.setPromptKey(promptKey);
 				federatedReportPromptDTO.setPromptValue(promptValue.getValue().get(0).trim());
@@ -695,6 +689,8 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 				Long sourceMetricValue = linkedReportRequestDTO.getSourceMetricId();
 				reportExecuteResponseCloumnDef.setLinkExists(null != sourceMetricValue ? true : false);
 			}
+		} catch (ResourceNotFoundException exception) {
+			log.error(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + reportObject.getId());
 		} catch (JpaSystemException exception) {
 			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
 		}

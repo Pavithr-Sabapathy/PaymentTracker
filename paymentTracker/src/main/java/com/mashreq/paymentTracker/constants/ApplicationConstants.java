@@ -70,14 +70,15 @@ public class ApplicationConstants {
 	public static final String MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY = "ReferenceNum";
 	public static final String MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY = "MessageType";
 	public static final String MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY = "MessageSubFormat";
-
+	public static final String MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY = "CorrBank";
+	
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RMESG = "msg-rmesg";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RINTV = "msg-rintv";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD = "msg-rtextfield";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_STX_MESSAGE = "msg-stx-message";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RCORR = "msg-rcorr";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW = "msg-stx-entry-field-view";
-	public static final String MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY = "corr-bank";
+	
 
 	public static final String MESSAGE_INPUT_SUB_FORMAT = "INPUT";
 	public static final String MESSAGE_OUTPUT_SUB_FORMAT = "OUTPUT";
@@ -127,7 +128,7 @@ public class ApplicationConstants {
 	public static final String PAYMENT_STATUS_AWAITING_CREDIT_COVER = "Payment awaiting credit cover";
 	public static final String PAYMENT_STATUS_AWAITING_CREDIT_COVER_CODE = "ACSP/G004";
 
-	public static final String MESSAGE_DETAILS_MESSAGE_CODES_PROMPT_KEY = "message-codes";
+	public static final String MESSAGE_DETAILS_MESSAGE_CODES_PROMPT_KEY = "MessageCodes";
 	public static final String COLON = " : ";
 	public static final String MESSAGE_CODE_32A = "32A";
 	public static final String MESSAGE_CODE_33B = "33B";

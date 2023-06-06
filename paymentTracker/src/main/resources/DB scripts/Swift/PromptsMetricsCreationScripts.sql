@@ -32,6 +32,6 @@ insert into conf_rpt_comp_det values('select t.field_code, t.field_option , case
 
 insert into conf_rpt_comp_det values('select top 1 ''Swift Input : '' , description as ''Swift Input'' from stxmessage with (nolock) where type = ''~MessageType~'' order by version_idx desc','msg-stx-message',3)
 
-insert into conf_rpt_comp_det values('select corr_x1, corr_institution_name,  corr_city_name, (corr_ctry_name + '' '' + corr_ctry_code) from  rcorr c with (nolock) where corr_x1 = ~CorrBank~' ,'msg-rcorr',3)
+insert into conf_rpt_comp_det values('select corr_x1, corr_institution_name,  corr_city_name, (corr_ctry_name + ' ' + corr_ctry_code) from  rcorr c with (nolock) where corr_x1 = '~CorrBank~'' ,'msg-rcorr',3)
 
 insert into conf_rpt_comp_det values('select code, entry_option, expansion,version_idx from stxEntryFieldView s with (nolock) where s.type = ''~MessageType~'' and code in(~MessageCodes~) order by code,version_idx desc','msg-stx-entry-field-view',3)
