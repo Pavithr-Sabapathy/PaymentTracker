@@ -76,6 +76,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		ReportExecuteResponseMetaDTO reportExecutionMetaDTO = new ReportExecuteResponseMetaDTO();
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
 		List<Map<String, Object>> swiftData = null;
+		Long queryExecutionTime = 0L;
 		Reports reportObject = reportConfigurationService.fetchReportByName(reportName);
 		if (null != reportObject) {
 			Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
@@ -102,6 +103,8 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 				responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
 				responseData.setData(swiftData);
 				Date endTime = new Date();
+				queryExecutionTime = populateReportQueryExecutionTime(startTime, endTime);
+				reportExecutionMetaDTO.setExecutionTime(queryExecutionTime);
 				reportExecutionMetaDTO.setStartTime(startTime.toString());
 				reportExecutionMetaDTO.setEndTime(endTime.toString());
 				reportExecutionMetaDTO.setReportId(reportName);
@@ -700,13 +703,21 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	private List<Map<String, Object>> populateSwiftDetailedReportData(
 			List<SWIFTMessageDetailsFederatedReportOutput> swiftDetailedReports) {
 		List<Map<String, Object>> swiftDetailedReportDataList = new ArrayList<Map<String, Object>>();
-		Map<String, Object> mapData = new HashMap<String, Object>();
-		swiftDetailedReports.stream().forEach(swiftReport -> {
-			mapData.put(swiftReport.getKey(), swiftReport.getValue());
-
-		});
-		swiftDetailedReportDataList.add(mapData);
+		for (SWIFTMessageDetailsFederatedReportOutput swiftReport : swiftDetailedReports) {
+			if (null != swiftReport.getKey() && null != swiftReport.getValue()) {
+				Map<String, Object> mapData = new HashMap<String, Object>();
+				mapData.put("Field Description", swiftReport.getKey());
+				mapData.put("Field Value", swiftReport.getValue());
+				swiftDetailedReportDataList.add(mapData);
+			}
+		}
+		
 		return swiftDetailedReportDataList;
+	}
+
+	private Long populateReportQueryExecutionTime(Date startTime, Date endTime) {
+		Long queryExecutionTime = endTime.getTime() - startTime.getTime();
+		return queryExecutionTime;
 	}
 
 	@Override
