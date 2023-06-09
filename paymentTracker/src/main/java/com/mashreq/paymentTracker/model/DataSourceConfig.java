@@ -30,7 +30,7 @@ public class DataSourceConfig {
 	
 	@NotNull(message = "DataSource provider should not be empty")
 	@Column(name = "ds_provider")
-	private BigInteger dataSourceProvider;
+	private Long dataSourceProvider;
 	
 	@NotNull(message = "DataSource username should not be empty")
 	@Column(name = "ds_username")
@@ -127,11 +127,11 @@ public class DataSourceConfig {
 		this.dataSourceDescription = dataSourceDescription;
 	}
 
-	public BigInteger getDataSourceProvider() {
+	public Long getDataSourceProvider() {
 		return dataSourceProvider;
 	}
 
-	public void setDataSourceProvider(BigInteger dataSourceProvider) {
+	public void setDataSourceProvider(Long dataSourceProvider) {
 		this.dataSourceProvider = dataSourceProvider;
 	}
 
@@ -214,7 +214,7 @@ public class DataSourceConfig {
 
 	public DataSourceConfig(long id, @NotNull(message = "DataSource name should not be empty") String dataSourceName,
 			String dataSourceDescription,
-			@NotNull(message = "DataSource provider should not be empty") BigInteger dataSourceProvider,
+			@NotNull(message = "DataSource provider should not be empty") Long dataSourceProvider,
 			@NotNull(message = "DataSource username should not be empty") String dataSourceUserName,
 			@NotNull(message = "Password should not be empty") String dataSourcePassword, String encryptedPassword,
 			@NotNull(message = "Server_ip should not be empty") String serverIP,

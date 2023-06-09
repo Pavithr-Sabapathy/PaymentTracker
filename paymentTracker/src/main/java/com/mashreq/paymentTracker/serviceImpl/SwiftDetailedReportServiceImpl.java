@@ -39,6 +39,7 @@ import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsFederatedReportOutput;
 import com.mashreq.paymentTracker.dto.StxEntryFieldViewInfo;
 import com.mashreq.paymentTracker.dto.SwiftDetailedReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.SwiftDetailsReportObjectDTO;
+import com.mashreq.paymentTracker.exception.DataAccessException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
@@ -51,6 +52,7 @@ import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
+import com.mashreq.paymentTracker.utility.SourceConnectionUtil;
 
 @Component
 public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportService {
@@ -608,8 +610,10 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		try {
 			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
 			Connection connection;
-			connection = DriverManager.getConnection(ApplicationConstants.SWIFT_DATABASE_URL,
-					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+			// Need to check with datasource details
+			connection = SourceConnectionUtil.getConnection("Test"); 
+//			connection = DriverManager.getConnection(ApplicationConstants.SWIFT_DATABASE_URL,
+//					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(queryString);
 			if (resultSet != null) {
@@ -635,6 +639,8 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (DataAccessException e) {
 			e.printStackTrace();
 		}
 		return federatedReportOutputList;
