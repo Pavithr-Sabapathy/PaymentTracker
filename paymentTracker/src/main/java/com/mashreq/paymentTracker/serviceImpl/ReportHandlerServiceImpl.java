@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.EntityDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
@@ -292,7 +293,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 					}));
 		} else {
 			log.error("error while retrieving prompt for report : " + report.getReportName());
-			throw new ReportException("Report instance creation failed for report : " + report.getReportName());
+			throw new ReportException(ApplicationConstants.REPORT_INSTANCE_CREATION_FAILED_MSG + report.getReportName());
 		}
 		return instancePromptList;
 
@@ -348,7 +349,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 	public APIResponse populateSuccessAPIRespone(ReportExecuteResponseData flexList) {
 		APIResponse reportExecutionApiResponse = new APIResponse();
 		reportExecutionApiResponse.setData(flexList);
-		reportExecutionApiResponse.setMessage("Report Execution Success");
+		reportExecutionApiResponse.setMessage(ApplicationConstants.REPORT_EXECUTION_MSG);
 		reportExecutionApiResponse.setStatus(Boolean.TRUE);
 		return reportExecutionApiResponse;
 	}

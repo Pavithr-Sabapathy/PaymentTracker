@@ -98,7 +98,7 @@ public class MetricsServiceImpl implements MetricsService {
 		List<Metrics> mertricsList = metricsRepository.findAll();
 		
 		if(mertricsList == null) {
-			throw new ResourceNotFoundException("metrics not available");
+			throw new ResourceNotFoundException(ApplicationConstants.METRICS_NOT_AVAILABLE);
 		}
 		
 		HashMap<Report, List<Metrics>> metricsReportMap = (HashMap<Report, List<Metrics>>) mertricsList.

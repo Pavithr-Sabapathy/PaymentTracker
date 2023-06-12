@@ -201,7 +201,7 @@ public class UtilityClass {
 
 	public static boolean isOutgoingPaymentMessage(String messageFormat, String messageType) {
 		boolean outgoingPayment = false;
-		if (messageFormat.equalsIgnoreCase(ApplicationConstants.MESSAGE_INPUT_SUB_FORMAT)) {
+		if (messageFormat.equalsIgnoreCase(MashreqFederatedReportConstants.MESSAGE_INPUT_SUB_FORMAT)) {
 			List<String> outgoingCodes = MashreqFederatedReportConstants.OUTGOING_PAYMENT_CODES_LIST;
 			return outgoingCodes.stream().anyMatch(outgoingcode -> outgoingcode.equalsIgnoreCase(messageType));
 		}
@@ -218,9 +218,9 @@ public class UtilityClass {
 
 	public static boolean isGpiTrchEnabledMessage(String receiver, String sender) {
 		boolean isGpiTrchEnabledMessage = false;
-		if ((null != receiver) && (receiver.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_TRCH_CODE))
+		if ((null != receiver) && (receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_TRCH_CODE))
 				|| ((null != sender)
-						&& (sender.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_TRCH_CODE)))) {
+						&& (sender.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_TRCH_CODE)))) {
 			isGpiTrchEnabledMessage = true;
 		}
 		return isGpiTrchEnabledMessage;
@@ -228,8 +228,8 @@ public class UtilityClass {
 
 	public static boolean isGpiIpalaEnabledMessage(String receiver, String sender) {
 		boolean isGpiIpalaEnabledMessage = false;
-		if (null != receiver && receiver.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_IPALA_CODE)
-				|| ((null != sender) && sender.toUpperCase().startsWith(ApplicationConstants.GPI_ENABLED_IPALA_CODE))) {
+		if (null != receiver && receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE)
+				|| ((null != sender) && sender.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE))) {
 			isGpiIpalaEnabledMessage = true;
 		}
 		return isGpiIpalaEnabledMessage;
@@ -245,7 +245,7 @@ public class UtilityClass {
 			if (index == 1) {
 				combinedValue = val;
 			} else {
-				combinedValue += ApplicationConstants.SEMI_COLON + val;
+				combinedValue += MashreqFederatedReportConstants.SEMI_COLON + val;
 			}
 			index++;
 		}
@@ -263,7 +263,7 @@ public class UtilityClass {
 		}
 
 		if (!tokens.isEmpty()) {
-			corrDetails = tokens.stream().collect(Collectors.joining(ApplicationConstants.BREAK_TAG));
+			corrDetails = tokens.stream().collect(Collectors.joining(MashreqFederatedReportConstants.BREAK_TAG));
 		}
 		return corrDetails;
 	}

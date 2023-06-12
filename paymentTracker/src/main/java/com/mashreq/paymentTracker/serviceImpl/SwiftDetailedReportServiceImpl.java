@@ -1,7 +1,6 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -19,15 +18,14 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Component;
 
+import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.CannedReportInstanceComponent;
 import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
-import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.dto.MessageField;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
@@ -43,7 +41,6 @@ import com.mashreq.paymentTracker.exception.DataAccessException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
-import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
@@ -51,8 +48,8 @@ import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.utility.CheckType;
-import com.mashreq.paymentTracker.utility.UtilityClass;
 import com.mashreq.paymentTracker.utility.SourceConnectionUtil;
+import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Component
 public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportService {
@@ -123,8 +120,8 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			SWIFTDetailedFederatedReportDTO swiftDetailedReportDTO, Components component) {
 		FederatedReportPromptDTO detailedType = swiftDetailedReportDTO.getDetailedType();
 		switch (detailedType.getPromptValue()) {
-		case "RMESG":
-		case "RINTV":
+		case (MashreqFederatedReportConstants.DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RMESG):
+		case (MashreqFederatedReportConstants.DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RINTV):
 			return populateRMesgDetailData(swiftDetailedReportDTO, component);
 
 		}
@@ -147,22 +144,22 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 		SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO = new SwiftDetailsReportObjectDTO();
 		if (!componentDetailsList.isEmpty()) {
-			String rmesgQuery = ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RMESG;
+			String rmesgQuery = MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RMESG;
 			processMessageDetailsComponentDetail(component, componentDetailsList, messagingDetailsInput, rmesgQuery,
 					swiftDetailsReportObjectDTO);
 			if (swiftDetailsReportObjectDTO.isMessageFound()) {
 				processMessageDetailsComponentDetail(component, componentDetailsList, messagingDetailsInput,
-						ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RINTV, swiftDetailsReportObjectDTO);
+						MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RINTV, swiftDetailsReportObjectDTO);
 				processMessageDetailsComponentDetail(component, componentDetailsList, messagingDetailsInput,
-						ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD, swiftDetailsReportObjectDTO);
+						MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD, swiftDetailsReportObjectDTO);
 				processMessageDetailsComponentDetail(component, componentDetailsList, messagingDetailsInput,
-						ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RCORR, swiftDetailsReportObjectDTO);
+						MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RCORR, swiftDetailsReportObjectDTO);
 				processMessageDetailsComponentDetail(component, componentDetailsList, messagingDetailsInput,
-						ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_MESSAGE, swiftDetailsReportObjectDTO);
+						MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_MESSAGE, swiftDetailsReportObjectDTO);
 				// if message fields are there, we need to process this.
 				if (!swiftDetailsReportObjectDTO.getMessageFields().isEmpty()) {
 					processMessageDetailsComponentDetail(component, componentDetailsList, messagingDetailsInput,
-							ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW,
+							MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW,
 							swiftDetailsReportObjectDTO);
 				}
 				processSwiftMessageDetailContext(swiftDetailsReportObjectDTO, messageDetails);
@@ -175,26 +172,26 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			List<SWIFTMessageDetailsFederatedReportOutput> messageDetails) {
 		// TODO
 		Long compDetailId = swiftDetailsReportObjectDTO.getComponentDetailId();
-		addToMessageDetails(messageDetails, ApplicationConstants.DESCRIPTION_LABEL,
+		addToMessageDetails(messageDetails, MashreqFederatedReportConstants.DESCRIPTION_LABEL,
 				swiftDetailsReportObjectDTO.getDescription(), compDetailId);
-		addToMessageDetails(messageDetails, ApplicationConstants.DELIVERY_STATUS_LABEL,
+		addToMessageDetails(messageDetails, MashreqFederatedReportConstants.DELIVERY_STATUS_LABEL,
 				swiftDetailsReportObjectDTO.getDeliveryStatus(), compDetailId);
-		addToMessageDetails(messageDetails, ApplicationConstants.PRIORITY_LABEL,
+		addToMessageDetails(messageDetails, MashreqFederatedReportConstants.PRIORITY_LABEL,
 				swiftDetailsReportObjectDTO.getPriority(), compDetailId);
-		addToMessageDetails(messageDetails, ApplicationConstants.INPUT_REFERENCE_LABEL,
+		addToMessageDetails(messageDetails, MashreqFederatedReportConstants.INPUT_REFERENCE_LABEL,
 				swiftDetailsReportObjectDTO.getReference(), compDetailId);
-		addToMessageDetails(messageDetails, ApplicationConstants.SWIFT_INPUT_LABEL,
+		addToMessageDetails(messageDetails, MashreqFederatedReportConstants.SWIFT_INPUT_LABEL,
 				swiftDetailsReportObjectDTO.getSwiftInput(), compDetailId);
 
 		String sender = swiftDetailsReportObjectDTO.getSender();
 		String senderDetails = swiftDetailsReportObjectDTO.getSenderDetails();
 		String senderValue = UtilityClass.combineValuesWithBreakTag(sender, senderDetails);
-		addToMessageDetails(messageDetails, ApplicationConstants.SENDER_LABEL, senderValue, compDetailId);
+		addToMessageDetails(messageDetails, MashreqFederatedReportConstants.SENDER_LABEL, senderValue, compDetailId);
 
 		String receiver = swiftDetailsReportObjectDTO.getReceiver();
 		String receiverDetails = swiftDetailsReportObjectDTO.getReceiverDetails();
 		String receiverValue = UtilityClass.combineValuesWithBreakTag(receiver, receiverDetails);
-		addToMessageDetails(messageDetails, ApplicationConstants.RECEIVER_LABEL, receiverValue, compDetailId);
+		addToMessageDetails(messageDetails, MashreqFederatedReportConstants.RECEIVER_LABEL, receiverValue, compDetailId);
 
 		if (!swiftDetailsReportObjectDTO.getMessageFields().isEmpty()) {
 			for (MessageField messageField : swiftDetailsReportObjectDTO.getMessageFields()) {
@@ -226,17 +223,17 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		if (!componentDetailsList.isEmpty()) {
 			ComponentDetails componentDetails = getMatchedComponentDetails(componentDetailsList, componentDetailKey);
-			if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RMESG.equalsIgnoreCase(componentDetailKey)) {
+			if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RMESG.equalsIgnoreCase(componentDetailKey)) {
 
 				processMessageDetailsRMesgQuery(componentDetails, messagingDetailsInput, componentDetailKey,
 						swiftDetailsReportObjectDTO);
-			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RINTV.equalsIgnoreCase(componentDetailKey)) {
+			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RINTV.equalsIgnoreCase(componentDetailKey)) {
 				processMessageDetailsRIntvQuery(componentDetails, messagingDetailsInput, componentDetailKey,
 						swiftDetailsReportObjectDTO);
-			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD.equalsIgnoreCase(componentDetailKey)) {
+			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD.equalsIgnoreCase(componentDetailKey)) {
 				processMessageDetailsRTextFieldQuery(componentDetails, messagingDetailsInput, componentDetailKey,
 						swiftDetailsReportObjectDTO);
-			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_RCORR.equalsIgnoreCase(componentDetailKey)) {
+			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RCORR.equalsIgnoreCase(componentDetailKey)) {
 				boolean sender = false;
 				if (null != swiftDetailsReportObjectDTO.getReceiver()) {
 					processMessageDetailsRCorrQuery(componentDetails, messagingDetailsInput, componentDetailKey,
@@ -248,11 +245,11 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 							swiftDetailsReportObjectDTO, sender);
 				}
 
-			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_MESSAGE
+			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_MESSAGE
 					.equalsIgnoreCase(componentDetailKey)) {
 				processMessageDetailsStxMessageQuery(componentDetails, messagingDetailsInput, componentDetailKey,
 						swiftDetailsReportObjectDTO);
-			} else if (ApplicationConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW
+			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW
 					.equalsIgnoreCase(componentDetailKey)) {
 				processMessageDetailsStxEntryFieldViewQuery(componentDetails, messagingDetailsInput, componentDetailKey,
 						swiftDetailsReportObjectDTO);
@@ -266,7 +263,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		List<FederatedReportPromptDTO> prompts = new ArrayList<FederatedReportPromptDTO>();
 		prompts.add(messagingDetailsInput.getMessageTypePrompt());
-		String messageCodesPromptKey = ApplicationConstants.MESSAGE_DETAILS_MESSAGE_CODES_PROMPT_KEY;
+		String messageCodesPromptKey = MashreqFederatedReportConstants.MESSAGE_DETAILS_MESSAGE_CODES_PROMPT_KEY;
 		List<MessageField> messagingFieldList = swiftDetailsReportObjectDTO.getMessageFields();
 		String promptValue = messagingFieldList.stream().map(MessageField::getFieldCode)
 				.collect(Collectors.joining(","));
@@ -319,18 +316,18 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		}
 		StxEntryFieldViewInfo stxEntryFieldViewInfo = fieldInfoMap.get(key);
 		if (stxEntryFieldViewInfo != null) {
-			expression = key + ApplicationConstants.COLON + stxEntryFieldViewInfo.getExpression();
+			expression = key + MashreqFederatedReportConstants.COLON + stxEntryFieldViewInfo.getExpression();
 		} else {
 			StxEntryFieldViewInfo CodeOnlyStxEntryFieldViewInfo = fieldInfoMap.get(messageField.getFieldCode());
 			if (CodeOnlyStxEntryFieldViewInfo != null) {
-				expression = key + ApplicationConstants.COLON + CodeOnlyStxEntryFieldViewInfo.getExpression();
+				expression = key + MashreqFederatedReportConstants.COLON + CodeOnlyStxEntryFieldViewInfo.getExpression();
 			}
 		}
 		if (expression.isEmpty()) {
 			expression = key;
 		}
 		// if key is 32A/33B, process the value by splitting into parts
-		if (ApplicationConstants.MESSAGE_CODE_32A.equalsIgnoreCase(key)) {
+		if (MashreqFederatedReportConstants.MESSAGE_CODE_32A.equalsIgnoreCase(key)) {
 			String fieldValue = messageField.getFieldValue();
 			if (null != fieldValue) {
 				if (fieldValue.length() >= 10) {
@@ -338,22 +335,22 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 					String currency = fieldValue.substring(6, 9);
 					String amount = fieldValue.substring(9);
 					fieldValue = UtilityClass.combineValues(
-							ApplicationConstants.DATE_LABEL + ApplicationConstants.COLON + valueDate,
-							ApplicationConstants.CURRENCY_LABEL + ApplicationConstants.COLON + currency,
-							ApplicationConstants.AMOUNT_LABEL + ApplicationConstants.COLON + amount);
+							MashreqFederatedReportConstants.DATE_LABEL + MashreqFederatedReportConstants.COLON + valueDate,
+							MashreqFederatedReportConstants.CURRENCY_LABEL + MashreqFederatedReportConstants.COLON + currency,
+							MashreqFederatedReportConstants.AMOUNT_LABEL + MashreqFederatedReportConstants.COLON + amount);
 					messageField.setFieldValue(fieldValue);
 				}
 			}
 		}
-		if (ApplicationConstants.MESSAGE_CODE_33B.equalsIgnoreCase(key)) {
+		if (MashreqFederatedReportConstants.MESSAGE_CODE_33B.equalsIgnoreCase(key)) {
 			String fieldValue = messageField.getFieldValue();
 			if (null != fieldValue) {
 				if (fieldValue.length() >= 4) {
 					String currency = fieldValue.substring(0, 3);
 					String amount = fieldValue.substring(3);
 					fieldValue = UtilityClass.combineValues(
-							ApplicationConstants.CURRENCY_LABEL + ApplicationConstants.COLON + currency,
-							ApplicationConstants.AMOUNT_LABEL + ApplicationConstants.COLON + amount);
+							MashreqFederatedReportConstants.CURRENCY_LABEL + MashreqFederatedReportConstants.COLON + currency,
+							MashreqFederatedReportConstants.AMOUNT_LABEL + MashreqFederatedReportConstants.COLON + amount);
 					messageField.setFieldValue(fieldValue);
 				}
 			}
@@ -385,7 +382,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO, boolean sender) {
 		List<FederatedReportPromptDTO> prompts = new ArrayList<FederatedReportPromptDTO>();
 		FederatedReportPromptDTO corrBankPrompt = new FederatedReportPromptDTO();
-		corrBankPrompt.setPromptKey(ApplicationConstants.MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY);
+		corrBankPrompt.setPromptKey(MashreqFederatedReportConstants.MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY);
 		if (sender) {
 			corrBankPrompt.setPromptValue(swiftDetailsReportObjectDTO.getSender());
 		} else {
@@ -434,11 +431,11 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 				String fieldOption = UtilityClass.getStringRepresentation(rowData.get(1));
 				String fieldValue = UtilityClass.getStringRepresentation(rowData.get(2));
 				if (null != fieldValue) {
-					fieldValue = fieldValue.replaceAll(ApplicationConstants.THREE_HASH_NOTATION,
-							ApplicationConstants.BREAK_TAG);
+					fieldValue = fieldValue.replaceAll(MashreqFederatedReportConstants.THREE_HASH_NOTATION,
+							MashreqFederatedReportConstants.BREAK_TAG);
 				}
 				messageFields.add(new MessageField(fieldCode, fieldOption, fieldValue));
-				if (fieldCode.equalsIgnoreCase(ApplicationConstants.PAYMENT_STATUS_CODE)) {
+				if (fieldCode.equalsIgnoreCase(MashreqFederatedReportConstants.PAYMENT_STATUS_CODE)) {
 					if (UtilityClass.isGpiTrchEnabledMessage(swiftDetailsReportObjectDTO.getReceiver(),
 							swiftDetailsReportObjectDTO.getSender())) {
 						if (null != fieldValue) {
@@ -453,32 +450,32 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	}
 
 	private String deriveActivityStatus(String paymentStatus) {
-		String activityStatus = ApplicationConstants.PAYMENT_STATUS_DEFAULT;
+		String activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_DEFAULT;
 		if (null != paymentStatus) {
-			if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_COMPLETED_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_COMPLETED;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_RETURNED_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_RETURNED;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_FORWARDED_GPI_BANK_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_FORWARDED_GPI_BANK;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_FORWARDED_NON_GPI_BANK_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_FORWARDED_NON_GPI_BANK;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_IN_PROGRESS_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_IN_PROGRESS;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_AWAITING_DOCUMENTS_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_AWAITING_DOCUMENTS;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_AWAITING_FUNDS_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_AWAITING_FUNDS;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_FORWARDED_NEXT_GPI_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_FORWARDED_NEXT_GPI;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_FORWARDED_NEXT_NON_GPI_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_FORWARDED_NEXT_NON_GPI;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_PAYMENT_IN_PROGRESS_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_PAYMENT_IN_PROGRESS;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_PENDING_DOCUMENTS_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_PENDING_DOCUMENTS;
-			} else if (paymentStatus.contains(ApplicationConstants.PAYMENT_STATUS_AWAITING_CREDIT_COVER_CODE)) {
-				activityStatus = ApplicationConstants.PAYMENT_STATUS_AWAITING_CREDIT_COVER;
+			if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_COMPLETED_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_COMPLETED;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_RETURNED_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_RETURNED;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_GPI_BANK_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_GPI_BANK;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_NON_GPI_BANK_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_NON_GPI_BANK;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_IN_PROGRESS_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_IN_PROGRESS;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_AWAITING_DOCUMENTS_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_AWAITING_DOCUMENTS;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_AWAITING_FUNDS_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_AWAITING_FUNDS;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_NEXT_GPI_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_NEXT_GPI;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_NEXT_NON_GPI_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_FORWARDED_NEXT_NON_GPI;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_PAYMENT_IN_PROGRESS_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_PAYMENT_IN_PROGRESS;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_PENDING_DOCUMENTS_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_PENDING_DOCUMENTS;
+			} else if (paymentStatus.contains(MashreqFederatedReportConstants.PAYMENT_STATUS_AWAITING_CREDIT_COVER_CODE)) {
+				activityStatus = MashreqFederatedReportConstants.PAYMENT_STATUS_AWAITING_CREDIT_COVER;
 			}
 		}
 		return activityStatus;
@@ -487,7 +484,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	private void processMessageDetailsRIntvQuery(ComponentDetails componentDetails,
 			MessageDetailsFederatedReportInput messagingDetailsInput, String componentDetailKey,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
-		String activityStatus = ApplicationConstants.COMPLETED_ACTIVITY_STATUS;
+		String activityStatus = MashreqFederatedReportConstants.COMPLETED_ACTIVITY_STATUS;
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 
 		if (UtilityClass.isOutgoingPaymentMessage(messagingDetailsInput.getMessageSubFormatPrompt().getPromptValue(),
@@ -501,7 +498,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 		} else if (UtilityClass.isGpiIpalaEnabledMessage(swiftDetailsReportObjectDTO.getReceiver(),
 				swiftDetailsReportObjectDTO.getSender())) {
-			activityStatus = ApplicationConstants.RINTV_MESG_ACK;
+			activityStatus = MashreqFederatedReportConstants.RINTV_MESG_ACK;
 		}
 		swiftDetailsReportObjectDTO.setDeliveryStatus(activityStatus);
 	}
@@ -510,15 +507,15 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			List<FederatedReportPromptDTO> promptsList, SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 
 		FederatedReportPromptDTO aidPrompt = new FederatedReportPromptDTO();
-		aidPrompt.setPromptKey(ApplicationConstants.AID_PROMPT_KEY);
+		aidPrompt.setPromptKey(MashreqFederatedReportConstants.AID_PROMPT_KEY);
 		aidPrompt.setPromptValue(swiftDetailsReportObjectDTO.getAid());
 		promptsList.add(aidPrompt);
 		FederatedReportPromptDTO sumidhPrompt = new FederatedReportPromptDTO();
-		sumidhPrompt.setPromptKey(ApplicationConstants.S_UMIDH_PROMPT_KEY);
+		sumidhPrompt.setPromptKey(MashreqFederatedReportConstants.S_UMIDH_PROMPT_KEY);
 		sumidhPrompt.setPromptValue(swiftDetailsReportObjectDTO.getSumidh());
 		promptsList.add(sumidhPrompt);
 		FederatedReportPromptDTO sumidlPrompt = new FederatedReportPromptDTO();
-		sumidlPrompt.setPromptKey(ApplicationConstants.S_UMIDL_PROMPT_KEY);
+		sumidlPrompt.setPromptKey(MashreqFederatedReportConstants.S_UMIDL_PROMPT_KEY);
 		sumidlPrompt.setPromptValue(swiftDetailsReportObjectDTO.getSumidl());
 		promptsList.add(sumidlPrompt);
 		promptsList.add(messagingDetailsInput.getReferenceNumPrompt());
@@ -528,7 +525,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 	private String processMessageDetailsRIntvData(List<FederatedReportOutput> federatedReportOutputList,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
-		String activityStatus = ApplicationConstants.RINTV_MESG_LIVE;
+		String activityStatus = MashreqFederatedReportConstants.RINTV_MESG_LIVE;
 		if (!federatedReportOutputList.isEmpty()) {
 			for (FederatedReportOutput federatedReportOutput : federatedReportOutputList) {
 
@@ -536,16 +533,16 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 				String intvName = UtilityClass.getStringRepresentation(rowDataObjectList.get(0));
 				String mpfnName = UtilityClass.getStringRepresentation(rowDataObjectList.get(1));
 				String networkDeliveryStatus = UtilityClass.getStringRepresentation(rowDataObjectList.get(3));
-				if (mpfnName.equalsIgnoreCase(ApplicationConstants.RINTV_MPFN_SI_TO_SWIFT)
+				if (mpfnName.equalsIgnoreCase(MashreqFederatedReportConstants.RINTV_MPFN_SI_TO_SWIFT)
 						&& null != networkDeliveryStatus) {
-					if (intvName.equalsIgnoreCase(ApplicationConstants.RINTV_NAME_INSTANCE_COMPLETED)
+					if (intvName.equalsIgnoreCase(MashreqFederatedReportConstants.RINTV_NAME_INSTANCE_COMPLETED)
 							&& networkDeliveryStatus
-									.equalsIgnoreCase(ApplicationConstants.RAPPE_NETWORK_DELIVERY_STATUS_ACKED)) {
-						return ApplicationConstants.RINTV_MESG_ACK;
-					} else if (intvName.equalsIgnoreCase(ApplicationConstants.RINTV_NAME_INSTANCE_CREATED)
+									.equalsIgnoreCase(MashreqFederatedReportConstants.RAPPE_NETWORK_DELIVERY_STATUS_ACKED)) {
+						return MashreqFederatedReportConstants.RINTV_MESG_ACK;
+					} else if (intvName.equalsIgnoreCase(MashreqFederatedReportConstants.RINTV_NAME_INSTANCE_CREATED)
 							&& networkDeliveryStatus
-									.equalsIgnoreCase(ApplicationConstants.RAPPE_NETWORK_DELIVERY_STATUS_NACKED)) {
-						return ApplicationConstants.RINTV_MESG_NACK;
+									.equalsIgnoreCase(MashreqFederatedReportConstants.RAPPE_NETWORK_DELIVERY_STATUS_NACKED)) {
+						return MashreqFederatedReportConstants.RINTV_MESG_NACK;
 					}
 				}
 
@@ -602,18 +599,18 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		for (FederatedReportPromptDTO prompts : promptsList) {
 			if (null != prompts.getPromptKey() && queryString.indexOf(prompts.getPromptKey()) > 0) {
 				if (null != prompts.getPromptValue()) {
-					queryString = queryString.replace("~" + prompts.getPromptKey() + "~", prompts.getPromptValue());
+					queryString = queryString.replace(MashreqFederatedReportConstants.TILDE + prompts.getPromptKey() + MashreqFederatedReportConstants.TILDE, prompts.getPromptValue());
 				}
 			}
 		}
 
 		try {
-			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
+			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
 			Connection connection;
 			// Need to check with datasource details
 			connection = SourceConnectionUtil.getConnection("Test"); 
-//			connection = DriverManager.getConnection(ApplicationConstants.SWIFT_DATABASE_URL,
-//					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+//			connection = DriverManager.getConnection(MashreqFederatedReportConstants.SWIFT_DATABASE_URL,
+//					MashreqFederatedReportConstants.DATABASE_USERNAME, MashreqFederatedReportConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(queryString);
 			if (resultSet != null) {
@@ -662,20 +659,20 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 				federatedReportPromptDTO.setPromptKey(promptKey);
 				federatedReportPromptDTO.setPromptValue(promptValue.getValue().get(0).trim());
 
-				if (promptKey.equalsIgnoreCase(ApplicationConstants.AID_PROMPT_KEY)) {
+				if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.AID_PROMPT_KEY)) {
 					SWIFTDetailedFederatedReportDTO.setAidPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(ApplicationConstants.S_UMIDH_PROMPT_KEY)) {
+				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.S_UMIDH_PROMPT_KEY)) {
 					SWIFTDetailedFederatedReportDTO.setUmidhPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(ApplicationConstants.S_UMIDL_PROMPT_KEY)) {
+				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.S_UMIDL_PROMPT_KEY)) {
 					SWIFTDetailedFederatedReportDTO.setUmidlPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(ApplicationConstants.SWIFT_DETAILED_REPORT_TYPE_PROMPT_KEY)) {
+				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.SWIFT_DETAILED_REPORT_TYPE_PROMPT_KEY)) {
 					SWIFTDetailedFederatedReportDTO.setDetailedType(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(ApplicationConstants.MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY)) {
+				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY)) {
 					SWIFTDetailedFederatedReportDTO.setReferenceNumPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(ApplicationConstants.MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY)) {
+				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY)) {
 					SWIFTDetailedFederatedReportDTO.setMessageTypePrompt(federatedReportPromptDTO);
 				} else if (promptKey
-						.equalsIgnoreCase(ApplicationConstants.MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY)) {
+						.equalsIgnoreCase(MashreqFederatedReportConstants.MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY)) {
 					SWIFTDetailedFederatedReportDTO.setMessageSubFormatPrompt(federatedReportPromptDTO);
 				}
 			}
@@ -700,7 +697,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		 * linkedReportRequestDTO.getSourceMetricId();
 		 * reportExecuteResponseCloumnDef.setLinkExists(null != sourceMetricValue ? true
 		 * : false); } } catch (ResourceNotFoundException exception) {
-		 * log.error(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS +
+		 * log.error(MashreqFederatedReportConstants.LINK_REPORT_DOES_NOT_EXISTS +
 		 * reportObject.getId()); } catch (JpaSystemException exception) {
 		 * log.error(FILENAME + " [Exception Occured] " + exception.getMessage()); }
 		 * return reportExecuteResponseCloumnDefList;
@@ -713,8 +710,8 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		for (SWIFTMessageDetailsFederatedReportOutput swiftReport : swiftDetailedReports) {
 			if (null != swiftReport.getKey() && null != swiftReport.getValue()) {
 				Map<String, Object> mapData = new HashMap<String, Object>();
-				mapData.put("Field Description", swiftReport.getKey());
-				mapData.put("Field Value", swiftReport.getValue());
+				mapData.put(MashreqFederatedReportConstants.FIELD_DESCRIPTION, swiftReport.getKey());
+				mapData.put(MashreqFederatedReportConstants.FIELD_VALUE, swiftReport.getValue());
 				swiftDetailedReportDataList.add(mapData);
 			}
 		}
@@ -731,7 +728,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	public APIResponse populateSuccessAPIRespone(ReportExecuteResponseData swiftDetailedReport) {
 		APIResponse swiftDetailedReportApiResponse = new APIResponse();
 		swiftDetailedReportApiResponse.setData(swiftDetailedReport);
-		swiftDetailedReportApiResponse.setMessage("Report Execution Success");
+		swiftDetailedReportApiResponse.setMessage(ApplicationConstants.REPORT_EXECUTION_MSG);
 		swiftDetailedReportApiResponse.setStatus(Boolean.TRUE);
 		return swiftDetailedReportApiResponse;
 	}

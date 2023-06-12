@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.LinkMappingResponseDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportMappingRequestDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -71,7 +72,7 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 			 * detail table. If Mapping type is 'M' then get from Metric table else if
 			 * Mapping type is 'P' then get from Prompts table
 			 **/
-			if (ApplicationConstants.METRIC.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
+			if (MashreqFederatedReportConstants.METRIC.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
 				Optional<Metrics> metricsResponseOptional = metricsRepository
 						.findById(linkMappingdeatils.getMappedId());
 				if (metricsResponseOptional.isEmpty()) {
@@ -82,7 +83,7 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 					linkMappingResponseDTO.setMappedEnitytId(metricResponse.getId());
 					linkMappingResponseDTO.setMappedEntity(metricResponse.getDisplayName());
 				}
-			} else if (ApplicationConstants.PROMPT.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
+			} else if (MashreqFederatedReportConstants.PROMPT.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
 				Optional<Prompts> promptResponseOptional = promptsRepository.findById(linkMappingdeatils.getMappedId());
 				if (promptResponseOptional.isEmpty()) {
 					throw new ResourceNotFoundException(

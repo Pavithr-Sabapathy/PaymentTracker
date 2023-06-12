@@ -25,6 +25,7 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.CannedReportComponent;
 import com.mashreq.paymentTracker.dto.CannedReportComponentDetail;
@@ -35,7 +36,6 @@ import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.FlexAccountingDetailedFederatedReportInput;
 import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
-import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportContext;
@@ -205,16 +205,16 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 		for (FederatedReportPromptDTO prompts : promptDTO) {
 			if (null != prompts.getPromptKey() && queryString.indexOf(prompts.getPromptKey()) > 0) {
 				if (null != prompts.getPromptValue()) {
-					queryString = queryString.replace("~" + prompts.getPromptKey() + "~", prompts.getPromptValue());
+					queryString = queryString.replace(MashreqFederatedReportConstants.TILDE + prompts.getPromptKey() + MashreqFederatedReportConstants.TILDE, prompts.getPromptValue());
 				}
 			}
 		}
 
 		try {
-			Class.forName(ApplicationConstants.DRIVER_CLASS_NAME);
+			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
 			Connection connection;
-			connection = DriverManager.getConnection(ApplicationConstants.FLEX_DATABASE_URL,
-					ApplicationConstants.DATABASE_USERNAME, ApplicationConstants.DATABASE_PASSWORD);
+			connection = DriverManager.getConnection(MashreqFederatedReportConstants.FLEX_DATABASE_URL,
+					MashreqFederatedReportConstants.DATABASE_USERNAME, MashreqFederatedReportConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(queryString);
 
@@ -254,11 +254,11 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 				FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
 				federatedReportPromptDTO.setPromptKey(promptKey);
 				federatedReportPromptDTO.setPromptValue(promptValue.getValue().get(0).trim());
-				if (promptKey.equalsIgnoreCase(ApplicationConstants.REFERENCENUMPROMPTS)) {
+				if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.REFERENCENUMPROMPTS)) {
 					flexAccountingDetailedFederatedReportInput.setReferenceNumPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(ApplicationConstants.RELATEDACCOUNTPROMPTS)) {
+				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.RELATEDACCOUNTPROMPTS)) {
 					flexAccountingDetailedFederatedReportInput.setDebitAccountPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(ApplicationConstants.ACCOUNTINGSOURCEPROMPTS)) {
+				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.ACCOUNTINGSOURCEPROMPTS)) {
 					flexAccountingDetailedFederatedReportInput.setAccountingSourcePrompt(federatedReportPromptDTO);
 				}
 			}
