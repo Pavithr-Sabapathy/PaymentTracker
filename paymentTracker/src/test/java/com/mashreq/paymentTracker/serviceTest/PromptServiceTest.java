@@ -29,7 +29,7 @@ import com.mashreq.paymentTracker.dto.PromptDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Prompts;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.PromptsRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.serviceImpl.PromptServiceImpl;
@@ -49,7 +49,7 @@ public class PromptServiceTest {
 	@Test
 	public void testSavePrompt() {
 		long reportId = 1L;
-		Reports report = new Reports();
+		Report report = new Report();
 		report.setId(reportId);
 		report.setActive("y");
 		report.setDisplayName("Reference Number");
@@ -126,7 +126,7 @@ public class PromptServiceTest {
 		ObjectMapper mapper = new ObjectMapper();
 		PromptDTO mockPromptDTO = new PromptDTO("Reference_Sample", "Reference Sample", BigInteger.ONE, "N", 1,
 				BigInteger.ZERO);
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -147,7 +147,7 @@ public class PromptServiceTest {
 	@Test
 	public void testupdateReportByIdNotExists() throws ResourceNotFoundException {
 		long reportId = 1L;
-		Reports mockReportsResponse = null;
+		Report mockReportsResponse = null;
 		PromptDTO mockPromptDTO = new PromptDTO("Reference_Sample", "Reference Sample", BigInteger.ONE, "N", 1,
 				BigInteger.ZERO);
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.ofNullable(mockReportsResponse));
@@ -161,7 +161,7 @@ public class PromptServiceTest {
 	@Test
 	public void testFetchPromptByReportIdExist() {
 		long reportId = 1L;
-		Reports report = new Reports();
+		Report report = new Report();
 		report.setId(reportId);
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
 		

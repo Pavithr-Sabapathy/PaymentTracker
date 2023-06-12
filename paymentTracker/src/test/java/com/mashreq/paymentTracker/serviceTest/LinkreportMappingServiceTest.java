@@ -26,7 +26,7 @@ import com.mashreq.paymentTracker.dto.LinkedReportMappingRequestDTO;
 import com.mashreq.paymentTracker.model.LinkedReportDetails;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.LinkMappingRepository;
 import com.mashreq.paymentTracker.repository.MetricsRepository;
 import com.mashreq.paymentTracker.repository.PromptsRepository;
@@ -54,7 +54,7 @@ public class LinkreportMappingServiceTest {
 		long linkedReportId = 1L;
 		List<LinkedReportDetails> linkMappingdeatilsListMock = new ArrayList<LinkedReportDetails>();
 		ObjectMapper mapper = new ObjectMapper();
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -94,7 +94,7 @@ public class LinkreportMappingServiceTest {
 		long linkedReportId = 1L;
 		List<LinkedReportDetails> linkMappingdeatilsListMock = new ArrayList<LinkedReportDetails>();
 		ObjectMapper mapper = new ObjectMapper();
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(5L);

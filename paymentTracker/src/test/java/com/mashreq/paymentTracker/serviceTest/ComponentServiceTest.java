@@ -27,7 +27,7 @@ import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
 import com.mashreq.paymentTracker.model.DataSourceConfig;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
@@ -121,7 +121,7 @@ public class ComponentServiceTest {
         componentsRequest.setComponentName("Test Component");
         componentsRequest.setDataSourceId(1L);
 
-        Reports report = new Reports();
+        Report report = new Report();
         report.setId(1L);
 
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
