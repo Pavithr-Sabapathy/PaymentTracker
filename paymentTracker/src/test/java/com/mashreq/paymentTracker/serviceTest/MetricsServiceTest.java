@@ -29,7 +29,7 @@ import com.mashreq.paymentTracker.dto.MetricsDTO;
 import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Metrics;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.MetricsRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.serviceImpl.MetricsServiceImpl;
@@ -57,7 +57,7 @@ public class MetricsServiceTest {
 
 	        // Configure the reportConfigurationRepo.findById() 
 
-	        Reports report = new Reports();
+	        Report report = new Report();
 	        when(mockreportConfigurationRepo.findById(metricsDto.getReportId())).thenReturn(Optional.of(report));
 
 	        // Configure the metricsRepository.findMetricsOrderByReportId()ss
@@ -106,7 +106,7 @@ public class MetricsServiceTest {
 		public void testfetchMetricsByReportId() throws JsonMappingException, JsonProcessingException{
 	        // Setup
 	        Long reportId = 1L;
-	        Reports report = new Reports();
+	        Report report = new Report();
 	        report.setId(reportId);
 	        Metrics metric = new Metrics();
 	        metric.setDisplay("y");
@@ -138,7 +138,7 @@ public class MetricsServiceTest {
 	    public void testFetchMetricsByReportIdNotExist() {
 	        // Setup
 	        Long reportId = 1L;
-	        Reports mockReportsResponse = new Reports();
+	        Report mockReportsResponse = new Report();
 			mockReportsResponse.setActive("y");
 			mockReportsResponse.setDisplayName("Reference Number");
 			mockReportsResponse.setId(1L);
@@ -158,7 +158,7 @@ public class MetricsServiceTest {
 	@Test
 	public void testFetchAllMetrics() throws JsonMappingException, JsonProcessingException {
 
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -216,7 +216,7 @@ public class MetricsServiceTest {
 	public void testupdateMetricsById() throws JsonMappingException, JsonProcessingException {
 		long metricsId = 1L;
 
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -248,7 +248,7 @@ public class MetricsServiceTest {
 	@Test
 	public void testupdateMetricsByIdNotExists() throws ResourceNotFoundException {
 		long metricsId = 1L;
-		Reports mockReportsResponse = null;
+		Report mockReportsResponse = null;
 
 		MetricsDTO mockMetricsDTO = new MetricsDTO();
 		mockMetricsDTO.setDisplay("y");

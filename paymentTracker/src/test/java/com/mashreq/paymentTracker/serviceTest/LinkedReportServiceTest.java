@@ -20,7 +20,7 @@ import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.model.LinkedReportInfo;
 import com.mashreq.paymentTracker.model.Metrics;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.LinkedReportRepository;
 import com.mashreq.paymentTracker.repository.MetricsRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
@@ -60,7 +60,7 @@ public class LinkedReportServiceTest {
 		long linkedReportId = 1L;
 		long sourceId = 1L;
 		long reportId = 1L;
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);

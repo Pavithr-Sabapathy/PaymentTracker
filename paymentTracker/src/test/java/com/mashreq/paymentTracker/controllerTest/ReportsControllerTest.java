@@ -30,7 +30,7 @@ import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.controller.ReportsController;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 
 @ExtendWith(SpringExtension.class)
@@ -45,7 +45,7 @@ public class ReportsControllerTest {
 
 	@Test
 	public void testsaveReportConfiguration() throws Exception {
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -76,7 +76,7 @@ public class ReportsControllerTest {
 	@Test
 	public void testfetchReports() throws Exception {
 
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -85,11 +85,11 @@ public class ReportsControllerTest {
 		mockReportsResponse.setReportName("Refernce_No");
 		mockReportsResponse.setValid("N");
 
-		List<Reports> mockReportsList = Arrays.asList(mockReportsResponse);
+		List<Report> mockReportsList = Arrays.asList(mockReportsResponse);
 
 		Mockito.when(reportConfigurationService.fetchAllReports()).thenReturn(mockReportsList);
 
-		mockMvc.perform(get("/reports")).andExpect(status().isOk())
+		mockMvc.perform(get("/Report")).andExpect(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(1)))
 				.andExpect(jsonPath("$[0].reportName", Matchers.is("Refernce_No")));
 	}
@@ -98,7 +98,7 @@ public class ReportsControllerTest {
 	public void testFetchReportByName() throws Exception {
 
 		// Create a sample report
-		Reports report = new Reports();
+		Report report = new Report();
 		report.setReportName("Test Report");
 
 		Mockito.when(reportConfigurationService.fetchReportByName("Test Report")).thenReturn(report);
@@ -110,7 +110,7 @@ public class ReportsControllerTest {
 
 		// Check
 		String response = result.getResponse().getContentAsString();
-		Reports responseReport = new ObjectMapper().readValue(response, Reports.class);
+		Report responseReport = new ObjectMapper().readValue(response, Report.class);
 		assertEquals(report.getReportName(), responseReport.getReportName());
 
 		// verify
@@ -129,7 +129,7 @@ public class ReportsControllerTest {
 	@Test
 	public void testupdateReport() throws Exception {
 		long reportId = 1L;
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);

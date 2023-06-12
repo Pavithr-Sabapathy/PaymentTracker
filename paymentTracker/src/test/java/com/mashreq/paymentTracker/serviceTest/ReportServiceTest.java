@@ -23,7 +23,7 @@ import org.modelmapper.ModelMapper;
 
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.serviceImpl.ReportConfigurationServiceImpl;
 
@@ -41,7 +41,7 @@ public class ReportServiceTest {
 
 	@Test
 	public void testSaveReports() {
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -58,21 +58,21 @@ public class ReportServiceTest {
 		mockReportDTORequest.setReportName("Refernce_No");
 		mockReportDTORequest.setValid("N");
 		mockReportDTORequest.setModuleId(0);
-		//Reports reportsResponse = modelMapper.map(mockReportDTORequest, Reports.class);
+		//Report reportsResponse = modelMapper.map(mockReportDTORequest, Report.class);
 		
-		when(modelMapper.map(mockReportDTORequest, Reports.class)).thenReturn(mockReportsResponse);
+		when(modelMapper.map(mockReportDTORequest, Report.class)).thenReturn(mockReportsResponse);
 		when(mockreportConfigurationRepo.save(mockReportsResponse)).thenReturn(mockReportsResponse);
 		
-		Reports reports = reportConfigurationService.saveReportConfiguration(mockReportDTORequest);
-		assertEquals(reports.getDisplayName(), "Reference Number");
+		Report Report = reportConfigurationService.saveReportConfiguration(mockReportDTORequest);
+		assertEquals(Report.getDisplayName(), "Reference Number");
 		verify(mockreportConfigurationRepo, times(1)).save(mockReportsResponse);
 	}
 
 	@Test
 	public void testfetchAllReports() {
-		List<Reports> mockReportsList = new ArrayList<Reports>();
+		List<Report> mockReportsList = new ArrayList<Report>();
 	
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -86,7 +86,7 @@ public class ReportServiceTest {
 		when(mockreportConfigurationRepo.findAll()).thenReturn(mockReportsList);
 
 		// test
-		List<Reports> reportsResponse = reportConfigurationService.fetchAllReports();
+		List<Report> reportsResponse = reportConfigurationService.fetchAllReports();
 
 		assertEquals(1, reportsResponse.size());
 		verify(mockreportConfigurationRepo, times(1)).findAll();
@@ -95,7 +95,7 @@ public class ReportServiceTest {
 	public void fetchReportByName() {
 		String name = "report name";
 		
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setReportName("Report_Name");
 	
 		when(mockreportConfigurationRepo.findByReportName(name)).thenReturn(mockReportsResponse);
@@ -135,7 +135,7 @@ public class ReportServiceTest {
 	@Test
 	public void testupdateReportById() {
 		long reportId = 1L;
-		Reports mockReportsResponse = new Reports();
+		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Old DisplayName");
 		mockReportsResponse.setId(1L);
@@ -147,7 +147,7 @@ public class ReportServiceTest {
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(mockReportsResponse));
 		
 		ReportDTORequest reportDtoRequest = new ReportDTORequest();
-		when(modelMapper.map(reportDtoRequest, Reports.class)).thenReturn(mockReportsResponse);
+		when(modelMapper.map(reportDtoRequest, Report.class)).thenReturn(mockReportsResponse);
 		
 		//reportConfigurationService.updateReportById(any(ReportDTORequest.class), reportId);
 		reportConfigurationService.updateReportById(reportDtoRequest, reportId);
@@ -158,7 +158,7 @@ public class ReportServiceTest {
 	@Test
 	public void testupdateReportByIdNotExists() throws ResourceNotFoundException {
 		long reportId = 1L;
-		Reports mockReportsResponse = null;
+		Report mockReportsResponse = null;
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.ofNullable(mockReportsResponse));
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> reportConfigurationService.updateReportById(any(ReportDTORequest.class), reportId),

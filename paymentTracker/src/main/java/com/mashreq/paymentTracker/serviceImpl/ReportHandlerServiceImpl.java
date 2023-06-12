@@ -9,12 +9,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.EntityDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportContext;
+import com.mashreq.paymentTracker.dto.ReportDataDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportExecutionDTO;
 import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
@@ -25,16 +27,19 @@ import com.mashreq.paymentTracker.model.ApplicationModule;
 import com.mashreq.paymentTracker.model.DataEntity;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
+import com.mashreq.paymentTracker.model.ReportData;
 import com.mashreq.paymentTracker.model.ReportExecution;
 import com.mashreq.paymentTracker.model.ReportInstance;
 import com.mashreq.paymentTracker.model.ReportInstancePrompt;
 import com.mashreq.paymentTracker.model.Roles;
 import com.mashreq.paymentTracker.model.Users;
+import com.mashreq.paymentTracker.repository.ReportDataRepository;
 import com.mashreq.paymentTracker.repository.ReportExecutionRepoistory;
 import com.mashreq.paymentTracker.repository.ReportInstanceRepository;
 import com.mashreq.paymentTracker.service.FlexFederatedReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportHandlerService;
+import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.type.EntityType;
 import com.mashreq.paymentTracker.type.ExecutionStatusType;
 
@@ -48,6 +53,9 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 
 	@Autowired
 	FlexFederatedReportService flexFederatedReportService;
+	
+	@Autowired
+	SwiftDetailedReportService swiftDetailedReportService;
 
 	@Autowired
 	ReportInstanceRepository reportInstanceRepo;
@@ -55,15 +63,22 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 	@Autowired
 	ReportExecutionRepoistory reportExecutionRepo;
 
+	@Autowired
+	ReportDataRepository reportDataRepo;
+
 	@Override
 	public ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest)
-			throws ReportException {
+			throws ReportException, JsonProcessingException {
+
 		ReportExecuteResponseData reportExecuteResponseData = new ReportExecuteResponseData();
+		ReportContext reportContext = new ReportContext();
+		ReportDataDTO reportDataDTO = new ReportDataDTO();
+
 		ReportInstanceDTO reportInstanceDTO = populateReportInstance(reportExecutionRequest, reportName);
 		ReportInstance reportInstance = createReportInstance(reportInstanceDTO);
 		reportInstanceRepo.save(reportInstance);
 		if (null != reportInstanceDTO) {
-			ReportContext reportContext = populateReportContext(reportInstanceDTO);
+			reportContext = populateReportContext(reportInstanceDTO);
 			if (null != reportExecutionRequest.getLinkReference()) {
 				reportContext.setLinkReference(reportExecutionRequest.getLinkReference());
 			}
@@ -74,9 +89,37 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			ReportExecutionDTO reportExecutionDTO = populateReportExecution(reportContext);
 			ReportExecution reportExecution = createReportExecution(reportExecutionDTO);
 			reportContext.setExecutionId(reportExecution.getId());
-			reportExecuteResponseData = flexFederatedReportService.processFlexReport(reportName, reportContext, reportExecutionRequest);
+			//TODO-Move to constants 
+			if (reportName.equals("flexPostingDetails")) {
+				reportExecuteResponseData = flexFederatedReportService.processFlexReport(reportName, reportContext,
+						reportExecutionRequest);
+
+			}else if(reportName.equals("swiftDetails")) {
+				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportName, reportExecutionRequest);
+			}
 		}
+
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonData = mapper.writeValueAsString(reportExecuteResponseData);
+		reportDataDTO.setReportExecutionId(reportContext.getExecutionId());
+		reportDataDTO.setReportData(jsonData);
+		ReportData reportData = populateReportData(reportDataDTO);
+		reportDataRepo.save(reportData);
+
 		return reportExecuteResponseData;
+	}
+
+	private ReportData populateReportData(ReportDataDTO reportDataDTO) {
+		ReportData reportData = new ReportData();
+		if (null != reportDataDTO.getReportExecutionId()) {
+			ReportExecution reportExecution = new ReportExecution();
+			reportExecution.setId(reportDataDTO.getReportExecutionId());
+			reportData.setReportExecution(reportExecution);
+		}
+		if (null != reportDataDTO.getReportData()) {
+			reportData.setReportData(reportDataDTO.getReportData());
+		}
+		return reportData;
 	}
 
 	private ReportExecution createReportExecution(ReportExecutionDTO reportExecutionDTO) {
