@@ -15,12 +15,13 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.mashreq.paymentTracker.exception.ExceptionCodes;
 
-import com.mashreq.paymentTracker.model.DataSourceConfig;
-import com.mashreq.paymentTracker.exception.DataAccessException;
-import com.mashreq.paymentTracker.service.DataSourceConfigService;
 import com.mashreq.paymentTracker.configuration.TrackerConfiguration;
+import com.mashreq.paymentTracker.exception.DataAccessException;
+import com.mashreq.paymentTracker.exception.ExceptionCodes;
+import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.service.DataSourceConfigService;
+
 import jakarta.annotation.PostConstruct;
 
 public class SourceConnectionUtil {
@@ -113,7 +114,7 @@ public class SourceConnectionUtil {
 		ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(dbConURL,
 				dataSource.getDataSourceUserName(), password);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,
-				connectionPool, null, getValidationQuery(dataSource.getDataSourceProvider()), false, true);
+				connectionPool, null, getValidationQuery(dataSource.getDataSourceProvider().longValue()), false, true);
 		connectionPool = poolableConnectionFactory.getPool();
 		PoolingDataSource poolingDataSource = new PoolingDataSource(connectionPool);
 		return poolingDataSource;
