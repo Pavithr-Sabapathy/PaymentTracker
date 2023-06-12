@@ -1,12 +1,17 @@
 package com.mashreq.paymentTracker.dto;
 
+import com.mashreq.paymentTracker.model.Metrics;
+
 public class LinkedReportResponseDTO {
 	private long id;
 	private String linkName;
 	private String linkDescription;
 	private String reportName;
+	private long linkedReportID;
+	private long reportId;
 	private String linkedReportName;
 	private String sourceMetricName;
+	private Metrics sourceMetrics;
 	private String active;
 
 	public long getId() {
@@ -63,6 +68,30 @@ public class LinkedReportResponseDTO {
 
 	public void setActive(String active) {
 		this.active = active;
+	}
+
+	public long getLinkedReportID() {
+		return linkedReportID;
+	}
+
+	public void setLinkedReportID(long linkedReportID) {
+		this.linkedReportID = linkedReportID;
+	}
+
+	public Metrics getSourceMetrics() {
+		return sourceMetrics;
+	}
+
+	public void setSourceMetrics(Metrics sourceMetrics) {
+		this.sourceMetrics = sourceMetrics;
+	}
+
+	public long getReportId() {
+		return reportId;
+	}
+
+	public void setReportId(long reportId) {
+		this.reportId = reportId;
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class ReportProcessingRequest implements Serializable {
+public class ReportExecutionRequest implements Serializable {
 
 	/**
 	 * 
@@ -18,6 +18,7 @@ public class ReportProcessingRequest implements Serializable {
 	private String linkReference;
 	private Boolean isMapLinked = false;
 	private Date createDate;
+	private Boolean linkExecution = false;
 
 	public String getRole() {
 		return role;
@@ -81,6 +82,14 @@ public class ReportProcessingRequest implements Serializable {
 
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
+	}
+
+	public Boolean getLinkExecution() {
+		return linkExecution;
+	}
+
+	public void setLinkExecution(Boolean linkExecution) {
+		this.linkExecution = linkExecution;
 	}
 
 	@Override

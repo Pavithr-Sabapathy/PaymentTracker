@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class SwiftDetailedReportExecuteResponseData implements Serializable {
+public class ReportExecuteResponseData implements Serializable {
 
 	/**
 	 * 
@@ -40,8 +40,9 @@ public class SwiftDetailedReportExecuteResponseData implements Serializable {
 
 	@Override
 	public String toString() {
-		return "SwiftDetailedReportExecuteResponseData [meta=" + meta + ", columnDefs=" + columnDefs + ", data=" + data
-				+ "]";
+		return "ReportExecuteResponseData [meta=" + meta + ", columnDefs=" + columnDefs + ", data=" + data + "]";
 	}
+
+	
 
 }

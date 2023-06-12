@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 
 import jakarta.validation.Valid;
@@ -42,15 +42,15 @@ public class ReportsController {
 	ReportConfigurationService reportConfigurationService;
 
 	@GetMapping
-	public ResponseEntity<List<Reports>> fetchReports() {
-		List<Reports> reportListResponse = reportConfigurationService.fetchAllReports();
+	public ResponseEntity<List<Report>> fetchReports() {
+		List<Report> reportListResponse = reportConfigurationService.fetchAllReports();
 		return ResponseEntity.ok(reportListResponse);
 	}
 
 	
 	@GetMapping("/{reportname}/execute")
-	public ResponseEntity<Reports> fetchReportByName(@PathVariable("reportname") String reportName) {
-		Reports reportResponse = reportConfigurationService.fetchReportByName(reportName);
+	public ResponseEntity<Report> fetchReportByName(@PathVariable("reportname") String reportName) {
+		Report reportResponse = reportConfigurationService.fetchReportByName(reportName);
 		return ResponseEntity.ok(reportResponse);
 	}
 

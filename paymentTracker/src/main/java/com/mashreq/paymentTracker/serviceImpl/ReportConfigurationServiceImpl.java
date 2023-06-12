@@ -35,7 +35,7 @@ import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.utility.UtilityClass;
@@ -53,32 +53,32 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	private ModelMapper modelMapper;
 
 	@Override
-	public Reports saveReportConfiguration(ReportDTORequest reportDTORequest) {
-		Reports reportConfigurationRequest = modelMapper.map(reportDTORequest, Reports.class);
-		Reports reportsConfigurationResponse = reportConfigurationRepo.save(reportConfigurationRequest);
+	public Report saveReportConfiguration(ReportDTORequest reportDTORequest) {
+		Report reportConfigurationRequest = modelMapper.map(reportDTORequest, Report.class);
+		Report reportsConfigurationResponse = reportConfigurationRepo.save(reportConfigurationRequest);
 		return reportsConfigurationResponse;
 
 	}
 
 	@Override
-	public List<Reports> fetchAllReports() {
-		List<Reports> reportsList = reportConfigurationRepo.findAll();
+	public List<Report> fetchAllReports() {
+		List<Report> reportsList = reportConfigurationRepo.findAll();
 		return reportsList;
 	}
 	
 	@Override
-	public Reports fetchReportByName(String reportName) {
-		Reports report = reportConfigurationRepo.findByReportName(reportName);
+	public Report fetchReportByName(String reportName) {
+		Report report = reportConfigurationRepo.findByReportName(reportName);
 		return report;
 	}
 
 	@Override
 	public void updateReportById(ReportDTORequest reportUpdateRequest, long reportId) {
-		Optional<Reports> reportReponseOptional = reportConfigurationRepo.findById(reportId);
+		Optional<Report> reportReponseOptional = reportConfigurationRepo.findById(reportId);
 		if (reportReponseOptional.isEmpty()) {
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 		}
-		Reports reportConfigurationRequest = modelMapper.map(reportUpdateRequest, Reports.class);
+		Report reportConfigurationRequest = modelMapper.map(reportUpdateRequest, Report.class);
 		reportConfigurationRequest.setId(reportId);
 		reportConfigurationRepo.save(reportConfigurationRequest);
 
@@ -95,14 +95,14 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	}
 
 	@Override
-	public List<Reports> fetchReportsAsExcel() {
-		List<Reports> reportsList = reportConfigurationRepo.findAll();
+	public List<Report> fetchReportsAsExcel() {
+		List<Report> reportsList = reportConfigurationRepo.findAll();
 
 		List<ReportDTO> reportDTOList = new ArrayList<ReportDTO>();
 		List<PromptDTO> promptDTOList = new ArrayList<PromptDTO>();
 		List<MetricsDTO> metricDTOList = new ArrayList<MetricsDTO>();
 
-		for (Reports report : reportsList) {
+		for (Report report : reportsList) {
 
 			ReportDTO reportDTO = new ReportDTO();
 
@@ -129,7 +129,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 		String excelFileName = "ReportsExcel";
 
 		Map<String, List<?>> sheetRowDataList = new HashMap<String, List<?>>();
-		sheetRowDataList.put("reports", reportDTOList);
+		sheetRowDataList.put("Report", reportDTOList);
 		sheetRowDataList.put("prompts", promptDTOList);
 		sheetRowDataList.put("Metrics", metricDTOList);
 		try {
@@ -155,12 +155,12 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	@Override
 	public ByteArrayOutputStream generateReportPDF() {
 		
-		List<Reports> reportsList = reportConfigurationRepo.findAll();
+		List<Report> reportsList = reportConfigurationRepo.findAll();
 		
 		List<ReportDTO> reportDTOList = new ArrayList<ReportDTO>();
 		List<PromptDTO> promptDTOList = new ArrayList<PromptDTO>();
 		List<MetricsDTO> metricDTOList = new ArrayList<MetricsDTO>();
-		for (Reports report : reportsList) {
+		for (Report report : reportsList) {
 
 			ReportDTO reportDTO = new ReportDTO();
 

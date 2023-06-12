@@ -14,7 +14,7 @@ import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Metrics;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.MetricsRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.service.MetricsService;
@@ -31,7 +31,7 @@ public class MetricsServiceImpl implements MetricsService {
 	@Override
 	public void saveMetrics(MetricsDTO metricsRequest) {
 		// code goes here
-		Optional<Reports> optionalReport = reportConfigurationRepo.findById(metricsRequest.getReportId());
+		Optional<Report> optionalReport = reportConfigurationRepo.findById(metricsRequest.getReportId());
 		
 		if(optionalReport.isPresent()) {
 			Metrics metric = new Metrics();
@@ -72,7 +72,7 @@ public class MetricsServiceImpl implements MetricsService {
 	@Override
 	public void updateMetricsById(MetricsDTO metricsDTORequest, long metricsId) {
 		Metrics metricsObject = new Metrics();
-		Optional<Reports> reportOptional = reportConfigurationRepo.findById(metricsDTORequest.getReportId());
+		Optional<Report> reportOptional = reportConfigurationRepo.findById(metricsDTORequest.getReportId());
 		if (reportOptional.isEmpty()) {
 			throw new ResourceNotFoundException(
 					ApplicationConstants.METRICS_DOES_NOT_EXISTS + metricsDTORequest.getReportId());
@@ -101,7 +101,7 @@ public class MetricsServiceImpl implements MetricsService {
 			throw new ResourceNotFoundException("metrics not available");
 		}
 		
-		HashMap<Reports, List<Metrics>> metricsReportMap = (HashMap<Reports, List<Metrics>>) mertricsList.
+		HashMap<Report, List<Metrics>> metricsReportMap = (HashMap<Report, List<Metrics>>) mertricsList.
 												stream().
 												collect(Collectors.groupingBy(Metrics::getReport));
 		
@@ -139,7 +139,7 @@ public class MetricsServiceImpl implements MetricsService {
 	@Override
 	public List<MetricsDTO> fetchMetricsByReportId(long reportId) {
 		// code goes here
-		Optional<Reports> reportOptional = reportConfigurationRepo.findById(reportId);
+		Optional<Report> reportOptional = reportConfigurationRepo.findById(reportId);
 		if (reportOptional.isPresent()) {
           List<MetricsDTO> metricsDtoList = new ArrayList<MetricsDTO>();
 			

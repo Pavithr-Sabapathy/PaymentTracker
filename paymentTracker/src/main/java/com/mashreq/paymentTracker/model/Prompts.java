@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
@@ -22,7 +23,7 @@ import jakarta.validation.constraints.NotNull;
 public class Prompts {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id;
 
 	@NotNull(message = "Prompt Key should not be empty")
 	@Column(name = "pr_key")
@@ -40,39 +41,41 @@ public class Prompts {
 	@Column(name = "pr_Order")
 	private BigInteger promptOrder;
 
-	// TODO -- @NotNull(message = "Entity Id should not be empty")
-	@Column(name = "ent_id")
-	private BigInteger entityId;
+	@OneToOne
+	@JoinColumn(name = "ent_id")
+	private DataEntity entity;
 
-	@ManyToOne(targetEntity = Reports.class)
+	@ManyToOne(targetEntity = Report.class)
 	@JsonBackReference
 	@JoinColumn(name = "report_id")
-	private Reports report;
+	private Report report;
 
 	public Prompts() {
 		super();
 	}
 
-	public Prompts(long id, @NotNull(message = "Prompt Key should not be empty") String promptKey,
+	
+	public Prompts(Long id, @NotNull(message = "Prompt Key should not be empty") String promptKey,
 			@NotNull(message = "Display name should not be empty") String displayName,
 			@NotNull(message = "Prompt Required should not be empty") String promptRequired,
-			@NotNull(message = "Prompt Order should not be empty") BigInteger promptOrder, BigInteger entityId,
-			Reports report) {
+			@NotNull(message = "Prompt Order should not be empty") BigInteger promptOrder, DataEntity entity,
+			Report report) {
 		super();
 		this.id = id;
 		this.promptKey = promptKey;
 		this.displayName = displayName;
 		this.promptRequired = promptRequired;
 		this.promptOrder = promptOrder;
-		this.entityId = entityId;
+		this.entity = entity;
 		this.report = report;
 	}
 
-	public long getId() {
+
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -100,19 +103,20 @@ public class Prompts {
 		this.promptRequired = promptRequired;
 	}
 
-	public BigInteger getEntityId() {
-		return entityId;
+
+	public DataEntity getEntity() {
+		return entity;
 	}
 
-	public void setEntityId(BigInteger entityId) {
-		this.entityId = entityId;
+	public void setEntity(DataEntity entity) {
+		this.entity = entity;
 	}
 
-	public Reports getReport() {
+	public Report getReport() {
 		return report;
 	}
 
-	public void setReport(Reports report) {
+	public void setReport(Report report) {
 		this.report = report;
 	}
 
@@ -127,8 +131,7 @@ public class Prompts {
 	@Override
 	public String toString() {
 		return "Prompts [id=" + id + ", promptKey=" + promptKey + ", displayName=" + displayName + ", promptRequired="
-				+ promptRequired + ", promptOrder=" + promptOrder + ", entityId=" + entityId + ", report=" + report
-				+ "]";
+				+ promptRequired + ", promptOrder=" + promptOrder + ", entity=" + entity + ", report=" + report + "]";
 	}
 
 }

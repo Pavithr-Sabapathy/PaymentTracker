@@ -4,19 +4,19 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 
 public interface ReportConfigurationService {
 
-	Reports saveReportConfiguration(ReportDTORequest reportDTORequest);
+	Report saveReportConfiguration(ReportDTORequest reportDTORequest);
 
-	List<Reports> fetchAllReports();
+	List<Report> fetchAllReports();
 
-	Reports fetchReportByName(String reportName);
+	Report fetchReportByName(String reportName);
 	
 	void deleteReportById(long reportId);
 
-	List<Reports> fetchReportsAsExcel();
+	List<Report> fetchReportsAsExcel();
 
 	void updateReportById(ReportDTORequest reportUpdateRequest, long reportId);
 	

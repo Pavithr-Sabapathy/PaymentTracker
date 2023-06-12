@@ -3,7 +3,7 @@ package com.mashreq.paymentTracker.dto;
 import java.io.Serializable;
 import java.util.List;
 
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 
 public class PromptResponseDTO implements Serializable {
 
@@ -11,14 +11,14 @@ public class PromptResponseDTO implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 4335098696343647066L;
-	private Reports reports;
+	private Report reports;
 	private List<PromptDTO> promptsList;
 
-	public Reports getReports() {
+	public Report getReports() {
 		return reports;
 	}
 
-	public void setReports(Reports reports) {
+	public void setReports(Report reports) {
 		this.reports = reports;
 	}
 

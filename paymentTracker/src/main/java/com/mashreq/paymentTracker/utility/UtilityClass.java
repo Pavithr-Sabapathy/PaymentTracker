@@ -27,19 +27,19 @@ import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 
 @Component
 public class UtilityClass {
 	/*** static code ****/
-	public void writeToMasterExcel(List<Reports> reportsList) throws IOException, InvalidFormatException {
+	public void writeToMasterExcel(List<Report> reportsList) throws IOException, InvalidFormatException {
 
 		String[] columns = { "reportName", "displayName", "reportDescription", "reportCategory", "active", "valid" };
 		// Create a Workbook
 		HSSFWorkbook workbook = new HSSFWorkbook(); // new HSSFWorkbook() for generating `.xls` file
 
 		// Create a Sheet
-		HSSFSheet sheet = workbook.createSheet("Reports Sheet");
+		HSSFSheet sheet = workbook.createSheet("Report Sheet");
 
 		// Create a Font for styling header cells
 		Font headerFont = workbook.createFont();
@@ -63,15 +63,15 @@ public class UtilityClass {
 		}
 		// Create Other rows and cells with employees data
 		int rowNum = 1;
-		for (Reports reports : reportsList) {
+		for (Report Report : reportsList) {
 
 			Row row = sheet.createRow(rowNum++);
-			row.createCell(0).setCellValue(reports.getReportName());
-			row.createCell(1).setCellValue(reports.getDisplayName());
-			row.createCell(2).setCellValue(reports.getReportDescription());
-			row.createCell(3).setCellValue(reports.getReportCategory());
-			row.createCell(4).setCellValue(reports.getActive());
-			row.createCell(5).setCellValue(reports.getValid());
+			row.createCell(0).setCellValue(Report.getReportName());
+			row.createCell(1).setCellValue(Report.getDisplayName());
+			row.createCell(2).setCellValue(Report.getReportDescription());
+			row.createCell(3).setCellValue(Report.getReportCategory());
+			row.createCell(4).setCellValue(Report.getActive());
+			row.createCell(5).setCellValue(Report.getValid());
 		}
 
 		// Resize all columns to fit the content size

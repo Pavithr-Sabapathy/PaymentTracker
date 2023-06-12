@@ -16,7 +16,7 @@ import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
 import com.mashreq.paymentTracker.model.DataSourceConfig;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
@@ -49,7 +49,7 @@ public class ComponentsServiceImpl implements ComponentsService {
 	@Transactional
 	public void saveComponents(ComponentsRequestDTO componentsRequest) {
 		Components componentsObject = new Components();
-		 Optional<Reports> reportOptional = reportConfigurationRepo.findById(componentsRequest.getReportId());
+		 Optional<Report> reportOptional = reportConfigurationRepo.findById(componentsRequest.getReportId());
 		if (reportOptional.isEmpty()) {
 			throw new ResourceNotFoundException(
 					ApplicationConstants.REPORT_DOES_NOT_EXISTS + componentsRequest.getReportId());

@@ -10,10 +10,10 @@ import com.mashreq.paymentTracker.model.Prompts;
 @Repository
 public interface PromptsCustomizedRepository {
 
-	@Query("select max(prompt.promptOrder)  from Prompts prompt join Reports report on prompt.report = report.id where report.id =?1")
+	@Query("select max(prompt.promptOrder)  from Prompts prompt join Report report on prompt.report = report.id where report.id =?1")
 	Long findPromptOrderByReportId(Long reportId);
 	
-	@Query("select prompt from Prompts prompt join Reports report on prompt.report = report.id where report.id =?1")
+	@Query("select prompt from Prompts prompt join Report report on prompt.report = report.id where report.id =?1")
 	List<Prompts> findPromptByReportId(long reportId);
 
 }

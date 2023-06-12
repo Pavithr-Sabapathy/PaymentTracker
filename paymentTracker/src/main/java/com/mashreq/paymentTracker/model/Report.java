@@ -21,10 +21,10 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @Table(name = "conf_report")
 @DynamicUpdate
-public class Reports {
+public class Report {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id;
 
 	@NotNull(message = "Report name should not be empty")
 	@Column(name = "report_name")
@@ -60,12 +60,12 @@ public class Reports {
 	List<Metrics> metricsList = new ArrayList<Metrics>();
 
 	
-	public Reports() {
+	public Report() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Reports(long id, @NotNull(message = "Report name should not be empty") String reportName,
+	public Report(Long id, @NotNull(message = "Report name should not be empty") String reportName,
 			@NotNull(message = "Display name should not be empty") String displayName, String reportDescription,
 			@NotNull(message = "Category should not be empty") String reportCategory,
 			@NotNull(message = "active status should not be empty") String active,
@@ -83,11 +83,11 @@ public class Reports {
 		this.metricsList = metricsList;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

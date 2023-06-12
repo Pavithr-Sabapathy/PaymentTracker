@@ -1,5 +1,7 @@
 package com.mashreq.paymentTracker.service;
 
+import java.util.List;
+
 import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 
@@ -9,6 +11,6 @@ public interface LinkReportService {
 
 	LinkedReportResponseDTO fetchLinkedReportById(long linkedReportId);
 
-	LinkedReportRequestDTO fetchLinkedReportByReportId(long reportId);	
+	List<LinkedReportResponseDTO> fetchLinkedReportByReportId(long reportId);	
 	
 }

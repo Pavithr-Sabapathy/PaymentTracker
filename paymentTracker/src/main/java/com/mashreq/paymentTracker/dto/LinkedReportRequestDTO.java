@@ -2,6 +2,8 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
+import com.mashreq.paymentTracker.model.Metrics;
+
 import jakarta.validation.constraints.NotEmpty;
 
 public class LinkedReportRequestDTO implements Serializable {
@@ -28,6 +30,8 @@ public class LinkedReportRequestDTO implements Serializable {
 
 	@NotEmpty
 	private long sourceMetricId;
+	
+	private Metrics sourceMetrics;
 
 	@NotEmpty
 	private String active;
@@ -88,6 +92,14 @@ public class LinkedReportRequestDTO implements Serializable {
 		this.active = active;
 	}
 
+	public Metrics getSourceMetrics() {
+		return sourceMetrics;
+	}
+
+	public void setSourceMetrics(Metrics sourceMetrics) {
+		this.sourceMetrics = sourceMetrics;
+	}
+	
 	public LinkedReportRequestDTO() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -95,7 +107,7 @@ public class LinkedReportRequestDTO implements Serializable {
 
 	public LinkedReportRequestDTO(@NotEmpty long id, @NotEmpty String linkName, @NotEmpty String linkDescription,
 			@NotEmpty long reportId, @NotEmpty long linkedReportId, @NotEmpty long sourceMetricId,
-			@NotEmpty String active) {
+			Metrics sourceMetrics, @NotEmpty String active) {
 		super();
 		this.id = id;
 		this.linkName = linkName;
@@ -103,8 +115,10 @@ public class LinkedReportRequestDTO implements Serializable {
 		this.reportId = reportId;
 		this.linkedReportId = linkedReportId;
 		this.sourceMetricId = sourceMetricId;
+		this.sourceMetrics = sourceMetrics;
 		this.active = active;
 	}
+
 
 	@Override
 	public String toString() {

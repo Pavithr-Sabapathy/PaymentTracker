@@ -32,10 +32,10 @@ public class Metrics {
 	@Column(name = "Metrics_Order")
 	private BigInteger metricsOrder;
 
-	@ManyToOne(targetEntity = Reports.class)
+	@ManyToOne(targetEntity = Report.class)
 	@JsonBackReference
 	@JoinColumn(name = "report_id")
-	private Reports report;
+	private Report report;
 
 	// TODO -- @NotNull(message = "Entity Id should not be empty")
 	@Column(name = "ent_id")
@@ -73,11 +73,11 @@ public class Metrics {
 		this.metricsOrder = metricsOrder;
 	}
 
-	public Reports getReport() {
+	public Report getReport() {
 		return report;
 	}
 
-	public void setReport(Reports report) {
+	public void setReport(Report report) {
 		this.report = report;
 	}
 
@@ -104,7 +104,7 @@ public class Metrics {
 	}
 
 	public Metrics(long id, @NotNull(message = "Display name should not be empty") String displayName,
-			@NotNull(message = "Prompt Order should not be empty") BigInteger metricsOrder, Reports report,
+			@NotNull(message = "Prompt Order should not be empty") BigInteger metricsOrder, Report report,
 			BigInteger entityId, @NotNull(message = "Prompt Required should not be empty") String display) {
 		super();
 		this.id = id;

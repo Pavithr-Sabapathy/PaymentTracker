@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.dto.APIResponse;
-import com.mashreq.paymentTracker.dto.ReportProcessingRequest;
-import com.mashreq.paymentTracker.dto.SwiftDetailedReportExecuteResponseData;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
+import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 
@@ -32,10 +32,10 @@ public class SwiftDetailedReportController {
 	
 	@PostMapping("/swift/{reportName}/execute")
 	public ResponseEntity<APIResponse> executeSwiftDetailedReport(@PathVariable String reportName,
-			@RequestBody ReportProcessingRequest reportProcessingRequest) throws ReportException {
+			@RequestBody ReportExecutionRequest reportProcessingRequest) throws ReportException {
 		APIResponse swiftDetailedReportApiResponse = new APIResponse();
 		try {
-			SwiftDetailedReportExecuteResponseData swiftDetailedReport = swiftDetailedReportService.processSwiftDetailReport(reportName, reportProcessingRequest);
+			ReportExecuteResponseData swiftDetailedReport = swiftDetailedReportService.processSwiftDetailReport(reportName, reportProcessingRequest);
 			swiftDetailedReportApiResponse = swiftDetailedReportService.populateSuccessAPIRespone(swiftDetailedReport);
 
 		} catch (Exception exception) {

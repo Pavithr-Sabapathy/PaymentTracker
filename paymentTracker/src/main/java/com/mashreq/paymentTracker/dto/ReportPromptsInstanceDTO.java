@@ -1,35 +1,45 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.util.List;
+import java.io.Serializable;
 
-public class ReportPromptsInstanceDTO {
-	private long id;
-	private String key;
-	private List<String> promptsValueList;
-	private String promptValue;
-	public long getId() {
+public class ReportPromptsInstanceDTO implements Serializable {
+	
+	private static final long serialVersionUID = 6276638738231877310L;
+	private Long id;
+	private Long reportId;
+	private Long reportInstanceId;
+	private PromptInstance prompt;
+
+	public Long getId() {
 		return id;
 	}
-	public void setId(long id) {
+
+	public void setId(Long id) {
 		this.id = id;
 	}
-	public String getKey() {
-		return key;
+
+	public Long getReportId() {
+		return reportId;
 	}
-	public void setKey(String key) {
-		this.key = key;
+
+	public void setReportId(Long reportId) {
+		this.reportId = reportId;
 	}
-	public List<String> getPromptsValueList() {
-		return promptsValueList;
+
+	public Long getReportInstanceId() {
+		return reportInstanceId;
 	}
-	public void setPromptsValueList(List<String> promptsValueList) {
-		this.promptsValueList = promptsValueList;
+
+	public void setReportInstanceId(Long reportInstanceId) {
+		this.reportInstanceId = reportInstanceId;
 	}
-	public String getPromptValue() {
-		return promptValue;
+
+	public PromptInstance getPrompt() {
+		return prompt;
 	}
-	public void setPromptValue(String promptValue) {
-		this.promptValue = promptValue;
+
+	public void setPrompt(PromptInstance prompt) {
+		this.prompt = prompt;
 	}
-	
+
 }

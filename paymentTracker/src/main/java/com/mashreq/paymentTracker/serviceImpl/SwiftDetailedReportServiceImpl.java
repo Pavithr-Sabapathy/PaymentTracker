@@ -32,12 +32,12 @@ import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.dto.MessageField;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseMetaDTO;
-import com.mashreq.paymentTracker.dto.ReportProcessingRequest;
+import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
 import com.mashreq.paymentTracker.dto.SWIFTDetailedFederatedReportDTO;
 import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsFederatedReportOutput;
 import com.mashreq.paymentTracker.dto.StxEntryFieldViewInfo;
-import com.mashreq.paymentTracker.dto.SwiftDetailedReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.SwiftDetailsReportObjectDTO;
 import com.mashreq.paymentTracker.exception.DataAccessException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -45,7 +45,7 @@ import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
@@ -72,14 +72,14 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	private static final Logger log = LoggerFactory.getLogger(SwiftDetailedReportServiceImpl.class);
 	private static final String FILENAME = "SwiftDetailedReportServiceImpl";
 
-	public SwiftDetailedReportExecuteResponseData processSwiftDetailReport(String reportName,
-			ReportProcessingRequest reportProcessingRequest) {
-		SwiftDetailedReportExecuteResponseData responseData = new SwiftDetailedReportExecuteResponseData();
+	public ReportExecuteResponseData processSwiftDetailReport(String reportName,
+			ReportExecutionRequest reportProcessingRequest) {
+		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
 		ReportExecuteResponseMetaDTO reportExecutionMetaDTO = new ReportExecuteResponseMetaDTO();
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
 		List<Map<String, Object>> swiftData = null;
 		Long queryExecutionTime = 0L;
-		Reports reportObject = reportConfigurationService.fetchReportByName(reportName);
+		Report reportObject = reportConfigurationService.fetchReportByName(reportName);
 		if (null != reportObject) {
 			Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(reportObject.getId());
 			if (componentsOptional.isEmpty()) {
@@ -650,6 +650,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			List<PromptsProcessingRequest> uiPromptsRequest) {
 
 		SWIFTDetailedFederatedReportDTO SWIFTDetailedFederatedReportDTO = new SWIFTDetailedFederatedReportDTO();
+		
 		List<String> promptsDisplayList = reportInstancePromptsList.stream().map(Prompts::getDisplayName)
 				.collect(Collectors.toList());
 		Map<String, PromptsProcessingRequest> promptsRequestMapping = uiPromptsRequest.stream()
@@ -682,28 +683,28 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		return SWIFTDetailedFederatedReportDTO;
 	}
 
-	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(Reports reportObject) {
-		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
-		ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
-		List<Metrics> metricsList = reportObject.getMetricsList();
-		metricsList.stream().forEach(metrics -> {
-			reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
-			reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
-		});
-		try {
-			LinkedReportRequestDTO linkedReportRequestDTO = linkReportService
-					.fetchLinkedReportByReportId(reportObject.getId());
-
-			if (null != linkedReportRequestDTO) {
-				Long sourceMetricValue = linkedReportRequestDTO.getSourceMetricId();
-				reportExecuteResponseCloumnDef.setLinkExists(null != sourceMetricValue ? true : false);
-			}
-		} catch (ResourceNotFoundException exception) {
-			log.error(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + reportObject.getId());
-		} catch (JpaSystemException exception) {
-			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
-		}
-		return reportExecuteResponseCloumnDefList;
+	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(Report reportObject) {
+		return null;
+		/*
+		 * List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList =
+		 * new ArrayList<ReportExecuteResponseColumnDefDTO>();
+		 * ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new
+		 * ReportExecuteResponseColumnDefDTO(); List<Metrics> metricsList =
+		 * reportObject.getMetricsList(); metricsList.stream().forEach(metrics -> {
+		 * reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
+		 * reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef); });
+		 * try { LinkedReportRequestDTO linkedReportRequestDTO = linkReportService
+		 * .fetchLinkedReportByReportId(reportObject.getId());
+		 * 
+		 * if (null != linkedReportRequestDTO) { Long sourceMetricValue =
+		 * linkedReportRequestDTO.getSourceMetricId();
+		 * reportExecuteResponseCloumnDef.setLinkExists(null != sourceMetricValue ? true
+		 * : false); } } catch (ResourceNotFoundException exception) {
+		 * log.error(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS +
+		 * reportObject.getId()); } catch (JpaSystemException exception) {
+		 * log.error(FILENAME + " [Exception Occured] " + exception.getMessage()); }
+		 * return reportExecuteResponseCloumnDefList;
+		 */
 	}
 
 	private List<Map<String, Object>> populateSwiftDetailedReportData(
@@ -727,7 +728,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	}
 
 	@Override
-	public APIResponse populateSuccessAPIRespone(SwiftDetailedReportExecuteResponseData swiftDetailedReport) {
+	public APIResponse populateSuccessAPIRespone(ReportExecuteResponseData swiftDetailedReport) {
 		APIResponse swiftDetailedReportApiResponse = new APIResponse();
 		swiftDetailedReportApiResponse.setData(swiftDetailedReport);
 		swiftDetailedReportApiResponse.setMessage("Report Execution Success");

@@ -1,12 +1,15 @@
 package com.mashreq.paymentTracker.model;
 
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.geo.Metric;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -29,8 +32,9 @@ public class LinkedReportInfo {
 	@Column(name = "linked_report_id")
 	private long linkedReportId;
 
-	@Column(name = "source_metric_id")
-	private long sourceMetricId;
+	@OneToOne
+	@JoinColumn(name = "source_metric_id")
+	private Metrics sourceMetrics;
 
 	@Column(name = "active")
 	private String active;
@@ -59,12 +63,12 @@ public class LinkedReportInfo {
 		this.linkedReportId = linkedReportId;
 	}
 
-	public long getSourceMetricId() {
-		return sourceMetricId;
+	public Metrics getSourceMetrics() {
+		return sourceMetrics;
 	}
 
-	public void setSourceMetricId(long sourceMetricId) {
-		this.sourceMetricId = sourceMetricId;
+	public void setSourceMetrics(Metrics sourceMetrics) {
+		this.sourceMetrics = sourceMetrics;
 	}
 
 	public String getActive() {
@@ -94,7 +98,7 @@ public class LinkedReportInfo {
 	@Override
 	public String toString() {
 		return "LinkedReportInfo [id=" + id + ", linkName=" + linkName + ", linkDescription=" + linkDescription
-				+ ", reportId=" + reportId + ", linkedReportId=" + linkedReportId + ", sourceMetricId=" + sourceMetricId
+				+ ", reportId=" + reportId + ", linkedReportId=" + linkedReportId + ", sourceMetrics=" + sourceMetrics
 				+ ", active=" + active + "]";
 	}
 
@@ -104,14 +108,14 @@ public class LinkedReportInfo {
 	}
 
 	public LinkedReportInfo(long id, String linkName, String linkDescription, long reportId, long linkedReportId,
-			long sourceMetricId, String active) {
+			Metrics sourceMetrics, String active) {
 		super();
 		this.id = id;
 		this.linkName = linkName;
 		this.linkDescription = linkDescription;
 		this.reportId = reportId;
 		this.linkedReportId = linkedReportId;
-		this.sourceMetricId = sourceMetricId;
+		this.sourceMetrics = sourceMetrics;
 		this.active = active;
 	}
 

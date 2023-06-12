@@ -39,9 +39,9 @@ public class Components {
 	@Column(name = "active")
 	private String active;
 
-	@ManyToOne(targetEntity = Reports.class)
+	@ManyToOne(targetEntity = Report.class)
 	@JoinColumn(name = "report_id")
-	private Reports report;
+	private Report report;
 
 	@OneToOne(mappedBy = "components", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private ComponentsCountry componentsCountry;
@@ -82,11 +82,11 @@ public class Components {
 		this.active = active;
 	}
 
-	public Reports getReport() {
+	public Report getReport() {
 		return report;
 	}
 
-	public void setReport(Reports report) {
+	public void setReport(Report report) {
 		this.report = report;
 	}
 
@@ -120,7 +120,7 @@ public class Components {
 	
 	public Components(long id, @NotNull(message = "Display name should not be empty") String componentName,
 			@NotNull(message = "Display name should not be empty") String componentKey,
-			@NotNull(message = "Display name should not be empty") String active, Reports report,
+			@NotNull(message = "Display name should not be empty") String active, Report report,
 			ComponentsCountry componentsCountry, List<ComponentDetails> componentDetailsList) {
 		super();
 		this.id = id;

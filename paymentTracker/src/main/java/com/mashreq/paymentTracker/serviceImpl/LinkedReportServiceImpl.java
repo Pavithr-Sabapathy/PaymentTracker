@@ -1,5 +1,7 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -15,7 +17,7 @@ import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.LinkedReportInfo;
 import com.mashreq.paymentTracker.model.Metrics;
-import com.mashreq.paymentTracker.model.Reports;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.LinkedReportRepository;
 import com.mashreq.paymentTracker.repository.MetricsRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
@@ -54,25 +56,30 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	}
 
 	@Override
-	public LinkedReportRequestDTO fetchLinkedReportByReportId(long reportId) {
-		LinkedReportRequestDTO linkedReportDTOrequest = new LinkedReportRequestDTO();
-		Optional<LinkedReportInfo> linkedReportOptionalResponse = linkedReportRepo.findAllByReportId(reportId);
-		if (linkedReportOptionalResponse.isEmpty()) {
+	public List<LinkedReportResponseDTO>  fetchLinkedReportByReportId(long reportId) {
+		List<LinkedReportResponseDTO> linkedReportDTOresponseList = new ArrayList<LinkedReportResponseDTO>();
+		Optional<List<LinkedReportInfo>> linkedReportOptionalResponseList = linkedReportRepo
+				.findAllByReportId(reportId);
+		if (linkedReportOptionalResponseList.isEmpty()) {
 			log.error(FILENAME + "[fetchLinkedReportByReportId] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS
 					+ reportId);
 			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + reportId);
 		} else {
-			LinkedReportInfo linkedReportResponse = linkedReportOptionalResponse.get();
-			linkedReportDTOrequest.setId(linkedReportResponse.getId());
-
-			linkedReportDTOrequest.setLinkedReportId(linkedReportResponse.getLinkedReportId());
-			linkedReportDTOrequest.setReportId(linkedReportResponse.getReportId());
-			linkedReportDTOrequest.setSourceMetricId(linkedReportResponse.getSourceMetricId());
-			linkedReportDTOrequest.setActive(linkedReportResponse.getActive());
-			linkedReportDTOrequest.setLinkDescription(linkedReportResponse.getLinkDescription());
-			linkedReportDTOrequest.setLinkName(linkedReportResponse.getLinkName());
+			List<LinkedReportInfo> linkedReportResponseList = linkedReportOptionalResponseList.get();
+			linkedReportResponseList.forEach(linkedReportResponse -> {
+				LinkedReportResponseDTO linkedReportDTOresponse = new LinkedReportResponseDTO();
+				linkedReportDTOresponse.setId(linkedReportResponse.getId());
+				linkedReportDTOresponse.setLinkedReportID(linkedReportResponse.getLinkedReportId());
+				linkedReportDTOresponse.setReportId(linkedReportResponse.getReportId());
+				linkedReportDTOresponse.setSourceMetrics(linkedReportResponse.getSourceMetrics());
+				linkedReportDTOresponse.setActive(linkedReportResponse.getActive());
+				linkedReportDTOresponse.setLinkDescription(linkedReportResponse.getLinkDescription());
+				linkedReportDTOresponse.setLinkName(linkedReportResponse.getLinkName());
+				linkedReportDTOresponseList.add(linkedReportDTOresponse);
+			});
+			
 		}
-		return linkedReportDTOrequest;
+		return linkedReportDTOresponseList;
 	}
 
 	@Override
@@ -92,7 +99,7 @@ public class LinkedReportServiceImpl implements LinkReportService {
 			/**
 			 * Map the metrics and source report name from metrics table based on mapping
 			 **/
-			long sourceMetricId = linkedReportResponse.getSourceMetricId();
+			long sourceMetricId = linkedReportResponse.getSourceMetrics().getId();
 			Optional<Metrics> metricsOptional = metricsRepository.findById(sourceMetricId);
 			if (linkedReportOptionalResponse.isEmpty()) {
 				log.error(FILENAME + "[fetchLinkedReportById] " + ApplicationConstants.METRICS_DOES_NOT_EXISTS
@@ -106,13 +113,13 @@ public class LinkedReportServiceImpl implements LinkReportService {
 			/**
 			 * Map the linked report name from the report table based on linked report id
 			 **/
-			Optional<Reports> reportReponseOptional = reportConfigurationRepo
+			Optional<Report> reportReponseOptional = reportConfigurationRepo
 					.findById(linkedReportResponse.getLinkedReportId());
 			if (reportReponseOptional.isEmpty()) {
 				throw new ResourceNotFoundException(
 						ApplicationConstants.REPORT_DOES_NOT_EXISTS + linkedReportResponse.getLinkedReportId());
 			} else {
-				Reports reportRepsonse = reportReponseOptional.get();
+				Report reportRepsonse = reportReponseOptional.get();
 				linkedReportDTOresponse.setLinkedReportName(reportRepsonse.getReportName());
 			}
 
