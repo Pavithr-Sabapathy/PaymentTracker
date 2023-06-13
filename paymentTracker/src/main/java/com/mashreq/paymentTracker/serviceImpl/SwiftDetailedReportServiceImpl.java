@@ -41,8 +41,11 @@ import com.mashreq.paymentTracker.exception.DataAccessException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
+import com.mashreq.paymentTracker.model.ComponentsCountry;
+import com.mashreq.paymentTracker.model.DataSourceConfig;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
+import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
@@ -65,6 +68,9 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 	@Autowired
 	LinkReportService linkReportService;
+	
+	@Autowired
+	ComponentsCountryRepository componentsCountryRepository;
 
 	private static final Logger log = LoggerFactory.getLogger(SwiftDetailedReportServiceImpl.class);
 	private static final String FILENAME = "SwiftDetailedReportServiceImpl";
@@ -594,6 +600,9 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 	private List<FederatedReportOutput> processComponentDetail(ComponentDetails componentDetails,
 			List<FederatedReportPromptDTO> promptsList) {
+		Long reportComponentId = componentDetails.getComponents().getId();
+		List<ComponentsCountry> componentsCountriesList = processComponentCountry(reportComponentId); 
+		DataSourceConfig dataSource = componentsCountriesList.get(0).getDataSourceConfig();
 		String queryString = componentDetails.getQuery();
 		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
 		for (FederatedReportPromptDTO prompts : promptsList) {
@@ -607,8 +616,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		try {
 			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
 			Connection connection;
-			// Need to check with datasource details
-			connection = SourceConnectionUtil.getConnection("Test"); 
+			connection = SourceConnectionUtil.getConnection(dataSource.getDataSourceName()); 
 //			connection = DriverManager.getConnection(MashreqFederatedReportConstants.SWIFT_DATABASE_URL,
 //					MashreqFederatedReportConstants.DATABASE_USERNAME, MashreqFederatedReportConstants.DATABASE_PASSWORD);
 			Statement statement = connection.createStatement();
@@ -643,6 +651,31 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		return federatedReportOutputList;
 	}
 
+	private List<ComponentsCountry> processComponentCountry(Long reportComponentId) {
+		if (null != reportComponentId) {
+			Optional<List<ComponentsCountry>> componentsCountryOptional = componentsCountryRepository
+					.findAllBycomponentsId(reportComponentId);
+			if (componentsCountryOptional.isEmpty()) {
+				throw new ResourceNotFoundException(
+						ApplicationConstants.COMPONENT_COUNTRY_DOES_NOT_EXISTS + reportComponentId);
+			} else {
+				List<ComponentsCountry> componentsCountryList = componentsCountryOptional.get();
+
+				if (!componentsCountryList.isEmpty()) {
+					List<ComponentsCountry> filterdcomponentsCountryList = new ArrayList<ComponentsCountry>();
+					componentsCountryList.stream().forEach(componentsCountry -> {
+						if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
+								.equalsIgnoreCase(MashreqFederatedReportConstants.DS_SWIFT)) {
+							filterdcomponentsCountryList.add(componentsCountry);
+						}
+					});
+					return filterdcomponentsCountryList;
+				}
+			}
+		}
+		return null;
+	}
+	
 	private SWIFTDetailedFederatedReportDTO populateBaseInputContext(List<Prompts> reportInstancePromptsList,
 			List<PromptsProcessingRequest> uiPromptsRequest) {
 

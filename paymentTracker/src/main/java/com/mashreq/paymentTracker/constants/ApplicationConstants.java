@@ -35,6 +35,7 @@ public class ApplicationConstants {
 	public static final String COMPONENT_DETAILS_CREATION_MSG = "Component Details Created Successfully";
 	public static final String COMPONENT_DETAILS_DELETION_MSG = "Component Details deleted for this Id";
 	public static final String COMPONENT_DETAILS_DOES_NOT_EXISTS = "Component Details not exist with this id :";
+	public static final String COMPONENT_COUNTRY_DOES_NOT_EXISTS = "Component Country Details not exist with this id :";
 
 	/** Module constants **/
 	public static final String MODULE_CREATION_MSG = "Module Created Successfully";

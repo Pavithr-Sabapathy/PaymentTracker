@@ -165,7 +165,7 @@ public class Report {
 
 	@Override
 	public String toString() {
-		return "Reports [id=" + id + ", reportName=" + reportName + ", displayName=" + displayName
+		return "Report [id=" + id + ", reportName=" + reportName + ", displayName=" + displayName
 				+ ", reportDescription=" + reportDescription + ", reportCategory=" + reportCategory + ", active="
 				+ active + ", valid=" + valid + ", promptList=" + promptList + ", metricsList=" + metricsList + "]";
 	}

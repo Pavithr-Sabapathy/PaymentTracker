@@ -125,4 +125,9 @@ public class MashreqFederatedReportConstants {
 	public static final String AMOUNT_LABEL = "Amount";
 	public static final String SEMI_COLON = " ; ";
 
+	// Data Source names
+	public static final String DS_EDMS = "EDMS";
+	public static final String DS_FLEX = "Flex";
+	public static final String DS_SWIFT = "SWIFT";
+
 }
