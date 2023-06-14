@@ -2,6 +2,8 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import com.mashreq.paymentTracker.utility.CheckType;
 
@@ -18,6 +20,7 @@ public class ReportQueryInfoDTO implements Serializable {
 	private CheckType dataFound;
 	private String failureCause;
 	private Long executionId;
+	private LinkedHashMap<String, List<String>> promptKeyValueMap;
 
 	public Long getId() {
 		return id;
@@ -97,6 +100,14 @@ public class ReportQueryInfoDTO implements Serializable {
 
 	public void setExecutionId(Long executionId) {
 		this.executionId = executionId;
+	}
+
+	public LinkedHashMap<String, List<String>> getPromptKeyValueMap() {
+		return promptKeyValueMap;
+	}
+
+	public void setPromptKeyValueMap(LinkedHashMap<String, List<String>> promptKeyValueMap) {
+		this.promptKeyValueMap = promptKeyValueMap;
 	}
 
 	@Override

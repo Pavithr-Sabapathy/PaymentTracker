@@ -54,7 +54,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 
 	@Autowired
 	FlexFederatedReportService flexFederatedReportService;
-	
+
 	@Autowired
 	SwiftDetailedReportService swiftDetailedReportService;
 
@@ -74,10 +74,16 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		ReportExecuteResponseData reportExecuteResponseData = new ReportExecuteResponseData();
 		ReportContext reportContext = new ReportContext();
 		ReportDataDTO reportDataDTO = new ReportDataDTO();
-
+		/**
+		 * populate report instance to store in reportInstance and reportPromptInstance
+		 * table
+		 **/
 		ReportInstanceDTO reportInstanceDTO = populateReportInstance(reportExecutionRequest, reportName);
 		ReportInstance reportInstance = createReportInstance(reportInstanceDTO);
-		reportInstanceRepo.save(reportInstance);
+		reportInstance = reportInstanceRepo.save(reportInstance);
+		if (null != reportInstance.getId()) {
+			reportInstanceDTO.setId(reportInstance.getId());
+		}
 		if (null != reportInstanceDTO) {
 			reportContext = populateReportContext(reportInstanceDTO);
 			if (null != reportExecutionRequest.getLinkReference()) {
@@ -87,16 +93,18 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 				reportContext.setLinkReference(reportExecutionRequest.getLinkReference());
 			}
 			reportContext.setLinkedReport(reportExecutionRequest.getLinkExecution());
+			/*** populate report execution to store in report execution table **/
 			ReportExecutionDTO reportExecutionDTO = populateReportExecution(reportContext);
 			ReportExecution reportExecution = createReportExecution(reportExecutionDTO);
 			reportContext.setExecutionId(reportExecution.getId());
-			//TODO-Move to constants 
+			// TODO-Move to constants
 			if (reportName.equals("flexPostingDetails")) {
 				reportExecuteResponseData = flexFederatedReportService.processFlexReport(reportName, reportContext,
 						reportExecutionRequest);
 
-			}else if(reportName.equals("swiftDetails")) {
-				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportName, reportExecutionRequest);
+			} else if (reportName.equals("swiftDetails")) {
+				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportName,
+						reportExecutionRequest);
 			}
 		}
 
@@ -107,7 +115,15 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		ReportData reportData = populateReportData(reportDataDTO);
 		reportDataRepo.save(reportData);
 
+		updateExecutionResponse(reportExecuteResponseData, reportContext);
+
 		return reportExecuteResponseData;
+	}
+
+	private void updateExecutionResponse(ReportExecuteResponseData reportExecuteResponseData,
+			ReportContext reportContext) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	private ReportData populateReportData(ReportDataDTO reportDataDTO) {
@@ -164,9 +180,9 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			reportExecution.setLinkExecution("T");
 		else
 			reportExecution.setLinkExecution("F");
-		if (null != reportExecution.getStartDate())
+		if (null != reportExecutionDTO.getStartDate())
 			reportExecution.setStartDate(reportExecutionDTO.getStartDate());
-		if (null != reportExecution.getEndDate())
+		if (null != reportExecutionDTO.getEndDate())
 			reportExecution.setEndDate(reportExecutionDTO.getEndDate());
 		if (null != reportExecutionDTO.getFailureCase())
 			reportExecution.setFailureCause(reportExecutionDTO.getFailureCase());
@@ -185,7 +201,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		execution.setReportId(reportContext.getReportId());
 		execution.setLinkExecution(reportContext.getLinkedReport());
 		execution.setModuleId(reportContext.getModuleId());
-		execution.setReportInstanceId(reportContext.getReportInstance().getReportId());
+		execution.setReportInstanceId(reportContext.getReportInstance().getId());
 		execution.setRoleId(reportContext.getRoleId());
 		execution.setStartDate(new Date());
 		execution.setStatus(ExecutionStatusType.INPROGRESS);
@@ -328,7 +344,8 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 							promptsInstance.setOrder(promptsInstanceDTO.getOrder());
 							promptsInstance.setRequired(promptsInstanceDTO.getRequired());
 							promptsInstance.setEntityId(promptsInstanceDTO.getEntityId());
-							promptsInstance.setPromptValue(promptsRequest.getPromptValue());
+							//--TODO confirm as // potential issues could be multiple values, date values, entity values etc    
+							promptsInstance.setPromptValue(promptsRequest.getValue().get(0));
 							promptsInstance.setValue(promptsRequest.getValue());
 							instancePrompt.setPrompt(promptsInstance);
 							instancePrompt.setReportId(report.getId());

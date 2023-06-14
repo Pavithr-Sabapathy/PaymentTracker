@@ -1,11 +1,6 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +27,6 @@ import com.mashreq.paymentTracker.dto.CannedReportComponentDetail;
 import com.mashreq.paymentTracker.dto.CannedReportInstanceComponent;
 import com.mashreq.paymentTracker.dto.CannedReportMetric;
 import com.mashreq.paymentTracker.dto.CannedReportPrompt;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.FlexAccountingDetailedFederatedReportInput;
 import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
@@ -42,12 +36,11 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
-import com.mashreq.paymentTracker.exception.DataAccessException;
+import com.mashreq.paymentTracker.dto.SourceQueryExecutionContext;
+import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
-import com.mashreq.paymentTracker.model.ComponentsCountry;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
@@ -55,9 +48,9 @@ import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.FlexFederatedReportService;
 import com.mashreq.paymentTracker.service.LinkReportService;
+import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.utility.CheckType;
-import com.mashreq.paymentTracker.utility.SourceConnectionUtil;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Component
@@ -74,9 +67,12 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 
 	@Autowired
 	LinkReportService linkReportService;
-	
+
 	@Autowired
 	ComponentsCountryRepository componentsCountryRepository;
+
+	@Autowired
+	QueryExecutorService queryExecutorService;
 
 	private static final Logger log = LoggerFactory.getLogger(FlexFederatedReportServiceImpl.class);
 	private static final String FILENAME = "FlexFederatedReportServiceImpl";
@@ -86,6 +82,7 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 		FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput = new FlexAccountingDetailedFederatedReportInput();
 		List<FlexReportExecuteResponseData> flexReportExecuteResponseList = new ArrayList<FlexReportExecuteResponseData>();
 		ReportExecuteResponseData flexReportExecuteResponseData = new ReportExecuteResponseData();
+		/**fetch the report details based on report name**/
 		Report report = reportConfigurationService.fetchReportByName(reportName);
 		CannedReport cannedReport = populateCannedReportInstance(report);
 		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(cannedReport.getId());
@@ -95,17 +92,18 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 			List<Components> componentList = componentsOptional.get();
 			Set<CannedReportComponent> cannedReportComponentSet = populateCannedReportComponent(componentList);
 			cannedReport.setCannedReportComponents(cannedReportComponentSet);
-			if (!componentList.isEmpty()) {
-				for (Components component : componentList) {
-					if (component.getActive().equalsIgnoreCase("Y")) {
-						CannedReportInstanceComponent componentReportInstance = modelMapper.map(component,
+			if (null != cannedReport.getCannedReportComponents() && !cannedReport.getCannedReportComponents().isEmpty()) {
+				Set<CannedReportComponent> cannedReportComponent = cannedReport.getCannedReportComponents();
+				for (CannedReportComponent componentReportComponent : cannedReportComponent) {
+					if (componentReportComponent.getActive().equals(CheckType.YES)) {
+						CannedReportInstanceComponent componentReportInstance = modelMapper.map(componentReportComponent,
 								CannedReportInstanceComponent.class);
 						FlexAccountingDetailedFederatedReportInput FlexAccountingDetailedFederatedReportInput = new FlexAccountingDetailedFederatedReportInput();
 						FlexAccountingDetailedFederatedReportInput.setComponent(componentReportInstance);
 						flexAccountingDetailedFederatedReportInput = populateBaseInputContext(
 								cannedReport.getCannedReportPrompts(), reportExecutionRequest.getPrompts());
 						List<FlexReportExecuteResponseData> flexReportExecuteResponse = executeReport(
-								flexAccountingDetailedFederatedReportInput, component);
+								flexAccountingDetailedFederatedReportInput, componentReportComponent, reportContext);
 						if (!flexReportExecuteResponse.isEmpty()) {
 							flexReportExecuteResponseList.addAll(flexReportExecuteResponse);
 						}
@@ -156,12 +154,12 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 				reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
 			});
 			List<String> metricsWithLinkList = prepareLinkReportInfo(reportObject);
-			reportExecuteResponseCloumnDefList.stream().forEach(colummnDef ->{
-				if(metricsWithLinkList.contains(colummnDef.getField())) {
+			reportExecuteResponseCloumnDefList.stream().forEach(colummnDef -> {
+				if (metricsWithLinkList.contains(colummnDef.getField())) {
 					colummnDef.setLinkExists(Boolean.TRUE);
 				}
 			});
-			
+
 		} catch (JpaSystemException exception) {
 			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
 		} catch (ResourceNotFoundException exception) {
@@ -181,13 +179,14 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 	}
 
 	private List<FlexReportExecuteResponseData> executeReport(
-			FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput,
-			Components component) {
+			FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput, CannedReportComponent component,
+			ReportContext reportContext) {
+		SourceQueryExecutionContext sourceQueryExecutionContext = new SourceQueryExecutionContext();
 		List<FlexReportExecuteResponseData> flexReportExecuteResponse = new ArrayList<FlexReportExecuteResponseData>();
-		ComponentDetails matchedComponentDetail = null;
+		CannedReportComponentDetail matchedComponentDetail = new CannedReportComponentDetail();
 		if (null != component) {
-			List<ComponentDetails> componentDetails = component.getComponentDetailsList();
-			for (ComponentDetails componentDetail : componentDetails) {
+			Set<CannedReportComponentDetail> componentDetailsSet = component.getCannedReportComponentDetails();
+			for (CannedReportComponentDetail componentDetail : componentDetailsSet) {
 				if (componentDetail.getQueryKey().toLowerCase().contains(flexAccountingDetailedFederatedReportInput
 						.getAccountingSourcePrompt().getPromptValue().toLowerCase())) {
 					matchedComponentDetail = componentDetail;
@@ -195,91 +194,21 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 				}
 			}
 			if (matchedComponentDetail != null) {
-				List<FederatedReportPromptDTO> prompts = new ArrayList<FederatedReportPromptDTO>();
-				prompts.add(flexAccountingDetailedFederatedReportInput.getReferenceNumPrompt());
-				prompts.add(flexAccountingDetailedFederatedReportInput.getDebitAccountPrompt());
-				flexReportExecuteResponse = processComponentDetail(matchedComponentDetail, prompts);
+				try {
+					sourceQueryExecutionContext.setInstancePrompts(reportContext.getReportInstance().getPromptsList());
+					sourceQueryExecutionContext.setQueryKey(matchedComponentDetail.getQueryKey());
+					sourceQueryExecutionContext.setQueryString(matchedComponentDetail.getQuery());
+					sourceQueryExecutionContext.setExecutionId(reportContext.getExecutionId());
+					sourceQueryExecutionContext.setQueryId(matchedComponentDetail.getId());
+					flexReportExecuteResponse = queryExecutorService.executeQuery(sourceQueryExecutionContext);
+				} catch (ReportException e) {
+					e.printStackTrace();
+				}
 
 			}
 		}
 		return flexReportExecuteResponse;
 	}
-
-	private List<FlexReportExecuteResponseData> processComponentDetail(ComponentDetails componentDetails,
-			List<FederatedReportPromptDTO> promptDTO) {
-		
-		Long reportComponentId = componentDetails.getComponents().getId();
-		List<ComponentsCountry> componentsCountrieList = processComponentCountry(reportComponentId); 
-		DataSourceConfig dataSource = componentsCountrieList.get(0).getDataSourceConfig();
-		List<FlexReportExecuteResponseData> flexReportDefaultOutputList = new ArrayList<FlexReportExecuteResponseData>();
-		String queryString = componentDetails.getQuery();
-		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
-		for (FederatedReportPromptDTO prompts : promptDTO) {
-			if (null != prompts.getPromptKey() && queryString.indexOf(prompts.getPromptKey()) > 0) {
-				if (null != prompts.getPromptValue()) {
-					queryString = queryString.replace(MashreqFederatedReportConstants.TILDE + prompts.getPromptKey() + MashreqFederatedReportConstants.TILDE, prompts.getPromptValue());
-				}
-			}
-		}
-
-		try {
-			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
-			Connection connection;
-			connection = SourceConnectionUtil.getConnection(dataSource.getDataSourceName()); 
-//			connection = DriverManager.getConnection(MashreqFederatedReportConstants.FLEX_DATABASE_URL,
-//					MashreqFederatedReportConstants.DATABASE_USERNAME, MashreqFederatedReportConstants.DATABASE_PASSWORD);
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery(queryString);
-
-			if (resultSet != null) {
-				ResultSetMetaData metaData = resultSet.getMetaData();
-				int columnCount = metaData.getColumnCount();
-				while (resultSet.next()) {
-					FlexReportExecuteResponseData flexReportOutput = new FlexReportExecuteResponseData();
-					List<Object> rowData = new ArrayList<Object>();
-					for (int index = 1; index < columnCount; index++) {
-						Object colValue = resultSet.getObject(index);
-						rowData.add(colValue);
-					}
-					flexReportOutput.setRowData(rowData);
-					flexReportDefaultOutputList.add(flexReportOutput);
-				}
-			}
-			connection.close();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}catch (DataAccessException e) {
-			e.printStackTrace();
-		} 
-		return flexReportDefaultOutputList;
-	}
-
-	private List<ComponentsCountry> processComponentCountry(Long reportComponentId) {
-		if (null != reportComponentId) {
-			Optional<List<ComponentsCountry>> componentsCountryOptional = componentsCountryRepository
-					.findAllBycomponentsId(reportComponentId);
-			if (componentsCountryOptional.isEmpty()) {
-				throw new ResourceNotFoundException(
-						ApplicationConstants.COMPONENT_COUNTRY_DOES_NOT_EXISTS + reportComponentId);
-			} else {
-				List<ComponentsCountry> componentsCountryList = componentsCountryOptional.get();
-
-				if (!componentsCountryList.isEmpty()) {
-					List<ComponentsCountry> filterdcomponentsCountryList = new ArrayList<ComponentsCountry>();
-					componentsCountryList.stream().forEach(componentsCountry -> {
-						if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
-								.equalsIgnoreCase(MashreqFederatedReportConstants.DS_FLEX)) {
-							filterdcomponentsCountryList.add(componentsCountry);
-						}
-					});
-					return filterdcomponentsCountryList;
-				}
-			}
-		}
-		return null;
-	}	
 
 	private FlexAccountingDetailedFederatedReportInput populateBaseInputContext(
 			Set<CannedReportPrompt> cannedReportPrompt, List<PromptsProcessingRequest> uiPromptsRequestList) {
@@ -293,6 +222,7 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 
 				FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
 				federatedReportPromptDTO.setPromptKey(promptKey);
+				//--TODO check with deena old code taking single string 
 				federatedReportPromptDTO.setPromptValue(promptValue.getValue().get(0).trim());
 				if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.REFERENCENUMPROMPTS)) {
 					flexAccountingDetailedFederatedReportInput.setReferenceNumPrompt(federatedReportPromptDTO);

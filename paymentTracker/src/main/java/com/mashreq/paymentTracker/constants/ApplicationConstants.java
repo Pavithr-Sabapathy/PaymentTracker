@@ -51,4 +51,8 @@ public class ApplicationConstants {
 	public static final String LINK_MAPPING_REPORT_DELETION_MSG = "Linked Mapping Deleted Successfully";
 	public static final String LINK_MAPPING_DOES_NOT_EXISTS = "Link Mapping not exist with this id";
 
+	public static final String QUESTION_MARK = "?";
+	public static final String TILDE = "~";
+	public static final String COMMA = ",";
+	public static final String SINGLE_QUOTE = "'";
 }

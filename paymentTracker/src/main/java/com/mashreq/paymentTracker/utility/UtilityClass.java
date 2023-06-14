@@ -276,4 +276,27 @@ public class UtilityClass {
 		}
 		return false;
 	}
+	
+	 public static String populateSeriesOfQuestionSymbol (String promptKey, List<String> promptValueList) {
+	      if (!promptValueList.isEmpty()) {
+	         return promptValueList.stream().map(x -> ApplicationConstants.QUESTION_MARK).collect(Collectors.joining(ApplicationConstants.COMMA));
+	      } else {
+	         return null;
+	      }
+	   }
+	 
+	 public static String getCommaSeperatedStringRepresentation(List<String> valueList) {
+	        StringBuilder result = new StringBuilder();
+	        if (!valueList.isEmpty()) {
+	            int counter = 1;
+	            for (String value : valueList) {
+	                result.append(ApplicationConstants.SINGLE_QUOTE).append(value).append(ApplicationConstants.SINGLE_QUOTE);
+	                if (counter < valueList.size()) {
+	                    result.append(ApplicationConstants.COMMA);
+	                    counter++;
+	                }
+	            }
+	        }
+	        return result.toString();
+	    }
 }
