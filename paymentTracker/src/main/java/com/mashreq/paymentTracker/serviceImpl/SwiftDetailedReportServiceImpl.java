@@ -601,8 +601,8 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	private List<FederatedReportOutput> processComponentDetail(ComponentDetails componentDetails,
 			List<FederatedReportPromptDTO> promptsList) {
 		Long reportComponentId = componentDetails.getComponents().getId();
-		List<ComponentsCountry> componentsCountriesList = processComponentCountry(reportComponentId); 
-		DataSourceConfig dataSource = componentsCountriesList.get(0).getDataSourceConfig();
+		ComponentsCountry componentsCountry = processComponentCountry(reportComponentId); 
+		DataSourceConfig dataSource = componentsCountry.getDataSourceConfig(); 
 		String queryString = componentDetails.getQuery();
 		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
 		for (FederatedReportPromptDTO prompts : promptsList) {
@@ -614,7 +614,6 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		}
 
 		try {
-			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
 			Connection connection;
 			connection = SourceConnectionUtil.getConnection(dataSource.getDataSourceName()); 
 //			connection = DriverManager.getConnection(MashreqFederatedReportConstants.SWIFT_DATABASE_URL,
@@ -641,8 +640,6 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			}
 			connection.close();
 			return federatedReportOutputList;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (DataAccessException e) {
@@ -651,25 +648,26 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		return federatedReportOutputList;
 	}
 
-	private List<ComponentsCountry> processComponentCountry(Long reportComponentId) {
+	private ComponentsCountry processComponentCountry(Long reportComponentId) {
 		if (null != reportComponentId) {
-			Optional<List<ComponentsCountry>> componentsCountryOptional = componentsCountryRepository
-					.findAllBycomponentsId(reportComponentId);
+			Optional<ComponentsCountry> componentsCountryOptional = componentsCountryRepository
+					.findBycomponentsId(reportComponentId);
 			if (componentsCountryOptional.isEmpty()) {
 				throw new ResourceNotFoundException(
 						ApplicationConstants.COMPONENT_COUNTRY_DOES_NOT_EXISTS + reportComponentId);
 			} else {
-				List<ComponentsCountry> componentsCountryList = componentsCountryOptional.get();
+				ComponentsCountry componentsCountry = componentsCountryOptional.get();
 
-				if (!componentsCountryList.isEmpty()) {
-					List<ComponentsCountry> filterdcomponentsCountryList = new ArrayList<ComponentsCountry>();
-					componentsCountryList.stream().forEach(componentsCountry -> {
-						if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
-								.equalsIgnoreCase(MashreqFederatedReportConstants.DS_SWIFT)) {
-							filterdcomponentsCountryList.add(componentsCountry);
-						}
-					});
-					return filterdcomponentsCountryList;
+				// Check if the corresponding DataSoure is Active or not
+				if (CheckType.NO.getValue().equalsIgnoreCase(componentsCountry.getDataSourceConfig().getActive())) {
+					log.error(componentsCountry.getDataSourceConfig().getDataSourceName()
+							+ " : Source System Connection is not Activie");
+					return null;
+				}
+				if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
+						.equalsIgnoreCase(MashreqFederatedReportConstants.DS_SWIFT)) {
+
+					return componentsCountry;
 				}
 			}
 		}
