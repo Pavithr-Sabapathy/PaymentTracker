@@ -209,8 +209,8 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 			List<FederatedReportPromptDTO> promptDTO) {
 		
 		Long reportComponentId = componentDetails.getComponents().getId();
-		List<ComponentsCountry> componentsCountrieList = processComponentCountry(reportComponentId); 
-		DataSourceConfig dataSource = componentsCountrieList.get(0).getDataSourceConfig();
+		ComponentsCountry componentsCountry = processComponentCountry(reportComponentId); 
+		DataSourceConfig dataSource = componentsCountry.getDataSourceConfig();
 		List<FlexReportExecuteResponseData> flexReportDefaultOutputList = new ArrayList<FlexReportExecuteResponseData>();
 		String queryString = componentDetails.getQuery();
 		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
@@ -223,7 +223,6 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 		}
 
 		try {
-			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
 			Connection connection;
 			connection = SourceConnectionUtil.getConnection(dataSource.getDataSourceName()); 
 //			connection = DriverManager.getConnection(MashreqFederatedReportConstants.FLEX_DATABASE_URL,
@@ -246,8 +245,6 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 				}
 			}
 			connection.close();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}catch (DataAccessException e) {
@@ -256,30 +253,31 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 		return flexReportDefaultOutputList;
 	}
 
-	private List<ComponentsCountry> processComponentCountry(Long reportComponentId) {
+	private ComponentsCountry processComponentCountry(Long reportComponentId) {
 		if (null != reportComponentId) {
-			Optional<List<ComponentsCountry>> componentsCountryOptional = componentsCountryRepository
-					.findAllBycomponentsId(reportComponentId);
+			Optional<ComponentsCountry> componentsCountryOptional = componentsCountryRepository
+					.findBycomponentsId(reportComponentId);
 			if (componentsCountryOptional.isEmpty()) {
 				throw new ResourceNotFoundException(
 						ApplicationConstants.COMPONENT_COUNTRY_DOES_NOT_EXISTS + reportComponentId);
 			} else {
-				List<ComponentsCountry> componentsCountryList = componentsCountryOptional.get();
+				ComponentsCountry componentsCountry = componentsCountryOptional.get();
 
-				if (!componentsCountryList.isEmpty()) {
-					List<ComponentsCountry> filterdcomponentsCountryList = new ArrayList<ComponentsCountry>();
-					componentsCountryList.stream().forEach(componentsCountry -> {
-						if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
-								.equalsIgnoreCase(MashreqFederatedReportConstants.DS_FLEX)) {
-							filterdcomponentsCountryList.add(componentsCountry);
-						}
-					});
-					return filterdcomponentsCountryList;
+				// Check if the corresponding DataSoure is Active or not
+				if (CheckType.NO.getValue().equalsIgnoreCase(componentsCountry.getDataSourceConfig().getActive())) {
+					log.error(componentsCountry.getDataSourceConfig().getDataSourceName()
+							+ " : Source System Connection is not Activie");
+					return null;
+				}
+				if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
+						.equalsIgnoreCase(MashreqFederatedReportConstants.DS_FLEX)) {
+
+					return componentsCountry;
 				}
 			}
 		}
 		return null;
-	}	
+	}
 
 	private FlexAccountingDetailedFederatedReportInput populateBaseInputContext(
 			Set<CannedReportPrompt> cannedReportPrompt, List<PromptsProcessingRequest> uiPromptsRequestList) {
