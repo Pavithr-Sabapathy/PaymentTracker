@@ -1,16 +1,13 @@
 package com.mashreq.paymentTracker.service;
 
-import com.mashreq.paymentTracker.dto.APIResponse;
+import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
-import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
+import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 
 
 public interface SwiftDetailedReportService {
 	
-	ReportExecuteResponseData processSwiftDetailReport(String reportName,
-			ReportExecutionRequest reportProcessingRequest);
-
-	APIResponse populateSuccessAPIRespone(ReportExecuteResponseData flexList);
-
+	ReportExecuteResponseData processSwiftDetailReport(ReportInstanceDTO reportInstanceDTO,
+			ReportContext reportContext);
 
 }

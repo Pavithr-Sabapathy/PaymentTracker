@@ -9,14 +9,15 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +27,20 @@ import org.springframework.stereotype.Component;
 import com.mashreq.paymentTracker.configuration.TrackerConfiguration;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
-import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
-import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
+import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.FederatedReportOutput;
+import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportQueryInfoDTO;
-import com.mashreq.paymentTracker.dto.SourceQueryExecutionContext;
 import com.mashreq.paymentTracker.exception.ReportException;
+import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
+import com.mashreq.paymentTracker.model.ComponentsCountry;
+import com.mashreq.paymentTracker.model.DataSourceConfig;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportQueryInfoService;
 import com.mashreq.paymentTracker.utility.CheckType;
+import com.mashreq.paymentTracker.utility.SourceConnectionUtil;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Component
@@ -50,49 +56,50 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 
 	@Autowired
 	ComponentsCountryRepository componentsCountryRepository;
-
+	
+	private static final Logger log = LoggerFactory.getLogger(QueryExecutorServiceImpl.class);
+ 	private static final String FILENAME = "QueryExecutorServiceImpl";
+ 
+ 	
 	@Override
-	public final List<FlexReportExecuteResponseData> executeQuery(
-			SourceQueryExecutionContext sourceQueryExecutionContext) throws ReportException {
-		List<FlexReportExecuteResponseData> flexReportDefaultOutputList = new ArrayList<FlexReportExecuteResponseData>();
-		ReportQueryInfoDTO reportQueryInfo = null;
-		String failureCause = null;
-		Date completionTime = null;
-		CheckType dataFound = CheckType.NO;
+	public List<FederatedReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
+			FederatedReportComponentDetailContext context) {
+		List<FederatedReportOutput> outputList = new ArrayList<FederatedReportOutput>();
 		Long queryExecutionTime = 0L;
+		ReportQueryInfoDTO reportQueryInfo = null;
+		Date startTime = null;
+		Date completionTime = null;
+		String failureCause = null;
+		CheckType dataFound = CheckType.NO;
 		Connection connection = null;
 		Statement stmt = null;
 		ResultSet rs = null;
 		PreparedStatement prepStat = null;
 		String promptValuemap = "Prompt Values";
-		String sql = sourceQueryExecutionContext.getQueryString();
-		String queryString = replacePrompts(sql, sourceQueryExecutionContext);
-
-		sourceQueryExecutionContext.setQueryString(queryString);
+		String queryKey = componentDetail.getQueryKey();
+		// Long dataSourceId = componentDetail.getReportComponent().getDataSourceId();
+		String queryString = replacePrompts(context.getQueryString(), context);
 		try {
-
-			Date startTime = new Date();
+			ComponentsCountry componentsCountry = processComponentCountry(componentDetail.getReportComponentId()); 
+			DataSourceConfig dataSource = componentsCountry.getDataSourceConfig();
+			startTime = new Date();
 			reportQueryInfo = new ReportQueryInfoDTO();
-			reportQueryInfo.setExecutionId(sourceQueryExecutionContext.getExecutionId());
+			reportQueryInfo.setExecutionId(context.getExecutionId());
 			reportQueryInfo.setDataSourceName("Flex");
-			reportQueryInfo.setQueryKey(sourceQueryExecutionContext.getQueryKey());
-			reportQueryInfo.setExecutedQuery(sourceQueryExecutionContext.getQueryString());
+			reportQueryInfo.setQueryKey(queryKey);
+			reportQueryInfo.setExecutedQuery(queryString);
 			reportQueryInfo.setStartTime(startTime);
 
 			reportQueryInfoService.insertReportQueryInfo(reportQueryInfo);
-
-			// Fetch Result Set
-			/*
-			 * DataSourceDTO dataSource = sourceQueryExecutionContext.getDataSource(); 
-			 * con = SourceConnectionUtil.getConnection(dataSource.getName());
-			 */
+			
 			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
+			//connection = SourceConnectionUtil.getConnection(dataSource.getDataSourceName());
 			connection = DriverManager.getConnection(MashreqFederatedReportConstants.FLEX_DATABASE_URL,
 					MashreqFederatedReportConstants.DATABASE_USERNAME,
 					MashreqFederatedReportConstants.DATABASE_PASSWORD);
 
 			long conStartTime = System.currentTimeMillis();
-			prepStat = connection.prepareStatement(sourceQueryExecutionContext.getQueryString());
+			prepStat = connection.prepareStatement(queryString);
 			rs = prepStat.executeQuery();
 			completionTime = new Date();
 			queryExecutionTime = System.currentTimeMillis() - conStartTime;
@@ -100,20 +107,19 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 				ResultSetMetaData metaData = rs.getMetaData();
 				int columnCount = metaData.getColumnCount();
 				while (rs.next()) {
-					FlexReportExecuteResponseData flexReportOutput = new FlexReportExecuteResponseData();
+					FederatedReportOutput componentData = new FederatedReportOutput();
 					List<Object> rowData = new ArrayList<Object>();
-					for (int index = 1; index < columnCount; index++) {
+					for (int index = 1; index <= columnCount; index++) {
 						Object colValue = rs.getObject(index);
 						rowData.add(colValue);
 					}
-					flexReportOutput.setRowData(rowData);
-					flexReportDefaultOutputList.add(flexReportOutput);
+					componentData.setRowData(rowData);
+					outputList.add(componentData);
 				}
 			}
-
 		} catch (SQLException sqlException) {
 			failureCause = constructErrorCause(sqlException);
-			logger.error("error executing query: " + sql);
+			logger.error("error executing query: " + queryString);
 			logger.error("query execution error :", sqlException);
 			sqlException.printStackTrace();
 		} catch (Exception e) {
@@ -121,8 +127,8 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 			logger.error("query execution error :", e);
 		} finally {
 			if (null != reportQueryInfo) {
-				reportQueryInfo.setExecutedQuery(sourceQueryExecutionContext.getQueryString()
-						+ promptValuemap.concat(sourceQueryExecutionContext.getPromptKeyValueMap().toString()));
+				reportQueryInfo.setExecutedQuery(
+						context.getQueryString() + promptValuemap.concat(context.getPromptKeyValueMap().toString()));
 				reportQueryInfo.setQueryExecutionTime(queryExecutionTime);
 				reportQueryInfo.setFailureCause(failureCause);
 				reportQueryInfo.setEndTime(completionTime);
@@ -135,52 +141,24 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 				}
 			}
 		}
-		return flexReportDefaultOutputList;
+		return outputList;
 	}
 
-	@SuppressWarnings("unused")
-	private String populatePreparedStatementWithPromptValues1(PreparedStatement ps,
-			LinkedHashMap<String, List<String>> promptKeyValueMap) throws ReportException {
-		StringBuilder promptValueMapString = new StringBuilder();
-		int counter = 1;
-		for (Entry<String, List<String>> entry : promptKeyValueMap.entrySet()) {
-			for (String promptValue : entry.getValue()) {
-				try {
-					ps.setString(counter, promptValue);
-					promptValueMapString.append(" - " + promptValue);
-					System.out.println(counter + " - " + promptValue);
-				} catch (SQLException sqlException) {
-					logger.error("Error seting up the Prepared Statment values :", sqlException);
-				}
-				counter++;
-			}
-		}
-		return promptValueMapString.toString();
-	}
-
-	private String constructErrorCause(Exception exception) {
-		StringWriter writer = new StringWriter();
-		PrintWriter printWriter = new PrintWriter(writer);
-		exception.printStackTrace(printWriter);
-		return "Trace: " + writer.toString();
-	}
-
-	private String replacePrompts(String sql, SourceQueryExecutionContext sourceQueryExecutionContext)
-			throws ReportException {
-
-		String updatedSQL = sql;
+	private String replacePrompts(String queryString, FederatedReportComponentDetailContext context) {
+		String updatedSQL = queryString;
 
 		LinkedHashMap<String, List<String>> promptKeyValueMap = new LinkedHashMap<>();
 		LinkedHashMap<String, List<String>> matchedPromptKeyValueMap = new LinkedHashMap<>();
 
 		LinkedHashSet<String> promptKeys = populatePromptKey(updatedSQL);
+		if (!context.getPrompts().isEmpty()) {
+			List<FederatedReportPromptDTO> instancePromts = context.getPrompts();
+			for (FederatedReportPromptDTO prompts : instancePromts) {
+				if (null != prompts) {
 
-		if (!sourceQueryExecutionContext.getInstancePrompts().isEmpty()) {
-			List<ReportPromptsInstanceDTO> instancePromts = sourceQueryExecutionContext.getInstancePrompts();
-			for (ReportPromptsInstanceDTO prompts : instancePromts) {
-				if (null != prompts && null != prompts.getPrompt()) {
-					String promptKey = prompts.getPrompt().getKey();
-					List<String> promptValueList = prompts.getPrompt().getValue();
+					String promptKey = prompts.getPromptKey();
+					String promptValue = prompts.getPromptValue();
+					List<String> promptValueList = Stream.of(promptValue.split(",", -1)).collect(Collectors.toList());
 					if (null != promptKey && updatedSQL.indexOf(promptKey) > 0) {
 						String noOfQuestionMarks = UtilityClass.populateSeriesOfQuestionSymbol(promptKey,
 								promptValueList);
@@ -189,38 +167,37 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 								ApplicationConstants.SINGLE_QUOTE + ApplicationConstants.TILDE + promptKey
 										+ ApplicationConstants.TILDE + ApplicationConstants.SINGLE_QUOTE,
 								noOfQuestionMarks);
-						sql = sql.replaceAll(
-								ApplicationConstants.SINGLE_QUOTE + ApplicationConstants.TILDE + promptKey
-										+ ApplicationConstants.TILDE + ApplicationConstants.SINGLE_QUOTE,
+						queryString = queryString.replaceAll(
+								ApplicationConstants.TILDE + promptKey + ApplicationConstants.TILDE,
 								UtilityClass.getCommaSeperatedStringRepresentation(promptValueList));
 					}
 				}
 			}
-			;
 		}
 		for (String promptKey : promptKeys) {
 			matchedPromptKeyValueMap.put(promptKey, promptKeyValueMap.get(promptKey));
 		}
-
-		logger.info("Final SQL String with values :" + sql);
-
-		sourceQueryExecutionContext.setQueryString(updatedSQL);
-		sourceQueryExecutionContext.setPromptKeyValueMap(matchedPromptKeyValueMap);
-
-		return sql;
-
+		logger.info("Final SQL String with values :" + queryString);
+		context.setQueryString(updatedSQL);
+		context.setPromptKeyValueMap(matchedPromptKeyValueMap);
+		return queryString;
 	}
 
-	private LinkedHashSet<String> populatePromptKey(String sql) {
-
-		// TODO need to return LisnkeHashSet
+	private LinkedHashSet<String> populatePromptKey(String updatedSQL) {
 		LinkedHashSet<String> queryPrompts = new LinkedHashSet<String>();
 		Matcher matcher = null;
-		matcher = trackerConfig.getPromptKeyConfig().getPromptKeyPattern().matcher(sql);
+		matcher = trackerConfig.getPromptKeyConfig().getPromptKeyPattern().matcher(updatedSQL);
 		while (matcher.find()) {
 			queryPrompts.add(matcher.group().replaceAll(ApplicationConstants.TILDE, "").trim());
 		}
 		return queryPrompts;
+	}
+
+	private String constructErrorCause(Exception exception) {
+		StringWriter writer = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(writer);
+		exception.printStackTrace(printWriter);
+		return "Trace: " + writer.toString();
 	}
 
 	private void closeResources(Connection connection, Statement statement, ResultSet resultSet,
@@ -273,37 +250,29 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 		}
 
 	}
+	
+	private ComponentsCountry processComponentCountry(Long reportComponentId) {
+		Optional<ComponentsCountry> componentsCountryOptional = componentsCountryRepository.findBycomponentsId(reportComponentId);
+	if (null != reportComponentId) {
+		if (componentsCountryOptional.isEmpty()) {
+			throw new ResourceNotFoundException(
+					ApplicationConstants.COMPONENT_COUNTRY_DOES_NOT_EXISTS + reportComponentId);
+		} else {
+			ComponentsCountry componentsCountry = componentsCountryOptional.get();
 
-	protected String getColumnName(ResultSetMetaData resultSetMetaData, int columnIndex) throws SQLException {
-		return resultSetMetaData.getColumnName(columnIndex);
-	}
+			// Check if the corresponding DataSoure is Active or not
+			if (CheckType.NO.getValue().equalsIgnoreCase(componentsCountry.getDataSourceConfig().getActive())) {
+				log.error(componentsCountry.getDataSourceConfig().getDataSourceName()
+						+ " : Source System Connection is not Activie");
+				return null;
+			}
+			if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
+					.equalsIgnoreCase(MashreqFederatedReportConstants.DS_SWIFT)) {
 
-	protected String getColumnLabel(ResultSetMetaData resultSetMetaData, int columnIndex) throws SQLException {
-		return resultSetMetaData.getColumnLabel(columnIndex);
-	}
-
-	public static String getStringRepresentation(Object colValue) {
-		String colString = null;
-		if (colValue != null) {
-			colString = colValue.toString().trim();
+				return componentsCountry;
+			}
 		}
-		return colString;
 	}
-
-	public static Timestamp getTimeStampRepresentation(Object colValue) {
-		Timestamp colDate = null;
-		if (colValue != null) {
-			colDate = (Timestamp) colValue;
-		}
-		return colDate;
-	}
-
-	public static Integer getNumberRepresentation(Object colValue) {
-		Integer colString = null;
-		if (colValue != null) {
-			colString = Integer.parseInt(colValue.toString().trim());
-		}
-		return colString;
-	}
-
+	return null;
+}
 }

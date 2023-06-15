@@ -8,14 +8,15 @@ public class FlexAccountingDetailedFederatedReportInput implements Serializable 
 	* 
 	*/
 	private static final long serialVersionUID = 7927096187166893563L;
-	private CannedReportInstanceComponent component;
+	private ReportComponentDTO component;
 	private FederatedReportPromptDTO referenceNumPrompt;
 	private FederatedReportPromptDTO accountingSourcePrompt;
 	private FederatedReportPromptDTO debitAccountPrompt;
-	public CannedReportInstanceComponent getComponent() {
+	
+	public ReportComponentDTO getComponent() {
 		return component;
 	}
-	public void setComponent(CannedReportInstanceComponent component) {
+	public void setComponent(ReportComponentDTO component) {
 		this.component = component;
 	}
 	public FederatedReportPromptDTO getReferenceNumPrompt() {

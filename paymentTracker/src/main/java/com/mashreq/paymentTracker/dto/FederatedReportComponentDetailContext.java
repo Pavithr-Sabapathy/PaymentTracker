@@ -6,8 +6,7 @@ import java.util.List;
 
 import com.mashreq.paymentTracker.type.CountryType;
 
-public class SourceQueryExecutionContext implements Serializable{
-
+public class FederatedReportComponentDetailContext implements Serializable {
 
 	private static final long serialVersionUID = -6562215658927484795L;
 	private Long queryId;
@@ -16,7 +15,7 @@ public class SourceQueryExecutionContext implements Serializable{
 	private DataSourceDTO dataSource;
 	private String queryString;
 	private CountryType country = CountryType.UAE;
-	private List<ReportPromptsInstanceDTO> instancePrompts;
+	private List<FederatedReportPromptDTO> prompts;
 	private LinkedHashMap<String, List<String>> promptKeyValueMap;
 
 	public Long getQueryId() {
@@ -67,12 +66,12 @@ public class SourceQueryExecutionContext implements Serializable{
 		this.country = country;
 	}
 
-	public List<ReportPromptsInstanceDTO> getInstancePrompts() {
-		return instancePrompts;
+	public List<FederatedReportPromptDTO> getPrompts() {
+		return prompts;
 	}
 
-	public void setInstancePrompts(List<ReportPromptsInstanceDTO> instancePrompts) {
-		this.instancePrompts = instancePrompts;
+	public void setPrompts(List<FederatedReportPromptDTO> prompts) {
+		this.prompts = prompts;
 	}
 
 	public LinkedHashMap<String, List<String>> getPromptKeyValueMap() {
@@ -85,9 +84,10 @@ public class SourceQueryExecutionContext implements Serializable{
 
 	@Override
 	public String toString() {
-		return "SourceQueryExecutionContext [queryId=" + queryId + ", queryKey=" + queryKey + ", executionId="
+		return "FederatedReportComponentDetailContext [queryId=" + queryId + ", queryKey=" + queryKey + ", executionId="
 				+ executionId + ", dataSource=" + dataSource + ", queryString=" + queryString + ", country=" + country
-				+ ", instancePrompts=" + instancePrompts + ", promptKeyValueMap=" + promptKeyValueMap + "]";
+				+ ", prompts=" + prompts + ", promptKeyValueMap=" + promptKeyValueMap + "]";
 	}
 
+	
 }

@@ -7,7 +7,7 @@ public class SWIFTDetailedFederatedReportDTO implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 5247030860616631609L;
-	private CannedReportInstanceComponent component;
+	private ReportComponentDTO component;
 	private FederatedReportPromptDTO aidPrompt;
 	private FederatedReportPromptDTO umidlPrompt;
 	private FederatedReportPromptDTO umidhPrompt;
@@ -16,11 +16,11 @@ public class SWIFTDetailedFederatedReportDTO implements Serializable {
 	private FederatedReportPromptDTO messageTypePrompt;
 	private FederatedReportPromptDTO detailedType;
 
-	public CannedReportInstanceComponent getComponent() {
+	public ReportComponentDTO getComponent() {
 		return component;
 	}
 
-	public void setComponent(CannedReportInstanceComponent component) {
+	public void setComponent(ReportComponentDTO component) {
 		this.component = component;
 	}
 
@@ -78,6 +78,14 @@ public class SWIFTDetailedFederatedReportDTO implements Serializable {
 
 	public void setDetailedType(FederatedReportPromptDTO detailedType) {
 		this.detailedType = detailedType;
+	}
+
+	@Override
+	public String toString() {
+		return "SWIFTDetailedFederatedReportDTO [component=" + component + ", aidPrompt=" + aidPrompt + ", umidlPrompt="
+				+ umidlPrompt + ", umidhPrompt=" + umidhPrompt + ", referenceNumPrompt=" + referenceNumPrompt
+				+ ", messageSubFormatPrompt=" + messageSubFormatPrompt + ", messageTypePrompt=" + messageTypePrompt
+				+ ", detailedType=" + detailedType + "]";
 	}
 
 }

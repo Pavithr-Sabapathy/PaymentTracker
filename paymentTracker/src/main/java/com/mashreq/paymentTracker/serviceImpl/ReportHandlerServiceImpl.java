@@ -3,6 +3,8 @@ package com.mashreq.paymentTracker.serviceImpl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,13 +101,14 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			reportContext.setExecutionId(reportExecution.getId());
 			// TODO-Move to constants
 			if (reportName.equals("flexPostingDetails")) {
-				reportExecuteResponseData = flexFederatedReportService.processFlexReport(reportName, reportContext,
-						reportExecutionRequest);
+				reportExecuteResponseData = flexFederatedReportService.processFlexReport(reportInstanceDTO,
+						reportContext);
 
 			} else if (reportName.equals("swiftDetails")) {
-				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportName,
-						reportExecutionRequest);
+				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportInstanceDTO,
+						reportContext);
 			}
+
 		}
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -123,7 +126,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 	private void updateExecutionResponse(ReportExecuteResponseData reportExecuteResponseData,
 			ReportContext reportContext) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	private ReportData populateReportData(ReportDataDTO reportDataDTO) {
@@ -326,44 +329,38 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 
 	private List<ReportPromptsInstanceDTO> populateInstancePrompts(ReportExecutionRequest reportExecutionRequest,
 			Report report) throws ReportException {
+		List<ReportPromptsInstanceDTO> reportPromptsInstanceDTOList = new ArrayList<ReportPromptsInstanceDTO>();
+		List<PromptsProcessingRequest> uiPrompts = reportExecutionRequest.getPrompts();
 		List<Prompts> reportPromptsList = report.getPromptList();
-		List<PromptInstance> PromptInstanceList = populatePromptInstanceByPrompts(reportPromptsList);
-
-		List<ReportPromptsInstanceDTO> instancePromptList = new ArrayList<ReportPromptsInstanceDTO>();
-
-		if (null != PromptInstanceList) {
-			List<PromptsProcessingRequest> promptsExecutionRequest = reportExecutionRequest.getPrompts();
-			promptsExecutionRequest.stream()
-					.forEach(promptsRequest -> PromptInstanceList.stream().forEach(promptsInstanceDTO -> {
-						if (promptsInstanceDTO.getKey().equalsIgnoreCase(promptsRequest.getKey())) {
-							PromptInstance promptsInstance = new PromptInstance();
-							ReportPromptsInstanceDTO instancePrompt = new ReportPromptsInstanceDTO();
-							promptsInstance.setId(promptsInstanceDTO.getId());
-							promptsInstance.setKey(promptsInstanceDTO.getKey());
-							promptsInstance.setName(promptsInstanceDTO.getName());
-							promptsInstance.setOrder(promptsInstanceDTO.getOrder());
-							promptsInstance.setRequired(promptsInstanceDTO.getRequired());
-							promptsInstance.setEntityId(promptsInstanceDTO.getEntityId());
-							//--TODO confirm as // potential issues could be multiple values, date values, entity values etc    
-							promptsInstance.setPromptValue(promptsRequest.getValue().get(0));
-							promptsInstance.setValue(promptsRequest.getValue());
-							instancePrompt.setPrompt(promptsInstance);
-							instancePrompt.setReportId(report.getId());
-							instancePromptList.add(instancePrompt);
-						}
-					}));
-		} else {
-			log.error("error while retrieving prompt for report : " + report.getReportName());
-			throw new ReportException(ApplicationConstants.REPORT_INSTANCE_CREATION_FAILED_MSG + report.getReportName());
+		List<PromptInstance> promptInstanceList = populatePromptInstanceByPrompts(reportPromptsList, uiPrompts);
+		if (!promptInstanceList.isEmpty()) {
+			promptInstanceList.stream().forEach(promptsInstance -> {
+				ReportPromptsInstanceDTO instancePrompt = new ReportPromptsInstanceDTO();
+				promptsInstance.setId(promptsInstance.getId());
+				promptsInstance.setKey(promptsInstance.getKey());
+				promptsInstance.setName(promptsInstance.getName());
+				promptsInstance.setOrder(promptsInstance.getOrder());
+				promptsInstance.setRequired(promptsInstance.getRequired());
+				promptsInstance.setEntityId(promptsInstance.getEntityId());
+				promptsInstance.setPromptValue(promptsInstance.getPromptValue());
+				promptsInstance.setValue(promptsInstance.getValue());
+				instancePrompt.setPrompt(promptsInstance);
+				instancePrompt.setReportId(report.getId());
+				reportPromptsInstanceDTOList.add(instancePrompt);
+			});
 		}
-		return instancePromptList;
+		return reportPromptsInstanceDTOList;
 
 	}
 
-	private List<PromptInstance> populatePromptInstanceByPrompts(List<Prompts> promptsList) {
+	private List<PromptInstance> populatePromptInstanceByPrompts(List<Prompts> promptsList,
+			List<PromptsProcessingRequest> uiPromptsList) {
 		List<PromptInstance> PromptInstanceList = new ArrayList<PromptInstance>();
 		if (promptsList != null && promptsList.size() > 0)
 			promptsList.forEach(prompt -> {
+				Optional<PromptsProcessingRequest> uipromptsOptional = uiPromptsList.stream()
+						.filter(uiPrompts -> uiPrompts.getKey().equalsIgnoreCase(prompt.getPromptKey())).findAny();
+				PromptsProcessingRequest uiPrompt = uipromptsOptional.get();
 				PromptInstance PromptInstanceObject = new PromptInstance();
 				if (null != prompt.getId())
 					PromptInstanceObject.setId(prompt.getId());
@@ -385,6 +382,8 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 					PromptInstanceObject.setEntity(entityDTO);
 					log.info("prompts values" + PromptInstanceObject.toString());
 				}
+				PromptInstanceObject.setPromptValue(uiPrompt.getPromptValue());
+				PromptInstanceObject.setValue(uiPrompt.getValue());
 				PromptInstanceList.add(PromptInstanceObject);
 			});
 		return PromptInstanceList;

@@ -4,22 +4,15 @@ import java.util.Set;
 
 import com.mashreq.paymentTracker.utility.CheckType;
 
-public class CannedReportComponent {
+public class ReportComponentDTO {
 	private Long id;
-
-	private Long cannedReportId;
-
+	private Long reportId;
 	private Long dataSourceId;
-
 	private Long appId;
-
 	private String componentKey;
-
 	private String componentName;
-
 	private CheckType active = CheckType.YES;
-
-	private Set<CannedReportComponentDetail> cannedReportComponentDetails;
+	private Set<ReportComponentDetailDTO> reportComponentDetails;
 
 	public Long getId() {
 		return id;
@@ -29,12 +22,12 @@ public class CannedReportComponent {
 		this.id = id;
 	}
 
-	public Long getCannedReportId() {
-		return cannedReportId;
+	public Long getReportId() {
+		return reportId;
 	}
 
-	public void setCannedReportId(Long cannedReportId) {
-		this.cannedReportId = cannedReportId;
+	public void setReportId(Long reportId) {
+		this.reportId = reportId;
 	}
 
 	public Long getDataSourceId() {
@@ -77,12 +70,14 @@ public class CannedReportComponent {
 		this.active = active;
 	}
 
-	public Set<CannedReportComponentDetail> getCannedReportComponentDetails() {
-		return cannedReportComponentDetails;
+	public Set<ReportComponentDetailDTO> getReportComponentDetails() {
+		return reportComponentDetails;
 	}
 
-	public void setCannedReportComponentDetails(Set<CannedReportComponentDetail> cannedReportComponentDetails) {
-		this.cannedReportComponentDetails = cannedReportComponentDetails;
+	public void setReportComponentDetails(Set<ReportComponentDetailDTO> reportComponentDetails) {
+		this.reportComponentDetails = reportComponentDetails;
 	}
+
+	
 
 }

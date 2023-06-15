@@ -2,7 +2,7 @@ package com.mashreq.paymentTracker.dto;
 
 import com.mashreq.paymentTracker.utility.CheckType;
 
-public class CannedReportInstancePrompt {
+public class ReportInstancePromptDTO {
 
 	private Long id;
 	private Long promptId;

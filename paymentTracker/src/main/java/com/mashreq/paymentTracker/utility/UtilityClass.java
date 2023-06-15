@@ -290,7 +290,7 @@ public class UtilityClass {
 	        if (!valueList.isEmpty()) {
 	            int counter = 1;
 	            for (String value : valueList) {
-	                result.append(ApplicationConstants.SINGLE_QUOTE).append(value).append(ApplicationConstants.SINGLE_QUOTE);
+	                result.append(value);
 	                if (counter < valueList.size()) {
 	                    result.append(ApplicationConstants.COMMA);
 	                    counter++;

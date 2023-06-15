@@ -1,6 +1,5 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,30 +21,35 @@ import org.springframework.stereotype.Component;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.CannedReport;
-import com.mashreq.paymentTracker.dto.CannedReportComponent;
-import com.mashreq.paymentTracker.dto.CannedReportComponentDetail;
-import com.mashreq.paymentTracker.dto.CannedReportInstanceComponent;
-import com.mashreq.paymentTracker.dto.CannedReportMetric;
 import com.mashreq.paymentTracker.dto.CannedReportPrompt;
+import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.FlexAccountingDetailedFederatedReportInput;
 import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
+import com.mashreq.paymentTracker.dto.ReportComponentDTO;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
-import com.mashreq.paymentTracker.dto.SourceQueryExecutionContext;
+import com.mashreq.paymentTracker.dto.ReportInstanceComponentDTO;
+import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
+import com.mashreq.paymentTracker.dto.ReportInstancePromptDTO;
+import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Metrics;
-import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
+import com.mashreq.paymentTracker.model.ReportInstance;
+import com.mashreq.paymentTracker.model.ReportInstancePrompt;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
+import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.FlexFederatedReportService;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
@@ -55,9 +59,6 @@ import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Component
 public class FlexFederatedReportServiceImpl implements FlexFederatedReportService {
-
-	@Autowired
-	private ModelMapper modelMapper;
 
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
@@ -74,60 +75,58 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 	@Autowired
 	QueryExecutorService queryExecutorService;
 
+	@Autowired
+	CannedReportService cannedReportService;
+
 	private static final Logger log = LoggerFactory.getLogger(FlexFederatedReportServiceImpl.class);
 	private static final String FILENAME = "FlexFederatedReportServiceImpl";
 
-	public ReportExecuteResponseData processFlexReport(String reportName, ReportContext reportContext,
-			ReportExecutionRequest reportExecutionRequest) {
-		FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput = new FlexAccountingDetailedFederatedReportInput();
-		List<FlexReportExecuteResponseData> flexReportExecuteResponseList = new ArrayList<FlexReportExecuteResponseData>();
+	public ReportExecuteResponseData processFlexReport(ReportInstanceDTO reportInstanceDTO,
+			ReportContext reportContext) {
 		ReportExecuteResponseData flexReportExecuteResponseData = new ReportExecuteResponseData();
-		/**fetch the report details based on report name**/
-		Report report = reportConfigurationService.fetchReportByName(reportName);
-		CannedReport cannedReport = populateCannedReportInstance(report);
-		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(cannedReport.getId());
+		List<FederatedReportOutput> flexReportExecuteResponseList = new ArrayList<FederatedReportOutput>();
+		Report report = new Report();
+		if (null != reportInstanceDTO) {
+			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
+		}
+		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(report.getId());
 		if (componentsOptional.isEmpty()) {
-			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + cannedReport.getId());
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + report.getId());
 		} else {
 			List<Components> componentList = componentsOptional.get();
-			Set<CannedReportComponent> cannedReportComponentSet = populateCannedReportComponent(componentList);
-			cannedReport.setCannedReportComponents(cannedReportComponentSet);
-			if (null != cannedReport.getCannedReportComponents() && !cannedReport.getCannedReportComponents().isEmpty()) {
-				Set<CannedReportComponent> cannedReportComponent = cannedReport.getCannedReportComponents();
-				for (CannedReportComponent componentReportComponent : cannedReportComponent) {
-					if (componentReportComponent.getActive().equals(CheckType.YES)) {
-						CannedReportInstanceComponent componentReportInstance = modelMapper.map(componentReportComponent,
-								CannedReportInstanceComponent.class);
-						FlexAccountingDetailedFederatedReportInput FlexAccountingDetailedFederatedReportInput = new FlexAccountingDetailedFederatedReportInput();
-						FlexAccountingDetailedFederatedReportInput.setComponent(componentReportInstance);
+			if (!componentList.isEmpty()) {
+				for (Components component : componentList) {
+					ReportComponentDTO reportComponent = populateReportComponent(component);
+					if (null != reportComponent.getActive() && reportComponent.getActive().equals(CheckType.YES)) {
+						FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput = new FlexAccountingDetailedFederatedReportInput();
+						flexAccountingDetailedFederatedReportInput.setComponent(reportComponent);
 						flexAccountingDetailedFederatedReportInput = populateBaseInputContext(
-								cannedReport.getCannedReportPrompts(), reportExecutionRequest.getPrompts());
-						List<FlexReportExecuteResponseData> flexReportExecuteResponse = executeReport(
-								flexAccountingDetailedFederatedReportInput, componentReportComponent, reportContext);
+								reportInstanceDTO.getPromptsList());
+						List<FederatedReportOutput> flexReportExecuteResponse = executeReport(
+								flexAccountingDetailedFederatedReportInput, reportComponent, reportContext);
 						if (!flexReportExecuteResponse.isEmpty()) {
 							flexReportExecuteResponseList.addAll(flexReportExecuteResponse);
 						}
 					}
 				}
 				List<Map<String, Object>> rowDataMapList = populateRowData(flexReportExecuteResponseList, report);
-				List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = populateColumnDef(
-						flexReportExecuteResponseList, report);
+				List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = populateColumnDef(report);
 				flexReportExecuteResponseData.setColumnDefs(reportExecuteResponseCloumnDefList);
 				flexReportExecuteResponseData.setData(rowDataMapList);
 			}
-
 		}
+
 		return flexReportExecuteResponseData;
 	}
 
-	private List<Map<String, Object>> populateRowData(List<FlexReportExecuteResponseData> flexReportList,
-			Report reportObject) {
+	private List<Map<String, Object>> populateRowData(List<FederatedReportOutput> flexReportExecuteResponseList,
+			Report report) {
 		List<Map<String, Object>> rowDataList = new ArrayList<Map<String, Object>>();
-		List<Metrics> reportMetricsList = reportObject.getMetricsList();
+		List<Metrics> reportMetricsList = report.getMetricsList();
 		List<String> metricsDisplayNameList = reportMetricsList.stream().map(Metrics::getDisplayName)
 				.collect(Collectors.toList());
 		Map<String, Object> rowMap = new HashMap<String, Object>();
-		flexReportList.stream().forEach(flexReport -> {
+		flexReportExecuteResponseList.stream().forEach(flexReport -> {
 			List<Object> dataList = flexReport.getRowData();
 
 			Iterator<Object> ik = dataList.iterator();
@@ -143,8 +142,50 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 		return rowDataList;
 	}
 
-	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(
-			List<FlexReportExecuteResponseData> flexReportList, Report reportObject) {
+	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> reportPromptsList,
+			String promptKey) {
+		FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
+		 Optional<ReportPromptsInstanceDTO> promptsOptional = reportPromptsList.stream()
+				.filter(prompts -> prompts.getPrompt().getKey().equalsIgnoreCase(promptKey)).findAny();
+		 ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
+		if (null != reportInstancePrompt) {
+			List<String> promptsList = new ArrayList<String>();
+			if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
+				promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
+			}
+			if(null!=reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty());{
+				promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
+			}
+			String promptValue = promptsList.stream().collect(Collectors.joining(","));
+			federatedReportPromptDTO.setPromptKey(reportInstancePrompt.getPrompt().getKey());
+			federatedReportPromptDTO.setPromptValue(promptValue);
+		}
+
+		return federatedReportPromptDTO;
+	}
+
+	private FlexAccountingDetailedFederatedReportInput populateBaseInputContext(
+			List<ReportPromptsInstanceDTO> reportPromptsList) {
+		FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput = new FlexAccountingDetailedFederatedReportInput();
+		FederatedReportPromptDTO referenceNumPrompt = getMatchedInstancePrompt(reportPromptsList,
+				MashreqFederatedReportConstants.REFERENCENUMPROMPTS);
+		FederatedReportPromptDTO accountingSourcePrompt = getMatchedInstancePrompt(reportPromptsList,
+				MashreqFederatedReportConstants.ACCOUNTINGSOURCEPROMPTS);
+		FederatedReportPromptDTO debitAccountPrompt = getMatchedInstancePrompt(reportPromptsList,
+				MashreqFederatedReportConstants.RELATEDACCOUNTPROMPTS);
+		if (null != referenceNumPrompt) {
+			flexAccountingDetailedFederatedReportInput.setReferenceNumPrompt(referenceNumPrompt);
+		}
+		if (null != accountingSourcePrompt) {
+			flexAccountingDetailedFederatedReportInput.setAccountingSourcePrompt(accountingSourcePrompt);
+		}
+		if (null != debitAccountPrompt) {
+			flexAccountingDetailedFederatedReportInput.setDebitAccountPrompt(debitAccountPrompt);
+		}
+		return flexAccountingDetailedFederatedReportInput;
+	}
+
+	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(Report reportObject) {
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
 		try {
 			List<Metrics> metricsList = reportObject.getMetricsList();
@@ -178,15 +219,14 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 		return metricsWithLinks;
 	}
 
-	private List<FlexReportExecuteResponseData> executeReport(
-			FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput, CannedReportComponent component,
-			ReportContext reportContext) {
-		SourceQueryExecutionContext sourceQueryExecutionContext = new SourceQueryExecutionContext();
-		List<FlexReportExecuteResponseData> flexReportExecuteResponse = new ArrayList<FlexReportExecuteResponseData>();
-		CannedReportComponentDetail matchedComponentDetail = new CannedReportComponentDetail();
+	private List<FederatedReportOutput> executeReport(
+			FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput,
+			ReportComponentDTO component, ReportContext reportContext) {
+		ReportComponentDetailDTO matchedComponentDetail = new ReportComponentDetailDTO();
+		List<FederatedReportOutput> flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
 		if (null != component) {
-			Set<CannedReportComponentDetail> componentDetailsSet = component.getCannedReportComponentDetails();
-			for (CannedReportComponentDetail componentDetail : componentDetailsSet) {
+			Set<ReportComponentDetailDTO> componentDetailsSet = component.getReportComponentDetails();
+			for (ReportComponentDetailDTO componentDetail : componentDetailsSet) {
 				if (componentDetail.getQueryKey().toLowerCase().contains(flexAccountingDetailedFederatedReportInput
 						.getAccountingSourcePrompt().getPromptValue().toLowerCase())) {
 					matchedComponentDetail = componentDetail;
@@ -194,123 +234,47 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 				}
 			}
 			if (matchedComponentDetail != null) {
-				try {
-					sourceQueryExecutionContext.setInstancePrompts(reportContext.getReportInstance().getPromptsList());
-					sourceQueryExecutionContext.setQueryKey(matchedComponentDetail.getQueryKey());
-					sourceQueryExecutionContext.setQueryString(matchedComponentDetail.getQuery());
-					sourceQueryExecutionContext.setExecutionId(reportContext.getExecutionId());
-					sourceQueryExecutionContext.setQueryId(matchedComponentDetail.getId());
-					flexReportExecuteResponse = queryExecutorService.executeQuery(sourceQueryExecutionContext);
-				} catch (ReportException e) {
-					e.printStackTrace();
-				}
+
+				FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+				List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
+				context.setQueryId(matchedComponentDetail.getId());
+				context.setQueryKey(matchedComponentDetail.getQueryKey());
+				context.setQueryString(matchedComponentDetail.getQuery());
+				promptsList.add(flexAccountingDetailedFederatedReportInput.getReferenceNumPrompt());
+				promptsList.add(flexAccountingDetailedFederatedReportInput.getAccountingSourcePrompt());
+				promptsList.add(flexAccountingDetailedFederatedReportInput.getDebitAccountPrompt());
+				context.setPrompts(promptsList);
+				context.setExecutionId(reportContext.getExecutionId());
+
+				flexReportExecuteResponse = queryExecutorService.executeQuery(matchedComponentDetail,
+						context);
 
 			}
 		}
 		return flexReportExecuteResponse;
 	}
+	
+	private ReportComponentDTO populateReportComponent(Components component) {
+		ReportComponentDTO reportComponentDTO = new ReportComponentDTO();
+		reportComponentDTO.setActive(CheckType.getCheckType(component.getActive()));
+		reportComponentDTO.setComponentKey(component.getComponentKey());
+		reportComponentDTO.setComponentName(component.getComponentName());
+		reportComponentDTO.setId(component.getId());
+		reportComponentDTO.setReportComponentDetails(populateComponentDetails(component.getComponentDetailsList()));
+		return reportComponentDTO;
+	}
 
-	private FlexAccountingDetailedFederatedReportInput populateBaseInputContext(
-			Set<CannedReportPrompt> cannedReportPrompt, List<PromptsProcessingRequest> uiPromptsRequestList) {
-		FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput = new FlexAccountingDetailedFederatedReportInput();
-		List<String> promptKeyList = cannedReportPrompt.stream().map(CannedReportPrompt::getPromptKey)
-				.collect(Collectors.toList());
-		Map<String, PromptsProcessingRequest> promptsRequestMapping = uiPromptsRequestList.stream()
-				.collect(Collectors.toMap(PromptsProcessingRequest::getKey, Function.identity()));
-		promptsRequestMapping.forEach((promptKey, promptValue) -> {
-			if (UtilityClass.ignoreCaseContains(promptKeyList, promptKey)) {
-
-				FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
-				federatedReportPromptDTO.setPromptKey(promptKey);
-				//--TODO check with deena old code taking single string 
-				federatedReportPromptDTO.setPromptValue(promptValue.getValue().get(0).trim());
-				if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.REFERENCENUMPROMPTS)) {
-					flexAccountingDetailedFederatedReportInput.setReferenceNumPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.RELATEDACCOUNTPROMPTS)) {
-					flexAccountingDetailedFederatedReportInput.setDebitAccountPrompt(federatedReportPromptDTO);
-				} else if (promptKey.equalsIgnoreCase(MashreqFederatedReportConstants.ACCOUNTINGSOURCEPROMPTS)) {
-					flexAccountingDetailedFederatedReportInput.setAccountingSourcePrompt(federatedReportPromptDTO);
-				}
-			}
+	private Set<ReportComponentDetailDTO> populateComponentDetails(List<ComponentDetails> componentDetailsList) {
+		Set<ReportComponentDetailDTO> componentDetailDTO = new HashSet<ReportComponentDetailDTO>();
+		componentDetailsList.stream().forEach(componentDetails -> {
+			ReportComponentDetailDTO reportComponentDetailDTO = new ReportComponentDetailDTO();
+			reportComponentDetailDTO.setId(componentDetails.getId());
+			reportComponentDetailDTO.setQuery(componentDetails.getQuery());
+			reportComponentDetailDTO.setQueryKey(componentDetails.getQueryKey());
+			reportComponentDetailDTO.setReportComponentId(componentDetails.getComponents().getId());
+			componentDetailDTO.add(reportComponentDetailDTO);
 		});
-		return flexAccountingDetailedFederatedReportInput;
+		return componentDetailDTO;
 	}
 
-	private Set<CannedReportComponent> populateCannedReportComponent(List<Components> componentList) {
-		Set<CannedReportComponent> cannedReportComponentSet = new HashSet<CannedReportComponent>();
-		if (!componentList.isEmpty()) {
-			componentList.stream().forEach(component -> {
-				CannedReportComponent cannedReportComponent = new CannedReportComponent();
-				cannedReportComponent.setId(component.getId());
-				cannedReportComponent.setComponentKey(component.getComponentKey());
-				cannedReportComponent.setComponentName(component.getComponentName());
-				cannedReportComponent.setActive(CheckType.getCheckType(component.getActive()));
-				Set<CannedReportComponentDetail> cannedReportComponentDetailsSet = populateCannedReportComponentDetails(
-						component);
-				cannedReportComponent.setCannedReportComponentDetails(cannedReportComponentDetailsSet);
-				cannedReportComponentSet.add(cannedReportComponent);
-			});
-		}
-		return cannedReportComponentSet;
-	}
-
-	private Set<CannedReportComponentDetail> populateCannedReportComponentDetails(Components component) {
-		Set<CannedReportComponentDetail> cannedReportComponentDetailsSet = new HashSet<CannedReportComponentDetail>();
-		if (!component.getComponentDetailsList().isEmpty()) {
-			List<ComponentDetails> componentDetailsList = component.getComponentDetailsList();
-			componentDetailsList.stream().forEach(componentDetails -> {
-				CannedReportComponentDetail cannedReportComponentDetail = new CannedReportComponentDetail();
-				cannedReportComponentDetail.setId(componentDetails.getId());
-				cannedReportComponentDetail.setQuery(componentDetails.getQuery());
-				cannedReportComponentDetail.setQueryKey(componentDetails.getQueryKey());
-				cannedReportComponentDetailsSet.add(cannedReportComponentDetail);
-			});
-		}
-		return cannedReportComponentDetailsSet;
-	}
-
-	private CannedReport populateCannedReportInstance(Report report) {
-		CannedReport cannedReport = new CannedReport();
-		if (null != report) {
-			cannedReport.setId(report.getId());
-			cannedReport.setName(report.getReportName());
-			cannedReport.setDisplayName(report.getDisplayName());
-			cannedReport.setValid(CheckType.getCheckType(report.getValid()));
-			Set<CannedReportPrompt> cannedReportPromptSet = populateReportPrompts(report);
-			Set<CannedReportMetric> cannedReportMetricSet = populateReportMetric(report);
-			cannedReport.setCannedReportPrompts(cannedReportPromptSet);
-			cannedReport.setCannedReportMetrics(cannedReportMetricSet);
-		}
-		return cannedReport;
-	}
-
-	private Set<CannedReportMetric> populateReportMetric(Report report) {
-		Set<CannedReportMetric> cannedReportMetricSet = new HashSet<CannedReportMetric>();
-		List<Metrics> metricList = report.getMetricsList();
-		metricList.forEach(metric -> {
-			CannedReportMetric cannedReportMetric = new CannedReportMetric();
-			cannedReportMetric.setId(metric.getId());
-			cannedReportMetric.setLabel(metric.getDisplayName());
-			cannedReportMetric.setOrder(metric.getMetricsOrder().intValue());
-			cannedReportMetric.setDisplayable(CheckType.getCheckType(metric.getDisplay()));
-			cannedReportMetric.setMetricKey(metric.getDisplayName());
-			cannedReportMetricSet.add(cannedReportMetric);
-		});
-		return cannedReportMetricSet;
-	}
-
-	private Set<CannedReportPrompt> populateReportPrompts(Report report) {
-		Set<CannedReportPrompt> cannedReportPromptSet = new HashSet<CannedReportPrompt>();
-		List<Prompts> promptsList = report.getPromptList();
-		promptsList.forEach(prompt -> {
-			CannedReportPrompt cannedReportPrompts = new CannedReportPrompt();
-			cannedReportPrompts.setId(prompt.getId());
-			cannedReportPrompts.setOrder(prompt.getPromptOrder().intValue());
-			cannedReportPrompts.setPromptKey(prompt.getPromptKey());
-			cannedReportPrompts.setPromptKeyDisplay(prompt.getDisplayName());
-			cannedReportPrompts.setRequired(CheckType.getCheckType(prompt.getPromptRequired()));
-			cannedReportPromptSet.add(cannedReportPrompts);
-		});
-		return cannedReportPromptSet;
-	}
 }

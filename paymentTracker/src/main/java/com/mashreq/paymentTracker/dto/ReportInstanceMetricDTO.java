@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import com.mashreq.paymentTracker.utility.CheckType;
 
-public class CannedReportInstanceMetric implements Serializable{
+public class ReportInstanceMetricDTO implements Serializable{
 	/**
 	 * 
 	 */

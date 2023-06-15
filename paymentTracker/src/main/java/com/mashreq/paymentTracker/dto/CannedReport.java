@@ -20,7 +20,7 @@ public class CannedReport implements Serializable {
 	private CheckType deleted = CheckType.NO;
 	private Set<CannedReportPrompt> cannedReportPrompts;
 	private Set<CannedReportMetric> cannedReportMetrics;
-	private Set<CannedReportComponent> cannedReportComponents;
+	private Set<ReportComponentDTO> cannedReportComponents;
 
 	public Long getAppId() {
 		return appId;
@@ -94,11 +94,11 @@ public class CannedReport implements Serializable {
 		this.cannedReportMetrics = cannedReportMetrics;
 	}
 
-	public Set<CannedReportComponent> getCannedReportComponents() {
+	public Set<ReportComponentDTO> getCannedReportComponents() {
 		return cannedReportComponents;
 	}
 
-	public void setCannedReportComponents(Set<CannedReportComponent> cannedReportComponents) {
+	public void setCannedReportComponents(Set<ReportComponentDTO> cannedReportComponents) {
 		this.cannedReportComponents = cannedReportComponents;
 	}
 

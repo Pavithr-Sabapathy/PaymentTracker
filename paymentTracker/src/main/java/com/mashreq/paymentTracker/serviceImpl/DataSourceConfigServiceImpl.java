@@ -28,6 +28,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 			throws Exception {
 		DataSourceConfig dataSourceResponse = new DataSourceConfig();
 		try {
+			/**how to handle password encrypted and active column**/
 			dataSourceResponse = dataSourceConfigRepository.save(dataSourceConfigurationRequest);
 		} catch (Exception exception) {
 			throw new Exception("Exception throw at [saveDataSourceConfiguration]-->" + exception);

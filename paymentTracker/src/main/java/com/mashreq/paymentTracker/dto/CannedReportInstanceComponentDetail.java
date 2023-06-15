@@ -16,7 +16,7 @@ public class CannedReportInstanceComponentDetail implements Serializable {
 
 	private String queryKey;
 
-	private CannedReportInstanceComponent cannedReportInstanceComponent;
+	private ReportInstanceComponentDTO cannedReportInstanceComponent;
 
 	public Long getId() {
 		return id;
@@ -50,11 +50,11 @@ public class CannedReportInstanceComponentDetail implements Serializable {
 		this.queryKey = queryKey;
 	}
 
-	public CannedReportInstanceComponent getCannedReportInstanceComponent() {
+	public ReportInstanceComponentDTO getCannedReportInstanceComponent() {
 		return cannedReportInstanceComponent;
 	}
 
-	public void setCannedReportInstanceComponent(CannedReportInstanceComponent cannedReportInstanceComponent) {
+	public void setCannedReportInstanceComponent(ReportInstanceComponentDTO cannedReportInstanceComponent) {
 		this.cannedReportInstanceComponent = cannedReportInstanceComponent;
 	}
 

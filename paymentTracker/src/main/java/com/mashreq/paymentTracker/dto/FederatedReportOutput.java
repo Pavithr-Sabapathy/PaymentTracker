@@ -12,7 +12,7 @@ public class FederatedReportOutput implements Serializable {
 	private List<Object> rowData;
 	private List<String> columnLabels;
 	private List<String> transformedData;
-
+	
 	public List<Object> getRowData() {
 		return rowData;
 	}

@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.mashreq.paymentTracker.utility.CheckType;
 
-public class CannedReportInstanceComponent implements Serializable {
+public class ReportInstanceComponentDTO implements Serializable {
 	/**
 	 * 
 	 */
@@ -24,8 +24,6 @@ public class CannedReportInstanceComponent implements Serializable {
 	private String componentName;
 
 	private CheckType active = CheckType.YES;
-
-	private CannedReportInstance report;
 
 	private Set<CannedReportInstanceComponentDetail> componentDetailsList;
 
@@ -85,14 +83,6 @@ public class CannedReportInstanceComponent implements Serializable {
 		this.active = active;
 	}
 
-	public CannedReportInstance getReport() {
-		return report;
-	}
-
-	public void setReport(CannedReportInstance report) {
-		this.report = report;
-	}
-
 	public Set<CannedReportInstanceComponentDetail> getComponentDetailsList() {
 		return componentDetailsList;
 	}
@@ -103,10 +93,10 @@ public class CannedReportInstanceComponent implements Serializable {
 
 	@Override
 	public String toString() {
-		return "CannedReportInstanceComponent [id=" + id + ", cannedReportComponentId=" + cannedReportComponentId
+		return "ReportInstanceComponentDTO [id=" + id + ", cannedReportComponentId=" + cannedReportComponentId
 				+ ", dataSourceId=" + dataSourceId + ", appId=" + appId + ", componentKey=" + componentKey
-				+ ", componentName=" + componentName + ", active=" + active + ", report=" + report
-				+ ", componentDetailsList=" + componentDetailsList + "]";
+				+ ", componentName=" + componentName + ", active=" + active + ", componentDetailsList="
+				+ componentDetailsList + "]";
 	}
 
 }
