@@ -2,11 +2,14 @@ package com.mashreq.paymentTracker.dto;
 
 import java.util.List;
 
+import com.mashreq.paymentTracker.type.PromptValueType;
+
 public class FederatedReportPromptDTO {
 	private String promptKey;
 	private String promptValue;
 	private List<String> valueList;
-	
+	private PromptValueType valueType;
+
 	public String getPromptKey() {
 		return promptKey;
 	}
@@ -31,10 +34,18 @@ public class FederatedReportPromptDTO {
 		this.valueList = valueList;
 	}
 
+	public PromptValueType getValueType() {
+		return valueType;
+	}
+
+	public void setValueType(PromptValueType valueType) {
+		this.valueType = valueType;
+	}
+
 	@Override
 	public String toString() {
 		return "FederatedReportPromptDTO [promptKey=" + promptKey + ", promptValue=" + promptValue + ", valueList="
-				+ valueList + "]";
+				+ valueList + ", valueType=" + valueType + "]";
 	}
 
 }

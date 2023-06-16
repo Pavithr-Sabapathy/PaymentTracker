@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,33 +18,25 @@ import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
-import com.mashreq.paymentTracker.dto.CannedReport;
-import com.mashreq.paymentTracker.dto.CannedReportPrompt;
+import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
+import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.FlexAccountingDetailedFederatedReportInput;
-import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
-import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
-import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
-import com.mashreq.paymentTracker.dto.ReportInstanceComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportInstancePromptDTO;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
-import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.model.ReportInstance;
-import com.mashreq.paymentTracker.model.ReportInstancePrompt;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.CannedReportService;
@@ -145,15 +135,17 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> reportPromptsList,
 			String promptKey) {
 		FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
-		 Optional<ReportPromptsInstanceDTO> promptsOptional = reportPromptsList.stream()
+		Optional<ReportPromptsInstanceDTO> promptsOptional = reportPromptsList.stream()
 				.filter(prompts -> prompts.getPrompt().getKey().equalsIgnoreCase(promptKey)).findAny();
-		 ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
+		ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
 		if (null != reportInstancePrompt) {
 			List<String> promptsList = new ArrayList<String>();
 			if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
 				promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
 			}
-			if(null!=reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty());{
+			if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty())
+				;
+			{
 				promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
 			}
 			String promptValue = promptsList.stream().collect(Collectors.joining(","));
@@ -246,14 +238,13 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 				context.setPrompts(promptsList);
 				context.setExecutionId(reportContext.getExecutionId());
 
-				flexReportExecuteResponse = queryExecutorService.executeQuery(matchedComponentDetail,
-						context);
+				flexReportExecuteResponse = queryExecutorService.executeQuery(matchedComponentDetail, context);
 
 			}
 		}
 		return flexReportExecuteResponse;
 	}
-	
+
 	private ReportComponentDTO populateReportComponent(Components component) {
 		ReportComponentDTO reportComponentDTO = new ReportComponentDTO();
 		reportComponentDTO.setActive(CheckType.getCheckType(component.getActive()));
@@ -275,6 +266,99 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 			componentDetailDTO.add(reportComponentDetailDTO);
 		});
 		return componentDetailDTO;
+	}
+
+	@Override
+	public List<AdvanceSearchReportOutput> processFlexDetailReport(AdvanceSearchReportInput advanceSearchReportInput,
+			List<Components> componentList, ReportContext reportContext) {
+		List<FederatedReportOutput> flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
+		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
+		Components component = getMatchedInstanceComponent(componentList, MashreqFederatedReportConstants.ADVANCE_SEARCH_FLEX_COMPONENT_KEY);
+		if (null != component) {
+			ReportComponentDTO reportComponent = populateReportComponent(component);
+			advanceSearchReportInput.setFlexComponent(reportComponent);
+			Set<ReportComponentDetailDTO> componentDetailsSet = reportComponent.getReportComponentDetails();
+			if (!componentDetailsSet.isEmpty()) {
+				ReportComponentDetailDTO componentDetail = componentDetailsSet.iterator().next(); // take first as it
+																									// gonna be single
+																									// set
+				if (null != componentDetail) {
+					FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+					List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
+					promptsList = populatePromptsForAdvanceSearch(advanceSearchReportInput);
+					context.setQueryId(componentDetail.getId());
+					context.setQueryKey(componentDetail.getQueryKey());
+					context.setQueryString(componentDetail.getQuery());
+					context.setExecutionId(reportContext.getExecutionId());
+					context.setPrompts(promptsList);
+					flexReportExecuteResponse = queryExecutorService.executeQuery(componentDetail, context);
+					if (!flexReportExecuteResponse.isEmpty()) {
+						advanceSearchReportOutputList = populateDataForAdvanceSearch(flexReportExecuteResponse,
+								advanceSearchReportInput);
+					}
+				}
+
+			}
+		}
+		return advanceSearchReportOutputList;
+	}
+
+	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(
+			List<FederatedReportOutput> flexReportExecuteResponse, AdvanceSearchReportInput advanceSearchReportInput) {
+		List<AdvanceSearchReportOutput> reportOutputList = new ArrayList<AdvanceSearchReportOutput>();
+		if (!flexReportExecuteResponse.isEmpty()) {
+			for (FederatedReportOutput federatedReportOutput : flexReportExecuteResponse) {
+				AdvanceSearchReportOutput advanceSearchReportOutput = new AdvanceSearchReportOutput();
+				List<Object> rowData = federatedReportOutput.getRowData();
+				advanceSearchReportOutput.setTransactionReference(UtilityClass.getStringRepresentation(rowData.get(0)));
+				advanceSearchReportOutput.setBeneficiaryDetails(UtilityClass.getStringRepresentation(rowData.get(1)));
+				advanceSearchReportOutput.setValueDate(UtilityClass.getStringRepresentation(rowData.get(2)));
+				advanceSearchReportOutput.setCurrency(UtilityClass.getStringRepresentation(rowData.get(3)));
+				advanceSearchReportOutput.setAmount(UtilityClass.getStringRepresentation(rowData.get(4)));
+				advanceSearchReportOutput.setStatus(UtilityClass.getStringRepresentation(rowData.get(5)));
+				advanceSearchReportOutput.setMessageType(UtilityClass.getStringRepresentation(rowData.get(6)));
+				advanceSearchReportOutput.setInitationSource(UtilityClass.getStringRepresentation(rowData.get(7)));
+				advanceSearchReportOutput.setMessageThrough(UtilityClass.getStringRepresentation(rowData.get(8)));
+				advanceSearchReportOutput.setAccountNum(UtilityClass.getStringRepresentation(rowData.get(9)));
+				advanceSearchReportOutput.setRelatedAccount(UtilityClass.getStringRepresentation(rowData.get(10)));
+				advanceSearchReportOutput.setInstrumentCode(UtilityClass.getStringRepresentation(rowData.get(11)));
+				advanceSearchReportOutput.setExternalRefNum(UtilityClass.getStringRepresentation(rowData.get(12)));
+				advanceSearchReportOutput.setCoreReferenceNum(UtilityClass.getStringRepresentation(rowData.get(13)));
+				advanceSearchReportOutput.setTransactionDate(UtilityClass.getTimeStampRepresentation(rowData.get(14)));
+				advanceSearchReportOutput.setProcessName(UtilityClass.getStringRepresentation(rowData.get(15)));
+				advanceSearchReportOutput.setActivityName(UtilityClass.getStringRepresentation(rowData.get(16)));
+				String rejectStatus = UtilityClass.getStringRepresentation(rowData.get(17));
+				if (rejectStatus.equalsIgnoreCase(
+						MashreqFederatedReportConstants.ADVANCE_SEARCH_REPORT_TRANSACTION_REJECT_STATUS)) {
+					advanceSearchReportOutput.setStatus(rejectStatus);
+				}
+				reportOutputList.add(advanceSearchReportOutput);
+			}
+		}
+		return reportOutputList;
+	}
+
+	private List<FederatedReportPromptDTO> populatePromptsForAdvanceSearch(
+			AdvanceSearchReportInput advanceSearchReportInput) {
+		List<FederatedReportPromptDTO> prompts = new ArrayList<FederatedReportPromptDTO>();
+		prompts.add(advanceSearchReportInput.getAccountNumPrompt());
+		prompts.add(advanceSearchReportInput.getAmountBetweenPrompt());
+		prompts.add(advanceSearchReportInput.getAmountToPrompt());
+		prompts.add(advanceSearchReportInput.getCurrencyPrompt());
+		prompts.add(advanceSearchReportInput.getFromDatePrompt());
+		prompts.add(advanceSearchReportInput.getToDatePrompt());
+		prompts.add(advanceSearchReportInput.getTransactionRefNum());
+		return prompts;
+
+	}
+
+	private Components getMatchedInstanceComponent(List<Components> componentList, String componentKey) {
+		Optional<Components> componentOptional = componentList.stream()
+				.filter(component -> component.getComponentKey().equalsIgnoreCase(componentKey)
+						&& component.getActive().equalsIgnoreCase(MashreqFederatedReportConstants.YES))
+				.findFirst();
+		Components component = componentOptional.get();
+		return component;
 	}
 
 }

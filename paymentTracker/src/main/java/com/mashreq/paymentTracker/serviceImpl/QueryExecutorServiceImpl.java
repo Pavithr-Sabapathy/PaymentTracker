@@ -114,6 +114,7 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 						rowData.add(colValue);
 					}
 					componentData.setRowData(rowData);
+					componentData.setComponentDetailId(componentDetail.getReportComponent().getId());
 					outputList.add(componentData);
 				}
 			}

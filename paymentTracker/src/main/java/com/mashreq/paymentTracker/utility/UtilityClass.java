@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -218,7 +219,8 @@ public class UtilityClass {
 
 	public static boolean isGpiTrchEnabledMessage(String receiver, String sender) {
 		boolean isGpiTrchEnabledMessage = false;
-		if ((null != receiver) && (receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_TRCH_CODE))
+		if ((null != receiver)
+				&& (receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_TRCH_CODE))
 				|| ((null != sender)
 						&& (sender.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_TRCH_CODE)))) {
 			isGpiTrchEnabledMessage = true;
@@ -228,8 +230,10 @@ public class UtilityClass {
 
 	public static boolean isGpiIpalaEnabledMessage(String receiver, String sender) {
 		boolean isGpiIpalaEnabledMessage = false;
-		if (null != receiver && receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE)
-				|| ((null != sender) && sender.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE))) {
+		if (null != receiver
+				&& receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE)
+				|| ((null != sender)
+						&& sender.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE))) {
 			isGpiIpalaEnabledMessage = true;
 		}
 		return isGpiIpalaEnabledMessage;
@@ -276,27 +280,36 @@ public class UtilityClass {
 		}
 		return false;
 	}
-	
-	 public static String populateSeriesOfQuestionSymbol (String promptKey, List<String> promptValueList) {
-	      if (!promptValueList.isEmpty()) {
-	         return promptValueList.stream().map(x -> ApplicationConstants.QUESTION_MARK).collect(Collectors.joining(ApplicationConstants.COMMA));
-	      } else {
-	         return null;
-	      }
-	   }
-	 
-	 public static String getCommaSeperatedStringRepresentation(List<String> valueList) {
-	        StringBuilder result = new StringBuilder();
-	        if (!valueList.isEmpty()) {
-	            int counter = 1;
-	            for (String value : valueList) {
-	                result.append(value);
-	                if (counter < valueList.size()) {
-	                    result.append(ApplicationConstants.COMMA);
-	                    counter++;
-	                }
-	            }
-	        }
-	        return result.toString();
-	    }
+
+	public static String populateSeriesOfQuestionSymbol(String promptKey, List<String> promptValueList) {
+		if (!promptValueList.isEmpty()) {
+			return promptValueList.stream().map(x -> ApplicationConstants.QUESTION_MARK)
+					.collect(Collectors.joining(ApplicationConstants.COMMA));
+		} else {
+			return null;
+		}
+	}
+
+	public static String getCommaSeperatedStringRepresentation(List<String> valueList) {
+		StringBuilder result = new StringBuilder();
+		if (!valueList.isEmpty()) {
+			int counter = 1;
+			for (String value : valueList) {
+				result.append(value);
+				if (counter < valueList.size()) {
+					result.append(ApplicationConstants.COMMA);
+					counter++;
+				}
+			}
+		}
+		return result.toString();
+	}
+
+	public static Timestamp getTimeStampRepresentation(Object colValue) {
+		Timestamp colDate = null;
+		if (colValue != null) {
+			colDate = (Timestamp) colValue;
+		}
+		return colDate;
+	}
 }

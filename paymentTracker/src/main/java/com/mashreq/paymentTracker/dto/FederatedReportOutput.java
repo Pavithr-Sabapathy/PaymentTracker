@@ -12,6 +12,7 @@ public class FederatedReportOutput implements Serializable {
 	private List<Object> rowData;
 	private List<String> columnLabels;
 	private List<String> transformedData;
+	private Long componentDetailId;
 	
 	public List<Object> getRowData() {
 		return rowData;
@@ -35,6 +36,20 @@ public class FederatedReportOutput implements Serializable {
 
 	public void setTransformedData(List<String> transformedData) {
 		this.transformedData = transformedData;
+	}
+
+	public Long getComponentDetailId() {
+		return componentDetailId;
+	}
+
+	public void setComponentDetailId(Long componentDetailId) {
+		this.componentDetailId = componentDetailId;
+	}
+
+	@Override
+	public String toString() {
+		return "FederatedReportOutput [rowData=" + rowData + ", columnLabels=" + columnLabels + ", transformedData="
+				+ transformedData + ", componentDetailId=" + componentDetailId + "]";
 	}
 
 }

@@ -56,8 +56,28 @@ public class MashreqFederatedReportConstants {
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RCORR = "msg-rcorr";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW = "msg-stx-entry-field-view";
 
+	public static final String ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY = "~FromDate~";
+	public static final String ADVANCE_SEARCH_TO_DATE_PROMPT_KEY = "~ToDate~";
+	public static final String ADVANCE_SEARCH_ACCOUNT_NUMBER_PROMPT_KEY = "~AccountNumber~";
+	public static final String ADVANCE_SEARCH_CURRENCY_PROMPT_KEY = "~Currency~";
+	public static final String ADVANCE_SEARCH_AMOUNT_BETWEEN_PROMPT_KEY = "~AmountFrom~";
+	public static final String ADVANCE_SEARCH_AMOUNT_TO_PROMPT_KEY = "~AmountTo~";
+	public static final String ADVANCE_SEARCH_TRANSACTION_STATUS_PROMPT_KEY = "~TransactionStatus~";
+	public static final String ADVANCE_SEARCH_TRANSACTION_REF_NUM_PROMPT_KEY = "~TransactionReferenceNo~";
+	public static final String ADVANCE_SEARCH_REPORT_TRANSACTION_REJECT_STATUS = "Rejected";
+	public static final String ADVANCE_SEARCH_REPORT_TRANSACTION_CREDIT_CONFIRMED_STATUS = "Credit Confirmed";
+	public static final String ADVANCE_SEARCH_MESSAGE_THROUGH_UAEFTS = "UAEFTS";
+	public static final String ADVANCE_SEARCH_INITATION_SOURCE_FLEX = "FLEX";
+	public static final String ADVANCE_SEARCH_INITATION_SOURCE_MATRIX = "MATRIX";
+	public static final String ADVANCE_SEARCH_REPORT_TRANSACTION_STATUS_PROMPT_DEFAULT_VALUE = "All";
 	public static final String MESSAGE_INPUT_SUB_FORMAT = "INPUT";
 	public static final String MESSAGE_OUTPUT_SUB_FORMAT = "OUTPUT";
+
+	public static final String ADVANCE_SEARCH_FLEX_COMPONENT_KEY = "flex";
+	public static final String ADVANCE_SEARCH_EDMS_COMPONENT_KEY = "edms";
+	public static final String ADVANCE_SEARCH_MATRIX_COMPONENT_KEY = "matrix";
+	public static final String ADVANCE_SEARCH_UAEFTS_COMPONENT_KEY = "uaefts";
+	public static final String ADVANCE_SEARCH_UAEFTS_CCN_KEY = "uaefts-ccn";
 
 	public static final String GPI_ENABLED_IPALA_CODE = "IPLAGPIA";
 
@@ -82,7 +102,7 @@ public class MashreqFederatedReportConstants {
 
 	public static final String FIELD_DESCRIPTION = "Field Description";
 	public static final String FIELD_VALUE = "Field Value";
-	
+
 	public static final String PAYMENT_STATUS_DEFAULT = "NO STATUS";
 	public static final String PAYMENT_STATUS_COMPLETED = "Completed";
 	public static final String PAYMENT_STATUS_COMPLETED_CODE = "ACSC";
@@ -129,5 +149,6 @@ public class MashreqFederatedReportConstants {
 	public static final String DS_EDMS = "EDMS";
 	public static final String DS_FLEX = "Flex";
 	public static final String DS_SWIFT = "SWIFT";
+	public static final String YES = "Y";
 
 }
