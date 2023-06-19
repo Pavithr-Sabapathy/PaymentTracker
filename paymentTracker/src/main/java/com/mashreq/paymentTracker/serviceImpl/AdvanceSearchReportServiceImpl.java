@@ -168,7 +168,7 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 		return rowDataList;
 	}
 
-	
+ 
 	private List<FederatedReportOutput> populateDataToObjectForm(
 			List<AdvanceSearchReportOutput> advanceSearchReportOutputList, Report report) {
 		List<FederatedReportOutput> data = new ArrayList<FederatedReportOutput>();
@@ -231,48 +231,93 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 			List<Components> componentList, ReportContext reportContext) {
 		List<AdvanceSearchReportOutput> advanceSearchReportFinalOutputList = new ArrayList<AdvanceSearchReportOutput>();
 
-		Long roleId = reportContext.getRoleId();
-		// --TODO Check role implementation
-		/*
-		 * SecurityRoles role = getUserManagementService().getRoleById(roleId); String
-		 * roleName = role.getName(); boolean isMatrixCustomerRole = false; if
-		 * (roleName.equalsIgnoreCase(IMashreqFederatedReportConstants.
-		 * CUSTOMER_MATRIX_REPORTING_ROLE)) { isMatrixCustomerRole = true; }
-		 */
-		// -TODO Implement all these Parallel
-		List<AdvanceSearchReportOutput> advanceSearchFlexReportOutList = flexFederatedReportService
-				.processFlexDetailReport(advanceSearchReportInput, componentList, reportContext);
+		if (!componentList.isEmpty()) {
 
-		List<AdvanceSearchReportOutput> advanceSearchMatrixReportOutList = matrixPaymentReportService
-				.processMatrixPaymentReport(advanceSearchReportInput, componentList, reportContext);
+			Long roleId = reportContext.getRoleId();
 
-		List<AdvanceSearchReportOutput> advanceSearchEdmsReportOutList = edmsProcessService
-				.processEdmsReport(advanceSearchReportInput, componentList, reportContext);
-		advanceSearchReportFinalOutputList.addAll(advanceSearchFlexReportOutList);
-		advanceSearchReportFinalOutputList.addAll(advanceSearchMatrixReportOutList);
-		advanceSearchReportFinalOutputList.addAll(advanceSearchEdmsReportOutList);
+			// --TODO Check role implementation
 
-		Map<String, AdvanceSearchReportOutput> flexMatrixBasedUaeftsTransactionsList = new HashMap<String, AdvanceSearchReportOutput>();
-		// break up the data into two parts uaefts and others so that we can use
-		// uaefts-ccn tables to find credit-confirmed status
-		if (!advanceSearchReportFinalOutputList.isEmpty()) {
-			for (AdvanceSearchReportOutput transOutput : advanceSearchReportFinalOutputList) {
-				if ((MashreqFederatedReportConstants.ADVANCE_SEARCH_INITATION_SOURCE_FLEX
-						.equalsIgnoreCase(transOutput.getInitationSource())
-						|| (MashreqFederatedReportConstants.ADVANCE_SEARCH_INITATION_SOURCE_MATRIX
-								.equalsIgnoreCase(transOutput.getInitationSource())))) {
-					if (MashreqFederatedReportConstants.ADVANCE_SEARCH_MESSAGE_THROUGH_UAEFTS
-							.equalsIgnoreCase(transOutput.getMessageThrough())) {
-						flexMatrixBasedUaeftsTransactionsList.put(transOutput.getTransactionReference(), transOutput);
+//			  SecurityRoles role = getUserManagementService().getRoleById(roleId); String
+//			  roleName = role.getName(); boolean isMatrixCustomerRole = false; if
+//			  (roleName.equalsIgnoreCase(IMashreqFederatedReportConstants.
+//			  CUSTOMER_MATRIX_REPORTING_ROLE)) { 
+//			  boolean isMatrixCustomerRole = false;}
+
+			boolean isMatrixCustomerRole = false;
+
+			// -TODO Implement all these Parallel
+			// run all three parallely
+
+			Thread thread1 = new Thread() {
+				public void run() {
+					List<AdvanceSearchReportOutput> advanceSearchFlexReportOutList = flexFederatedReportService
+							.processFlexDetailReport(advanceSearchReportInput, componentList, reportContext);
+					advanceSearchReportFinalOutputList.addAll(advanceSearchFlexReportOutList);
+
+				}
+			};
+
+			Thread thread2 = new Thread() {
+				public void run() {
+					List<AdvanceSearchReportOutput> advanceSearchMatrixReportOutList = matrixPaymentReportService
+							.processMatrixPaymentReport(advanceSearchReportInput, componentList, reportContext);
+					advanceSearchReportFinalOutputList.addAll(advanceSearchMatrixReportOutList);
+
+				}
+			};
+
+			Thread thread3 = new Thread() {
+				public void run() {
+					List<AdvanceSearchReportOutput> advanceSearchEdmsReportOutList = edmsProcessService
+							.processEdmsReport(advanceSearchReportInput, componentList, reportContext);
+					advanceSearchReportFinalOutputList.addAll(advanceSearchEdmsReportOutList);
+				}
+			};
+
+			// run all three parallely
+
+			thread1.start();
+			if (!isMatrixCustomerRole) {
+				thread2.start();
+			}
+			thread3.start();
+
+			// wait for all three
+
+			try {
+				thread1.join();
+				if (!isMatrixCustomerRole) {
+					thread2.join();
+				}
+				thread3.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			Map<String, AdvanceSearchReportOutput> flexMatrixBasedUaeftsTransactionsList = new HashMap<String, AdvanceSearchReportOutput>();
+			// break up the data into two parts uaefts and others so that we can use
+			// uaefts-ccn tables to find credit-confirmed status
+			if (!advanceSearchReportFinalOutputList.isEmpty()) {
+				for (AdvanceSearchReportOutput transOutput : advanceSearchReportFinalOutputList) {
+					if ((MashreqFederatedReportConstants.ADVANCE_SEARCH_INITATION_SOURCE_FLEX
+							.equalsIgnoreCase(transOutput.getInitationSource())
+							|| (MashreqFederatedReportConstants.ADVANCE_SEARCH_INITATION_SOURCE_MATRIX
+									.equalsIgnoreCase(transOutput.getInitationSource())))) {
+						if (MashreqFederatedReportConstants.ADVANCE_SEARCH_MESSAGE_THROUGH_UAEFTS
+								.equalsIgnoreCase(transOutput.getMessageThrough())) {
+							flexMatrixBasedUaeftsTransactionsList.put(transOutput.getTransactionReference(),
+									transOutput);
+						}
 					}
 				}
-			}
-			// process the uaefts-ccn to update the status
-			if (!flexMatrixBasedUaeftsTransactionsList.isEmpty()) {
-				advanceSearchReportInput.setFlexMatrixBasedUaeftsTransactions(flexMatrixBasedUaeftsTransactionsList);
-				List<AdvanceSearchReportOutput> advanceSearchUAEFTSReportOutList = UAEFTSReportService
-						.processUAEFTSReport(advanceSearchReportInput, componentList, reportContext);
-				advanceSearchReportFinalOutputList.addAll(advanceSearchUAEFTSReportOutList);
+				// process the uaefts-ccn to update the status
+				if (!flexMatrixBasedUaeftsTransactionsList.isEmpty()) {
+					advanceSearchReportInput
+							.setFlexMatrixBasedUaeftsTransactions(flexMatrixBasedUaeftsTransactionsList);
+					List<AdvanceSearchReportOutput> advanceSearchUAEFTSReportOutList = UAEFTSReportService
+							.processUAEFTSReport(advanceSearchReportInput, componentList, reportContext);
+					advanceSearchReportFinalOutputList.addAll(advanceSearchUAEFTSReportOutList);
+				}
 			}
 		}
 		return advanceSearchReportFinalOutputList;
@@ -329,7 +374,20 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> promptsList,
 			String advanceSearchFromDatePromptKey) {
 		// TODO Auto-generated method stub
-		return null;
-	}
 
+		FederatedReportPromptDTO promptInfo = new FederatedReportPromptDTO();
+		ReportPromptsInstanceDTO matchedPrompt = null;
+		for (ReportPromptsInstanceDTO prompt : promptsList) {
+			if (prompt.getPrompt().getKey().equalsIgnoreCase(advanceSearchFromDatePromptKey)) {
+				matchedPrompt = prompt;
+				break;
+			}
+		}
+		if (matchedPrompt != null) {
+			promptInfo.setPromptKey(matchedPrompt.getPrompt().getKey());
+			promptInfo.setPromptValue(matchedPrompt.getPrompt().getPromptValue());
+			promptInfo.setValueList(matchedPrompt.getPrompt().getValue());
+		}
+		return promptInfo;
+	}
 }
