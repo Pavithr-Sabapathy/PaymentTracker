@@ -46,9 +46,15 @@ public class LinkedReportServiceTest {
 
 	@Test
 	public void testSaveOrUpdateLinkedReport() {
-		LinkedReportRequestDTO linkedReportRequestDTO = new LinkedReportRequestDTO(1, "SampleReference",
-				"Referene Detail Report", 1, 1, 1, "y");
-
+		LinkedReportRequestDTO linkedReportRequestDTO = new LinkedReportRequestDTO();
+		linkedReportRequestDTO.setId(1L);
+		linkedReportRequestDTO.setLinkName("SampleReference");
+		linkedReportRequestDTO.setLinkDescription("Referene Detail Report");
+		linkedReportRequestDTO.setLinkedReportId(1L);
+		linkedReportRequestDTO.setReportId(1L);
+		linkedReportRequestDTO.setSourceMetricId(1L);
+		linkedReportRequestDTO.setActive("Y");
+		
 		LinkedReportInfo linkedReportModel = modelMapper.map(linkedReportRequestDTO, LinkedReportInfo.class);
 		when(mockLinkedReportRepo.save(linkedReportModel)).thenReturn(linkedReportModel);
 		linkedReportServiceImpl.saveOrUpdateLinkedReport(linkedReportRequestDTO);
@@ -77,8 +83,14 @@ public class LinkedReportServiceTest {
 		metricsMockObject.setMetricsOrder(BigInteger.ONE);
 		metricsMockObject.setReport(mockReportsResponse);
 
-		LinkedReportInfo linkedReportInfo = new LinkedReportInfo(1, "SampleReference", "Referene Detail Report", 1, 1,
-				1, "y");
+		LinkedReportInfo linkedReportInfo = new LinkedReportInfo();
+		linkedReportInfo.setId(1L);
+		linkedReportInfo.setLinkName("SampleReference");
+		linkedReportInfo.setLinkDescription("Referene Detail Report");
+		linkedReportInfo.setReportId(1L);
+		linkedReportInfo.setLinkedReportId(1L);
+		linkedReportInfo.setActive("y");
+		
 		Mockito.when(mockLinkedReportRepo.findById(linkedReportId)).thenReturn(Optional.of(linkedReportInfo));
 		Mockito.when(mockMetricsRepository.findById(sourceId)).thenReturn(Optional.of(metricsMockObject));
 		Mockito.when(reportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(mockReportsResponse));

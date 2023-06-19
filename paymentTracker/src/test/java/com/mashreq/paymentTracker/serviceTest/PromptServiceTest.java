@@ -166,8 +166,22 @@ public class PromptServiceTest {
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
 		
 		List<Prompts> mockPromptList = new ArrayList<Prompts>();
-		Prompts prompt1 = new Prompts(1, "promptKey-1", "display-1", "y", BigInteger.ONE, BigInteger.ONE , report);
-		Prompts prompt2 = new Prompts(2, "promptKey-2", "display-2", "y", BigInteger.ONE, BigInteger.ONE , report);
+		Prompts prompt1 = new Prompts();
+		prompt1.setId(1L);
+		prompt1.setDisplayName("promptKey-1");
+		prompt1.setPromptKey("display-1");
+		prompt1.setPromptRequired("y");
+		prompt1.setPromptOrder(BigInteger.ONE);
+		prompt1.setReport(report);
+		
+		Prompts prompt2 = new Prompts();
+		prompt2.setId(1L);
+		prompt2.setDisplayName("promptKey-2");
+		prompt2.setPromptKey("display-2");
+		prompt2.setPromptRequired("y");
+		prompt2.setPromptOrder(BigInteger.ONE);
+		prompt2.setReport(report);
+		
 		mockPromptList.add(prompt1);
 		mockPromptList.add(prompt2);
 		

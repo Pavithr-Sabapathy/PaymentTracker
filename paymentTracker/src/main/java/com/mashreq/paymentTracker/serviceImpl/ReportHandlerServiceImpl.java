@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +20,7 @@ import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportDataDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseMetaDTO;
 import com.mashreq.paymentTracker.dto.ReportExecutionDTO;
 import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
@@ -45,6 +45,7 @@ import com.mashreq.paymentTracker.service.ReportHandlerService;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.type.EntityType;
 import com.mashreq.paymentTracker.type.ExecutionStatusType;
+import com.mashreq.paymentTracker.utility.DateTimeUtil;
 
 @Component
 public class ReportHandlerServiceImpl implements ReportHandlerService {
@@ -76,10 +77,12 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		ReportExecuteResponseData reportExecuteResponseData = new ReportExecuteResponseData();
 		ReportContext reportContext = new ReportContext();
 		ReportDataDTO reportDataDTO = new ReportDataDTO();
+		ReportExecuteResponseMetaDTO reportExecutionMetaDTO = new ReportExecuteResponseMetaDTO();
 		/**
 		 * populate report instance to store in reportInstance and reportPromptInstance
 		 * table
 		 **/
+		Date startTime = new Date();
 		ReportInstanceDTO reportInstanceDTO = populateReportInstance(reportExecutionRequest, reportName);
 		ReportInstance reportInstance = createReportInstance(reportInstanceDTO);
 		reportInstance = reportInstanceRepo.save(reportInstance);
@@ -119,7 +122,11 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		reportDataRepo.save(reportData);
 
 		updateExecutionResponse(reportExecuteResponseData, reportContext);
-
+		
+		Date endTime = new Date();
+		reportExecutionMetaDTO = populateReportExecutionResponseMeta(startTime, endTime, reportName);
+		reportExecuteResponseData.setMeta(reportExecutionMetaDTO);
+		
 		return reportExecuteResponseData;
 	}
 
@@ -128,6 +135,17 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		// TODO Auto-generated method stub
 
 	}
+	
+	private ReportExecuteResponseMetaDTO populateReportExecutionResponseMeta (Date startTime, Date endTime,
+            String reportName) {
+		ReportExecuteResponseMetaDTO meta = new ReportExecuteResponseMetaDTO();
+      meta.setStartTime(DateTimeUtil.getFormattedDate(startTime));
+      meta.setEndTime(DateTimeUtil.getFormattedDate(endTime));
+      meta.setExecutionTime(endTime.getTime() - startTime.getTime());
+      meta.setReportId(reportName);
+      return meta;
+   }
+
 
 	private ReportData populateReportData(ReportDataDTO reportDataDTO) {
 		ReportData reportData = new ReportData();

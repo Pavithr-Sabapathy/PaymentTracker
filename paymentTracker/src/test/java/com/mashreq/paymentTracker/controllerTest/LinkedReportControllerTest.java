@@ -39,8 +39,15 @@ public class LinkedReportControllerTest {
 
 	@Test
 	public void testsaveOrUpdateLinkedReport() throws Exception {
-		LinkedReportRequestDTO linkedReportRequestDTO = new LinkedReportRequestDTO(1, "sample Link",
-				"Sample Link Description", 1, 4, 4, "y");
+		LinkedReportRequestDTO linkedReportRequestDTO = new LinkedReportRequestDTO();
+		linkedReportRequestDTO.setId(1L);
+		linkedReportRequestDTO.setLinkName("Sample Link");
+		linkedReportRequestDTO.setLinkDescription("Sample Link Description");
+		linkedReportRequestDTO.setReportId(1L);
+		linkedReportRequestDTO.setLinkedReportId(4);
+		linkedReportRequestDTO.setSourceMetricId(4);
+		linkedReportRequestDTO.setActive("y");
+		
 		linkReportService.saveOrUpdateLinkedReport(linkedReportRequestDTO);
 		// execute
 		MvcResult result = mockMvc

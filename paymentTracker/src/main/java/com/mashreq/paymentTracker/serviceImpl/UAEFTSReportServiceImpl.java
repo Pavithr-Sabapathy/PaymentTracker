@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
@@ -27,6 +28,7 @@ import com.mashreq.paymentTracker.type.PromptValueType;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
+@Component
 public class UAEFTSReportServiceImpl implements UAEFTSReportService {
 
 	@Autowired

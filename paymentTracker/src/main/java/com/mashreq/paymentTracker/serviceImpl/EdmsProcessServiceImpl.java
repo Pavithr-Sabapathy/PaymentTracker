@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
@@ -24,6 +25,7 @@ import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
+@Component
 public class EdmsProcessServiceImpl implements EdmsProcessService {
 
 	@Autowired
