@@ -248,7 +248,7 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 			// -TODO Implement all these Parallel
 			// run all three parallely
 
-			Thread thread1 = new Thread() {
+			Thread flexProcessor = new Thread() {
 				public void run() {
 					List<AdvanceSearchReportOutput> advanceSearchFlexReportOutList = flexFederatedReportService
 							.processFlexDetailReport(advanceSearchReportInput, componentList, reportContext);
@@ -257,7 +257,7 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 				}
 			};
 
-			Thread thread2 = new Thread() {
+			Thread matrixProcessor = new Thread() {
 				public void run() {
 					List<AdvanceSearchReportOutput> advanceSearchMatrixReportOutList = matrixPaymentReportService
 							.processMatrixPaymentReport(advanceSearchReportInput, componentList, reportContext);
@@ -266,7 +266,7 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 				}
 			};
 
-			Thread thread3 = new Thread() {
+			Thread edmsProcessor = new Thread() {
 				public void run() {
 					List<AdvanceSearchReportOutput> advanceSearchEdmsReportOutList = edmsProcessService
 							.processEdmsReport(advanceSearchReportInput, componentList, reportContext);
@@ -276,20 +276,20 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 
 			// run all three parallely
 
-			thread1.start();
+			flexProcessor.start();
 			if (!isMatrixCustomerRole) {
-				thread2.start();
+				matrixProcessor.start();
 			}
-			thread3.start();
+			edmsProcessor.start();
 
 			// wait for all three
 
 			try {
-				thread1.join();
+				flexProcessor.join();
 				if (!isMatrixCustomerRole) {
-					thread2.join();
+					matrixProcessor.join();
 				}
-				thread3.join();
+				edmsProcessor.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
