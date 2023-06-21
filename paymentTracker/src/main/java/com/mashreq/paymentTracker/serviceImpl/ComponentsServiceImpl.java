@@ -15,7 +15,7 @@ import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
@@ -60,7 +60,7 @@ public class ComponentsServiceImpl implements ComponentsService {
 			componentsObject.setReport(reportOptional.get());
 			Components componentsResponse = componentRepository.save(componentsObject);
 
-			Optional<DataSourceConfig> dataSourceConfigurationOptional = dataSourceConfigRepository
+			Optional<DataSource> dataSourceConfigurationOptional = dataSourceConfigRepository
 					.findById(componentsRequest.getDataSourceId());
 			if (dataSourceConfigurationOptional.isEmpty()) {
 				log.error(FILENAME + "[saveComponents] " + ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS
@@ -75,7 +75,7 @@ public class ComponentsServiceImpl implements ComponentsService {
 	}
 
 	@Transactional
-	private void saveComponentsCountryDetails(DataSourceConfig dataSourceConfig, Components componentsResponse) {
+	private void saveComponentsCountryDetails(DataSource dataSourceConfig, Components componentsResponse) {
 		ComponentsCountry componentsCountryObject = new ComponentsCountry();
 		componentsCountryObject.setCountry(dataSourceConfig.getCountry());
 		componentsCountryObject.setDataSourceConfig(dataSourceConfig);

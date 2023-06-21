@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mashreq.paymentTracker.configuration.TrackerConfiguration;
 import com.mashreq.paymentTracker.exception.DataAccessException;
 import com.mashreq.paymentTracker.exception.ExceptionCodes;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
 import jakarta.annotation.PostConstruct;
@@ -27,7 +27,6 @@ import jakarta.annotation.PostConstruct;
 public class SourceConnectionUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(SourceConnectionUtil.class);
-	private static final String FILENAME = "SourceConnectionUtil";
 
 	@Autowired
 	private DataSourceConfigService dataSourceConfigService;
@@ -41,7 +40,7 @@ public class SourceConnectionUtil {
 	@PostConstruct
 	void loadDataSources() throws DataAccessException {
 
-		List<DataSourceConfig> dataSources = dataSourceConfigService.allDataSourceConfig();
+		List<DataSource> dataSources = dataSourceConfigService.allDataSourceConfig();
 
 		try {
 			setupDataSources(dataSources);
@@ -53,21 +52,21 @@ public class SourceConnectionUtil {
 		}
 	}
 
-	public void setupDataSources(List<DataSourceConfig> dataSources) throws DataAccessException {
+	public void setupDataSources(List<DataSource> dataSources) throws DataAccessException {
 		synchronized (dataSourceMap) {
 			// Register the required Database Drivers
 			registerDrivers();
 			// Setup Connection Pooling Factories for each data source
-			for (DataSourceConfig dataSource : dataSources) {
+			for (DataSource dataSource : dataSources) {
 				setupDataSource(dataSource);
 			}
 		}
 	}
 
-	private void setupDataSource(DataSourceConfig dataSource) {
+	private void setupDataSource(DataSource dataSource) {
 		PoolingDataSource poolingDataSource = null;
 		poolingDataSource = getPooledDataSource(dataSource);
-		addDataSource(dataSource.getDataSourceName(), poolingDataSource);
+		addDataSource(dataSource.getName(), poolingDataSource);
 	}
 
 	private void addDataSource(String name, PoolingDataSource poolingDataSource) {
@@ -95,26 +94,26 @@ public class SourceConnectionUtil {
 		return dataSourceMap;
 	}
 
-	private PoolingDataSource getPooledDataSource(DataSourceConfig dataSource) {
-		String dbConURL = connectionMap.get(dataSource.getDataSourceProvider());
+	private PoolingDataSource getPooledDataSource(DataSource dataSource) {
+		String dbConURL = connectionMap.get(dataSource.getProvider());
 		dbConURL = dbConURL.replaceAll("<hostName>", dataSource.getServerIP());
 		dbConURL = dbConURL.replaceAll("<portNumber>", dataSource.getPort().toString());
-		dbConURL = dbConURL.replaceAll("<schemaName>", dataSource.getDataSourceSchemaName().toString());
-		dbConURL = dbConURL.replaceAll("<db_name>", dataSource.getDataSourceSchemaName().toString());
+		dbConURL = dbConURL.replaceAll("<schemaName>", dataSource.getSchemaName().toString());
+		dbConURL = dbConURL.replaceAll("<db_name>", dataSource.getSchemaName().toString());
 		GenericObjectPool genericObjectPool = new GenericObjectPool(null);
 		genericObjectPool.setTestOnBorrow(trackerConfig.getTestOnBorrow());
 		genericObjectPool.setMaxActive(trackerConfig.getMaxActive());
 		genericObjectPool.setMaxIdle(trackerConfig.getMaxIdle());
 		ObjectPool connectionPool = genericObjectPool;
-		String password = dataSource.getDataSourcePassword();
+		String password = dataSource.getPassword();
 		if (dataSource.getEncryptedPassword().equals("Y")) {
 			AesUtil aesUtil = new AesUtil();
-			password = aesUtil.decrypt(dataSource.getDataSourcePassword());
+			password = aesUtil.decrypt(dataSource.getPassword());
 		}
 		ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(dbConURL,
-				dataSource.getDataSourceUserName(), password);
+				dataSource.getUserName(), password);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,
-				connectionPool, null, getValidationQuery(dataSource.getDataSourceProvider().longValue()), false, true);
+				connectionPool, null, getValidationQuery(dataSource.getProvider().longValue()), false, true);
 		connectionPool = poolableConnectionFactory.getPool();
 		PoolingDataSource poolingDataSource = new PoolingDataSource(connectionPool);
 		return poolingDataSource;

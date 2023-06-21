@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.controller.DataSourceConfigController;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
 @ExtendWith(SpringExtension.class)
@@ -47,10 +47,10 @@ public class DataSourceConfigControllerTest {
 
 	@Test
 	public void testSaveDataSourceConfig() throws Exception {
-		DataSourceConfig mockDataSourceConfig = new DataSourceConfig(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
+		DataSource mockDataSourceConfig = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
 
-		when(dataSourceConfigService.saveDataSourceConfiguration(any(DataSourceConfig.class)))
+		when(dataSourceConfigService.saveDataSourceConfiguration(any(DataSource.class)))
 				.thenReturn(mockDataSourceConfig);
 		// execute
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/dataSource/save")
@@ -71,9 +71,9 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testAllDataSourceConfig() throws Exception {
 
-		DataSourceConfig dataSourceConfigValue = new DataSourceConfig(1L, "Oracle", "null",BigInteger.ZERO, "Oracle",
+		DataSource dataSourceConfigValue = new DataSource(1L, "Oracle", "null",BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
-		List<DataSourceConfig> mockDatasourceConfigList = Arrays.asList(dataSourceConfigValue);
+		List<DataSource> mockDatasourceConfigList = Arrays.asList(dataSourceConfigValue);
 
 		Mockito.when(dataSourceConfigService.allDataSourceConfig()).thenReturn(mockDatasourceConfigList);
 
@@ -85,7 +85,7 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testGetDataSourceConfig() throws Exception {
 		long dataSourceId = 1L;
-		DataSourceConfig mockDataSourceConfigValue = new DataSourceConfig(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
+		DataSource mockDataSourceConfigValue = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
 		Mockito.when(dataSourceConfigService.getDataSourceConfigById(dataSourceId))
 				.thenReturn(mockDataSourceConfigValue);
@@ -108,7 +108,7 @@ public class DataSourceConfigControllerTest {
 		long dataSourceId = 1L;
 	//	mockMvc.perform(MockMvcRequestBuilders.put("/dataSource/updateDataSourceConfig/{dataSourceId}", dataSourceId)       --->  to be check
 		mockMvc.perform(MockMvcRequestBuilders.put("/dataSource", dataSourceId)
-				.content(asJsonString(new DataSourceConfig(1L, "Oracle1", "ReadValue", BigInteger.ZERO, "Oracle",
+				.content(asJsonString(new DataSource(1L, "Oracle1", "ReadValue", BigInteger.ZERO, "Oracle",
 						"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE")))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isAccepted());

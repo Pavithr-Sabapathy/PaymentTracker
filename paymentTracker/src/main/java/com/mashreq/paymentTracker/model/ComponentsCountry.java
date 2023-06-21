@@ -25,9 +25,9 @@ public class ComponentsCountry {
 	@Column(name = "country")
 	private String country;
 
-	@ManyToOne(targetEntity = DataSourceConfig.class)
+	@ManyToOne(targetEntity = DataSource.class)
 	@JoinColumn(name = "data_source_id")
-	private DataSourceConfig dataSourceConfig;
+	private DataSource dataSourceConfig;
 
 	@OneToOne(targetEntity = Components.class)
 	@JoinColumn(name = "rept_comp_id")
@@ -49,11 +49,11 @@ public class ComponentsCountry {
 		this.country = country;
 	}
 
-	public DataSourceConfig getDataSourceConfig() {
+	public DataSource getDataSourceConfig() {
 		return dataSourceConfig;
 	}
 
-	public void setDataSourceConfig(DataSourceConfig dataSourceConfig) {
+	public void setDataSourceConfig(DataSource dataSourceConfig) {
 		this.dataSourceConfig = dataSourceConfig;
 	}
 
@@ -77,7 +77,7 @@ public class ComponentsCountry {
 	}
 
 	public ComponentsCountry(long id, @NotNull(message = "Display name should not be empty") String country,
-			DataSourceConfig dataSourceConfig, Components components) {
+			DataSource dataSourceConfig, Components components) {
 		super();
 		this.id = id;
 		this.country = country;

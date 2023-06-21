@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.WebClientService;
 
 import io.netty.channel.ChannelOption;
@@ -21,7 +21,7 @@ import reactor.netty.http.client.HttpClient;
 public class WebClientServiceImpl implements WebClientService {
 
 	@Override
-	public DataSourceConfig getDataSourceConfigById(Long dataSourceId) {
+	public DataSource getDataSourceConfigById(Long dataSourceId) {
 		HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
 				.responseTimeout(Duration.ofMillis(5000))
 				.doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS))
@@ -36,12 +36,12 @@ public class WebClientServiceImpl implements WebClientService {
 				 * ":" + token).getBytes(UTF_8)))
 				 */
 				.retrieve();
-		DataSourceConfig responseBody = responseSpec.bodyToMono(DataSourceConfig.class).block();
+		DataSource responseBody = responseSpec.bodyToMono(DataSource.class).block();
 		return responseBody;
 	}
 
 	@Override
-	public String saveDataSourceConfig(@Valid DataSourceConfig dataSourceConfigurationRequest) {
+	public String saveDataSourceConfig(@Valid DataSource dataSourceConfigurationRequest) {
 		// TODO Auto-generated method stub
 		HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
 				.responseTimeout(Duration.ofMillis(5000))

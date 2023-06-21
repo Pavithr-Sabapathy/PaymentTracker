@@ -2,17 +2,17 @@ package com.mashreq.paymentTracker.service;
 
 import java.util.List;
 
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 
 public interface DataSourceConfigService {
 
-	DataSourceConfig saveDataSourceConfiguration(DataSourceConfig dataSourceConfigurationRequest) throws Exception;
+	DataSource saveDataSourceConfiguration(DataSource dataSourceConfigurationRequest) throws Exception;
 
-	DataSourceConfig getDataSourceConfigById(long dataSourceId);
+	DataSource getDataSourceConfigById(long dataSourceId);
 
 	void deleteDataSourceConfigById(long dataSourceId);
 
-	List<DataSourceConfig> allDataSourceConfig();
+	List<DataSource> allDataSourceConfig();
 
-	void updateDataSourceConfigById(DataSourceConfig dataSourceupdateRequest);
+	void updateDataSourceConfigById(DataSource dataSourceupdateRequest);
 }

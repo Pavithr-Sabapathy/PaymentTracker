@@ -26,7 +26,7 @@ import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
@@ -124,7 +124,7 @@ public class ComponentServiceTest {
         Report report = new Report();
         report.setId(1L);
 
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
+        DataSource dataSourceConfig = new DataSource();
         dataSourceConfig.setId(1L);
 
         // when
@@ -227,7 +227,7 @@ public class ComponentServiceTest {
 			compCountryObject.setDataSourceConfig(compCountryObject.getDataSourceConfig());
 			compCountryObject.setComponents(compCountryObject.getComponents());
 			
-	        DataSourceConfig dataSourceConfig = new DataSourceConfig();
+	        DataSource dataSourceConfig = new DataSource();
 	        dataSourceConfig.setCountry("USA");
 	        Components componentsResponse = new Components();
 	        componentsResponse.setId(1L);

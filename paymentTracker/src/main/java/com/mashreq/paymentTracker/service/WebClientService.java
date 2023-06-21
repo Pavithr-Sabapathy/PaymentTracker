@@ -1,14 +1,14 @@
 package com.mashreq.paymentTracker.service;
 
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 
 import jakarta.validation.Valid;
 
 public interface WebClientService {
 
-	DataSourceConfig getDataSourceConfigById(Long dataSourceId);
+	DataSource getDataSourceConfigById(Long dataSourceId);
 
-	String saveDataSourceConfig(@Valid DataSourceConfig dataSourceConfigurationRequest);
+	String saveDataSourceConfig(@Valid DataSource dataSourceConfigurationRequest);
 
 
 }

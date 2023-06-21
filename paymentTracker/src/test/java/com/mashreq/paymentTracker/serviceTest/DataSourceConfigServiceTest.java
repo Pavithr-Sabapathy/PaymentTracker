@@ -21,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.repository.DataSourceConfigRepository;
 import com.mashreq.paymentTracker.serviceImpl.DataSourceConfigServiceImpl;
 
@@ -36,30 +36,30 @@ public class DataSourceConfigServiceTest {
 
 	@Test
 	public void testSaveDataSourceConfig() throws Exception {
-		DataSourceConfig mockdataSourceConfigValue = new DataSourceConfig(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
 		when(mockdataSourceConfigRepository.save(mockdataSourceConfigValue)).thenReturn(mockdataSourceConfigValue);
-		DataSourceConfig dataSourceConfiguration = dataSourceConfigService
+		DataSource dataSourceConfiguration = dataSourceConfigService
 				.saveDataSourceConfiguration(mockdataSourceConfigValue);
-		assertEquals(dataSourceConfiguration.getDataSourceName(), "sample");
+		assertEquals(dataSourceConfiguration.getName(), "sample");
 		verify(mockdataSourceConfigRepository, times(1)).save(mockdataSourceConfigValue);
 	}
 
 	@Test
 	public void testGetDataSourceConfigById() {
 		long dataSourceId = 1L;
-		DataSourceConfig mockdataSourceConfigValue = new DataSourceConfig(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
 		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.of(mockdataSourceConfigValue));
-		DataSourceConfig dataSourceConfiguration = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
-		assertEquals(dataSourceConfiguration.getDataSourceName(), "sample");
+		DataSource dataSourceConfiguration = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
+		assertEquals(dataSourceConfiguration.getName(), "sample");
 		verify(mockdataSourceConfigRepository, times(1)).findById(dataSourceId);
 	}
 
 	@Test
 	public void testGetDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
 		long dataSourceId = 1L;
-		DataSourceConfig mockdataSourceConfigValue = null;
+		DataSource mockdataSourceConfigValue = null;
 		when(mockdataSourceConfigRepository.findById(dataSourceId))
 				.thenReturn(Optional.ofNullable(mockdataSourceConfigValue));
 
@@ -74,7 +74,7 @@ public class DataSourceConfigServiceTest {
 	@Test
 	public void testUpdateDataSourceConfigById() {
 		long dataSourceId = 1L;
-		DataSourceConfig mockdataSourceConfigValue = new DataSourceConfig(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");;
 		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.of(mockdataSourceConfigValue));
 		dataSourceConfigService.updateDataSourceConfigById(mockdataSourceConfigValue);
@@ -85,7 +85,7 @@ public class DataSourceConfigServiceTest {
 	public void testUpdateDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
 		long dataSourceId = 1L;
 		//DataSourceConfig mockdataSourceConfigValue = null;
-		DataSourceConfig mockdataSourceConfigValue = new DataSourceConfig(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
 		
 		
@@ -100,12 +100,12 @@ public class DataSourceConfigServiceTest {
 
 	@Test
 	public void testAllDataSourceConfig() {
-		List<DataSourceConfig> mockDataSourceConfigList = new ArrayList<DataSourceConfig>();
-		DataSourceConfig dataSourceConfigValue1 = new DataSourceConfig(1L, "Oracle", "oracle", BigInteger.ZERO, "Oracle",
+		List<DataSource> mockDataSourceConfigList = new ArrayList<DataSource>();
+		DataSource dataSourceConfigValue1 = new DataSource(1L, "Oracle", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
-		DataSourceConfig dataSourceConfigValue2 = new DataSourceConfig(1L, "FLEX", "FLEX_UAT", BigInteger.ZERO, "Oracle",
+		DataSource dataSourceConfigValue2 = new DataSource(1L, "FLEX", "FLEX_UAT", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "6789", "@3$45", BigInteger.ZERO, "101.20.12.43", "RS", "y","UAE");
-		DataSourceConfig dataSourceConfigValue3 = new DataSourceConfig(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
+		DataSource dataSourceConfigValue3 = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "34567", "@!()*$5", BigInteger.ZERO, "123.13.34.56", "sample", "y","UAE");
 
 		mockDataSourceConfigList.add(dataSourceConfigValue1);
@@ -115,7 +115,7 @@ public class DataSourceConfigServiceTest {
 		when(mockdataSourceConfigRepository.findAll()).thenReturn(mockDataSourceConfigList);
 
 		// test
-		List<DataSourceConfig> dataSourceConfig = dataSourceConfigService.allDataSourceConfig();
+		List<DataSource> dataSourceConfig = dataSourceConfigService.allDataSourceConfig();
 
 		assertEquals(3, dataSourceConfig.size());
 		verify(mockdataSourceConfigRepository, times(1)).findAll();

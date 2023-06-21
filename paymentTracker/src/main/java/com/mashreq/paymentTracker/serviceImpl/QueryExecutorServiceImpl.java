@@ -35,7 +35,7 @@ import com.mashreq.paymentTracker.dto.ReportQueryInfoDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportQueryInfoService;
@@ -81,7 +81,7 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 		String queryString = replacePrompts(context.getQueryString(), context);
 		try {
 			ComponentsCountry componentsCountry = processComponentCountry(componentDetail.getReportComponentId()); 
-			DataSourceConfig dataSource = componentsCountry.getDataSourceConfig();
+			DataSource dataSource = componentsCountry.getDataSourceConfig();
 			startTime = new Date();
 			reportQueryInfo = new ReportQueryInfoDTO();
 			reportQueryInfo.setExecutionId(context.getExecutionId());
@@ -263,11 +263,11 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 
 			// Check if the corresponding DataSoure is Active or not
 			if (CheckType.NO.getValue().equalsIgnoreCase(componentsCountry.getDataSourceConfig().getActive())) {
-				log.error(componentsCountry.getDataSourceConfig().getDataSourceName()
+				log.error(componentsCountry.getDataSourceConfig().getName()
 						+ " : Source System Connection is not Activie");
 				return null;
 			}
-			if (componentsCountry.getDataSourceConfig().getDataSourceSchemaName()
+			if (componentsCountry.getDataSourceConfig().getSchemaName()
 					.equalsIgnoreCase(MashreqFederatedReportConstants.DS_SWIFT)) {
 
 				return componentsCountry;

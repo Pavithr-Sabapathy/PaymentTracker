@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.WebClientService;
 
 import jakarta.validation.Valid;
@@ -24,14 +24,14 @@ public class WebClientController {
 	WebClientService webClientService;
 	
 	@GetMapping("/{dataSourceId}")
-	public ResponseEntity<DataSourceConfig> getDataSourceConfig(@PathVariable Long dataSourceId) {
-		DataSourceConfig dataSourceConfigResponse = webClientService.getDataSourceConfigById(dataSourceId);
+	public ResponseEntity<DataSource> getDataSourceConfig(@PathVariable Long dataSourceId) {
+		DataSource dataSourceConfigResponse = webClientService.getDataSourceConfigById(dataSourceId);
 		return ResponseEntity.ok(dataSourceConfigResponse);
 	}
 	
 	@PostMapping("saveDataSource")
 	public ResponseEntity<String> saveDataSourceConfig(
-			@Valid @RequestBody DataSourceConfig dataSourceConfigurationRequest){
+			@Valid @RequestBody DataSource dataSourceConfigurationRequest){
 		String dataSourceConfigResponse = webClientService.saveDataSourceConfig(dataSourceConfigurationRequest);
 		return ResponseEntity.ok(dataSourceConfigResponse);
 		

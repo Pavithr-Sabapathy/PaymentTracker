@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.repository.DataSourceConfigRepository;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
@@ -24,9 +24,9 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	private DataSourceConfigRepository dataSourceConfigRepository;
 
 	@Override
-	public DataSourceConfig saveDataSourceConfiguration(DataSourceConfig dataSourceConfigurationRequest)
+	public DataSource saveDataSourceConfiguration(DataSource dataSourceConfigurationRequest)
 			throws Exception {
-		DataSourceConfig dataSourceResponse = new DataSourceConfig();
+		DataSource dataSourceResponse = new DataSource();
 		try {
 			/**how to handle password encrypted and active column**/
 			dataSourceResponse = dataSourceConfigRepository.save(dataSourceConfigurationRequest);
@@ -38,9 +38,9 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	}
 
 	@Override
-	public DataSourceConfig getDataSourceConfigById(long dataSourceId) {
-		DataSourceConfig dataSourceConfigResponse = new DataSourceConfig();
-		Optional<DataSourceConfig> dataSourceConfigurationOptional = dataSourceConfigRepository.findById(dataSourceId);
+	public DataSource getDataSourceConfigById(long dataSourceId) {
+		DataSource dataSourceConfigResponse = new DataSource();
+		Optional<DataSource> dataSourceConfigurationOptional = dataSourceConfigRepository.findById(dataSourceId);
 		if (dataSourceConfigurationOptional.isEmpty()) {
 			log.error(FILENAME + "[getDataSourceConfigById] " + ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS
 					+ dataSourceId);
@@ -64,14 +64,14 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	}
 
 	@Override
-	public List<DataSourceConfig> allDataSourceConfig() {
-		List<DataSourceConfig> dataSourceConfigurationResponse = dataSourceConfigRepository.findAll();
+	public List<DataSource> allDataSourceConfig() {
+		List<DataSource> dataSourceConfigurationResponse = dataSourceConfigRepository.findAll();
 		return dataSourceConfigurationResponse;
 	}
 
 	@Override
-	public void updateDataSourceConfigById(DataSourceConfig dataSourceupdateRequest) {
-		Optional<DataSourceConfig> dataSourceOptional = dataSourceConfigRepository
+	public void updateDataSourceConfigById(DataSource dataSourceupdateRequest) {
+		Optional<DataSource> dataSourceOptional = dataSourceConfigRepository
 				.findById(dataSourceupdateRequest.getId());
 		if (dataSourceOptional.isEmpty()) {
 			log.error(FILENAME + "[updateDataSourceConfigById] "

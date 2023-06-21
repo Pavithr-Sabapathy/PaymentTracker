@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.model.DataSourceConfig;
+import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
 import jakarta.validation.Valid;
@@ -35,10 +35,10 @@ public class DataSourceConfigController {
 
 	@PostMapping("/save")
 	public ResponseEntity<String> saveDataSourceConfig(
-			@Valid @RequestBody DataSourceConfig dataSourceConfigurationRequest) {
+			@Valid @RequestBody DataSource dataSourceConfigurationRequest) {
 		try {
 			log.info(FILENAME + "[saveDataSourceConfig Request]--->" + dataSourceConfigurationRequest.toString());
-			DataSourceConfig dataSourceConfigResponse = dataSourceConfigService
+			DataSource dataSourceConfigResponse = dataSourceConfigService
 					.saveDataSourceConfiguration(dataSourceConfigurationRequest);
 			log.info(FILENAME + "[saveDataSourceConfig Response]--->" + dataSourceConfigResponse.toString());
 			return new ResponseEntity<String>(ApplicationConstants.DATA_SOURCE_CREATION_MSG, HttpStatus.CREATED);
@@ -49,9 +49,9 @@ public class DataSourceConfigController {
 	}
 
 	@GetMapping("/{dataSourceId}")
-	public ResponseEntity<DataSourceConfig> getDataSourceConfig(@PathVariable Long dataSourceId) {
+	public ResponseEntity<DataSource> getDataSourceConfig(@PathVariable Long dataSourceId) {
 		log.info(FILENAME + "[getDataSourceConfig for DatasourceId]--->" + dataSourceId);
-		DataSourceConfig dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
+		DataSource dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
 		log.info(FILENAME + "[getDataSourceConfig Response]--->" + dataSourceConfigResponse.toString());
 		return ResponseEntity.ok(dataSourceConfigResponse);
 	}
@@ -66,16 +66,16 @@ public class DataSourceConfigController {
 	}
 
 	@GetMapping("/allDataSource")
-	public ResponseEntity<List<DataSourceConfig>> allDataSourceConfig() {
+	public ResponseEntity<List<DataSource>> allDataSourceConfig() {
 		log.info(FILENAME + "[allDataSourceConfig] Started");
-		List<DataSourceConfig> dataSourceConfigurationListResponse = dataSourceConfigService.allDataSourceConfig();
+		List<DataSource> dataSourceConfigurationListResponse = dataSourceConfigService.allDataSourceConfig();
 		log.info(FILENAME + "[allDataSourceConfig] Ended with this response-->"
 				+ dataSourceConfigurationListResponse.toString());
 		return ResponseEntity.ok(dataSourceConfigurationListResponse);
 	}
 
 	@PutMapping()
-	public ResponseEntity<String> updateDataSourceConfig(@Valid @RequestBody DataSourceConfig dataSourceupdateRequest) {
+	public ResponseEntity<String> updateDataSourceConfig(@Valid @RequestBody DataSource dataSourceupdateRequest) {
 		log.info(FILENAME + "[updateDataSourceConfig] Request from UI-->" + dataSourceupdateRequest.toString());
 		dataSourceConfigService.updateDataSourceConfigById(dataSourceupdateRequest);
 		log.info(FILENAME + "[updateDataSourceConfig] Response-->" + ApplicationConstants.DATA_SOURCE_UPDATE_MSG);
