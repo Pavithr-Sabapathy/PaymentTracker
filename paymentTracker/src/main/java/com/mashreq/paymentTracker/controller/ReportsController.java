@@ -33,7 +33,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @Component
-@RequestMapping("/reports")
+@RequestMapping("/report")
 public class ReportsController {
 
 	private static final Logger log = LoggerFactory.getLogger(ReportsController.class);
@@ -66,7 +66,7 @@ public class ReportsController {
 		return ResponseEntity.ok(reportResponse);
 	}
 
-	@PostMapping("/saveReport")
+	@PostMapping("/save")
 	public ResponseEntity<String> saveReportConfiguration(@Valid @RequestBody ReportDTORequest reportDTORequest) {
 		try {
 			reportConfigurationService.saveReport(reportDTORequest);
@@ -77,14 +77,14 @@ public class ReportsController {
 		}
 	}
 
-	@PutMapping("/updateReport/{reportId}")
+	@PutMapping("/update/{reportId}")
 	public ResponseEntity<String> updateReport(@Valid @RequestBody ReportDTORequest reportUpdateRequest,
 			@PathVariable long reportId) {
 		reportConfigurationService.updateReportById(reportUpdateRequest, reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_UPDATE_MSG, HttpStatus.ACCEPTED);
 	}
 
-	@DeleteMapping("deleteReport/{reportId}")
+	@DeleteMapping("delete/{reportId}")
 	public ResponseEntity<String> deleteReport(@PathVariable long reportId) {
 		reportConfigurationService.deleteReportById(reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
