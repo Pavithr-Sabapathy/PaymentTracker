@@ -31,7 +31,7 @@ import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
-import com.mashreq.paymentTracker.repository.DataSourceConfigRepository;
+import com.mashreq.paymentTracker.repository.DataSourceRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.serviceImpl.ComponentsServiceImpl;
 
@@ -54,7 +54,7 @@ public class ComponentServiceTest {
 	private ComponentsDetailsRepository mockComponentsDetailsRepository;
 
 	@Mock
-	private DataSourceConfigRepository dataSourceConfigRepository;
+	private DataSourceRepository dataSourceConfigRepository;
 
 	@Mock
 	private Components compResponse;

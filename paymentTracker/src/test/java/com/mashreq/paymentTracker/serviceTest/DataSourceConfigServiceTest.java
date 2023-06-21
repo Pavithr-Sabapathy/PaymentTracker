@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.DataSource;
-import com.mashreq.paymentTracker.repository.DataSourceConfigRepository;
+import com.mashreq.paymentTracker.repository.DataSourceRepository;
 import com.mashreq.paymentTracker.serviceImpl.DataSourceConfigServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +32,7 @@ public class DataSourceConfigServiceTest {
 	DataSourceConfigServiceImpl dataSourceConfigService;
 
 	@Mock
-	DataSourceConfigRepository mockdataSourceConfigRepository;
+	DataSourceRepository mockdataSourceConfigRepository;
 
 	@Test
 	public void testSaveDataSourceConfig() throws Exception {
