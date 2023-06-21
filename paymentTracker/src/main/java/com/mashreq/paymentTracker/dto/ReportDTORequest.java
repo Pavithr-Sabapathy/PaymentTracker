@@ -2,18 +2,26 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
+import jakarta.validation.constraints.NotNull;
+
 public class ReportDTORequest implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6531572042923050288L;
+	@NotNull(message = "Report name should not be empty")
 	private String reportName;
+	@NotNull(message = "Display name should not be empty")
 	private String displayName;
 	private String reportDescription;
+	@NotNull(message = "Category should not be empty")
 	private String reportCategory;
+	@NotNull(message = "active status should not be empty")
 	private String active;
+	@NotNull(message = "valid should not be empty")
 	private String valid;
-	private long moduleId;
+	@NotNull(message = "Module Name should not be empty")
+	private String moduleName;
 
 	public String getReportName() {
 		return reportName;
@@ -63,12 +71,12 @@ public class ReportDTORequest implements Serializable {
 		this.valid = valid;
 	}
 
-	public long getModuleId() {
-		return moduleId;
+	public String getModuleName() {
+		return moduleName;
 	}
 
-	public void setModuleId(long moduleId) {
-		this.moduleId = moduleId;
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
 	}
 
 	public ReportDTORequest() {
@@ -76,23 +84,11 @@ public class ReportDTORequest implements Serializable {
 		// TODO Auto-generated constructor stub
 	}
 
-	public ReportDTORequest(String reportName, String displayName, String reportDescription, String reportCategory,
-			String active, String valid, long moduleId) {
-		super();
-		this.reportName = reportName;
-		this.displayName = displayName;
-		this.reportDescription = reportDescription;
-		this.reportCategory = reportCategory;
-		this.active = active;
-		this.valid = valid;
-		this.moduleId = moduleId;
-	}
-
 	@Override
 	public String toString() {
 		return "ReportDTORequest [reportName=" + reportName + ", displayName=" + displayName + ", reportDescription="
 				+ reportDescription + ", reportCategory=" + reportCategory + ", active=" + active + ", valid=" + valid
-				+ ", moduleId=" + moduleId + "]";
+				+ ", moduleName=" + moduleName + "]";
 	}
 
 }

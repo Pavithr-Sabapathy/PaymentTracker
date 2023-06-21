@@ -39,9 +39,16 @@ public class ModuleController {
 	}
 	
 	@DeleteMapping("/{moduleId}")
-	public ResponseEntity<String> deleteModile(@PathVariable long moduleId){
+	public ResponseEntity<String> deleteModule(@PathVariable long moduleId){
 		moduleService.deleteModule(moduleId);
 		return ResponseEntity.ok(ApplicationConstants.MODULE_DELETION_MSG);
+	}
+	
+	@GetMapping("{moduleName}")
+	public ResponseEntity<ApplicationModule> fetchModuleByName(String moduleName) {
+		ApplicationModule module = moduleService.fetchModuleByName(moduleName);
+		return ResponseEntity.ok(module);
+
 	}
 	
 }

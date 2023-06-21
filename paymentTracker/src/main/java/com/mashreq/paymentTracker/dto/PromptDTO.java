@@ -6,9 +6,7 @@ import java.math.BigInteger;
 import jakarta.validation.constraints.NotEmpty;
 
 public class PromptDTO implements Serializable {
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = 6394517087984821262L;
 	@NotEmpty
 	private String promptKey;
 	@NotEmpty

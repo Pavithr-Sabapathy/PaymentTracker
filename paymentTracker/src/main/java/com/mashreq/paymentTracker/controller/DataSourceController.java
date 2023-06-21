@@ -27,9 +27,9 @@ import jakarta.validation.Valid;
 @RestController
 @Component
 @RequestMapping("/dataSource")
-public class DataSourceConfigController {
+public class DataSourceController {
 
-	private static final Logger log = LoggerFactory.getLogger(DataSourceConfigController.class);
+	private static final Logger log = LoggerFactory.getLogger(DataSourceController.class);
 	private static final String FILENAME = "DataSourceConfigController";
 	@Autowired
 	private DataSourceConfigService dataSourceConfigService;

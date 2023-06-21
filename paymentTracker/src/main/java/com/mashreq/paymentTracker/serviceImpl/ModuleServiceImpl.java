@@ -46,4 +46,10 @@ public class ModuleServiceImpl implements ModuleService {
 
 	}
 
+	@Override
+	public ApplicationModule fetchModuleByName(String moduleName) {
+		ApplicationModule module = moduleRepository.findByModuleName(moduleName);
+		return module;
+	}
+
 }

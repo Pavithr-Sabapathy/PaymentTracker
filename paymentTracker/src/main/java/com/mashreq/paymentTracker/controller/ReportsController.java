@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
@@ -47,8 +48,19 @@ public class ReportsController {
 		return ResponseEntity.ok(reportListResponse);
 	}
 
+	@GetMapping("/fetchByModuleId")
+	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleId(Long moduleId) {
+		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModuleId(moduleId);
+		return ResponseEntity.ok(reportListResponse);
+	}
+
+	@GetMapping("/fetchByModuleName")
+	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleName(String ModuleName) {
+		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModule(ModuleName);
+		return ResponseEntity.ok(reportListResponse);
+	}
 	
-	@GetMapping("/{reportname}/execute")
+	@GetMapping("/{reportname}")
 	public ResponseEntity<Report> fetchReportByName(@PathVariable("reportname") String reportName) {
 		Report reportResponse = reportConfigurationService.fetchReportByName(reportName);
 		return ResponseEntity.ok(reportResponse);
@@ -57,7 +69,7 @@ public class ReportsController {
 	@PostMapping("/saveReport")
 	public ResponseEntity<String> saveReportConfiguration(@Valid @RequestBody ReportDTORequest reportDTORequest) {
 		try {
-			reportConfigurationService.saveReportConfiguration(reportDTORequest);
+			reportConfigurationService.saveReport(reportDTORequest);
 			return new ResponseEntity<String>(ApplicationConstants.REPORT_CREATION_MSG, HttpStatus.CREATED);
 		} catch (Exception e) {
 			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
@@ -78,7 +90,7 @@ public class ReportsController {
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
 
 	}
-	
+		
 	@GetMapping("/allReports/pdf")
 	 public ResponseEntity<byte[]> getTeacherPdf() throws IOException {
 		 ByteArrayOutputStream baos = reportConfigurationService.generateReportPDF();

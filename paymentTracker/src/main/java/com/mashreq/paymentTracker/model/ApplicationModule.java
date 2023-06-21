@@ -33,7 +33,6 @@ public class ApplicationModule {
 	@NotNull(message = "active should not be empty")
 	@Column(name = "active")
 	private String active;
-
 	
 	@Column(name = "valid")
 	private String valid;

@@ -3,6 +3,7 @@ package com.mashreq.paymentTracker.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import com.mashreq.paymentTracker.model.Prompts;

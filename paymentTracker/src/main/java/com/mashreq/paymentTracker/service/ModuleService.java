@@ -11,5 +11,7 @@ public interface ModuleService{
 	void saveModule(ApplicationModule moduleRequest);
 
 	void deleteModule(long moduleId);
+
+	ApplicationModule fetchModuleByName(String moduleName);
 	
 }
