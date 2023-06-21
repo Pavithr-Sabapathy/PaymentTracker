@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dto.DataSourceDTO;
 import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
@@ -34,13 +35,10 @@ public class DataSourceConfigController {
 	private DataSourceConfigService dataSourceConfigService;
 
 	@PostMapping("/save")
-	public ResponseEntity<String> saveDataSourceConfig(
-			@Valid @RequestBody DataSource dataSourceConfigurationRequest) {
+	public ResponseEntity<String> saveDataSource(@Valid @RequestBody DataSource dataSourceConfigurationRequest) {
 		try {
 			log.info(FILENAME + "[saveDataSourceConfig Request]--->" + dataSourceConfigurationRequest.toString());
-			DataSource dataSourceConfigResponse = dataSourceConfigService
-					.saveDataSourceConfiguration(dataSourceConfigurationRequest);
-			log.info(FILENAME + "[saveDataSourceConfig Response]--->" + dataSourceConfigResponse.toString());
+			dataSourceConfigService.saveDataSourceConfiguration(dataSourceConfigurationRequest);
 			return new ResponseEntity<String>(ApplicationConstants.DATA_SOURCE_CREATION_MSG, HttpStatus.CREATED);
 		} catch (Exception e) {
 			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
@@ -49,24 +47,28 @@ public class DataSourceConfigController {
 	}
 
 	@GetMapping("/{dataSourceId}")
-	public ResponseEntity<DataSource> getDataSourceConfig(@PathVariable Long dataSourceId) {
-		log.info(FILENAME + "[getDataSourceConfig for DatasourceId]--->" + dataSourceId);
-		DataSource dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
-		log.info(FILENAME + "[getDataSourceConfig Response]--->" + dataSourceConfigResponse.toString());
+	public ResponseEntity<DataSourceDTO> getDataSourceById(@PathVariable Long dataSourceId) {
+		DataSourceDTO dataSourceConfigResponse = new DataSourceDTO();
+		try {
+			dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
+		} catch (Exception e) {
+			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
+			return new ResponseEntity<DataSourceDTO>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 		return ResponseEntity.ok(dataSourceConfigResponse);
 	}
 
 	@DeleteMapping("/{dataSourceId}")
-	public ResponseEntity<String> deleteDataSourceConfig(@PathVariable long dataSourceId) {
-		log.info(FILENAME + "[deleteDataSourceConfig for DatasourceId]--->" + dataSourceId);
-		dataSourceConfigService.deleteDataSourceConfigById(dataSourceId);
+	public ResponseEntity<String> deleteDataSourceById(@PathVariable long dataSourceId) {
+		log.info(FILENAME + "[deleteDataSourceById Requested DatasourceId]--->" + dataSourceId);
+		dataSourceConfigService.deleteDataSourceById(dataSourceId);
 		log.info(FILENAME + "[deleteDataSourceConfig deleted for this ID]--->" + dataSourceId);
 		return new ResponseEntity<String>(ApplicationConstants.DATA_SOURCE_DELETION_MSG, HttpStatus.ACCEPTED);
 
 	}
 
 	@GetMapping("/allDataSource")
-	public ResponseEntity<List<DataSource>> allDataSourceConfig() {
+	public ResponseEntity<List<DataSource>> getAllDataSource() {
 		log.info(FILENAME + "[allDataSourceConfig] Started");
 		List<DataSource> dataSourceConfigurationListResponse = dataSourceConfigService.allDataSourceConfig();
 		log.info(FILENAME + "[allDataSourceConfig] Ended with this response-->"
@@ -75,11 +77,19 @@ public class DataSourceConfigController {
 	}
 
 	@PutMapping()
-	public ResponseEntity<String> updateDataSourceConfig(@Valid @RequestBody DataSource dataSourceupdateRequest) {
+	public ResponseEntity<String> updateDataSourceById(@Valid @RequestBody DataSource dataSourceupdateRequest) {
 		log.info(FILENAME + "[updateDataSourceConfig] Request from UI-->" + dataSourceupdateRequest.toString());
-		dataSourceConfigService.updateDataSourceConfigById(dataSourceupdateRequest);
+		dataSourceConfigService.updateDataSourceById(dataSourceupdateRequest);
 		log.info(FILENAME + "[updateDataSourceConfig] Response-->" + ApplicationConstants.DATA_SOURCE_UPDATE_MSG);
 		return new ResponseEntity<String>(ApplicationConstants.DATA_SOURCE_UPDATE_MSG, HttpStatus.ACCEPTED);
 
 	}
+
+	@GetMapping("/allActive")
+	public ResponseEntity<List<DataSourceDTO>> allActive() {
+		List<DataSourceDTO> dataSourceDTOList = dataSourceConfigService.allActiveDataSource();
+		log.info(FILENAME + "[allDataSourceConfig] Ended with this response-->" + dataSourceDTOList.toString());
+		return ResponseEntity.ok(dataSourceDTOList);
+	}
+
 }

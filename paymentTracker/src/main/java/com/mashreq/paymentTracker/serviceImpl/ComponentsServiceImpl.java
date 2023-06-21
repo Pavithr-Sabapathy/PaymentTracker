@@ -20,7 +20,7 @@ import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
-import com.mashreq.paymentTracker.repository.DataSourceConfigRepository;
+import com.mashreq.paymentTracker.repository.DataSourceRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.service.ComponentsService;
 
@@ -43,7 +43,7 @@ public class ComponentsServiceImpl implements ComponentsService {
 	private ComponentsDetailsRepository componentsDetailsRepository;
 	
 	@Autowired
-	private DataSourceConfigRepository dataSourceConfigRepository;
+	private DataSourceRepository dataSourceConfigRepository;
 
 	@Override
 	@Transactional

@@ -12,8 +12,8 @@ public class DataSourceDTO implements Serializable{
 	private Long provider;
 	private String userName;
 	private String password;
-	private String passwordEncrypted;
-	private String serverIp;
+	private String encryptedPassword;
+	private String serverIP;
 	private Long port;
 	private String schemaName;
 	private String owner;
@@ -67,20 +67,20 @@ public class DataSourceDTO implements Serializable{
 		this.password = password;
 	}
 
-	public String getPasswordEncrypted() {
-		return passwordEncrypted;
+	public String getEncryptedPassword() {
+		return encryptedPassword;
 	}
 
-	public void setPasswordEncrypted(String passwordEncrypted) {
-		this.passwordEncrypted = passwordEncrypted;
+	public void setEncryptedPassword(String encryptedPassword) {
+		this.encryptedPassword = encryptedPassword;
 	}
 
-	public String getServerIp() {
-		return serverIp;
+	public String getServerIP() {
+		return serverIP;
 	}
 
-	public void setServerIp(String serverIp) {
-		this.serverIp = serverIp;
+	public void setServerIP(String serverIP) {
+		this.serverIP = serverIP;
 	}
 
 	public Long getPort() {
@@ -117,9 +117,9 @@ public class DataSourceDTO implements Serializable{
 
 	@Override
 	public String toString() {
-		return "DataSourceVO [id=" + id + ", name=" + name + ", description=" + description + ", provider=" + provider
-				+ ", userName=" + userName + ", password=" + password + ", passwordEncrypted=" + passwordEncrypted
-				+ ", serverIp=" + serverIp + ", port=" + port + ", schemaName=" + schemaName + ", owner=" + owner
+		return "DataSourceDTO [id=" + id + ", name=" + name + ", description=" + description + ", provider=" + provider
+				+ ", userName=" + userName + ", password=" + password + ", encryptedPassword=" + encryptedPassword
+				+ ", serverIP=" + serverIP + ", port=" + port + ", schemaName=" + schemaName + ", owner=" + owner
 				+ ", active=" + active + "]";
 	}
 

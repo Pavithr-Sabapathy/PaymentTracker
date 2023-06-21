@@ -9,12 +9,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
 @DynamicUpdate
 @Table(name = "conf_data_source")
+@NamedQueries ({@NamedQuery (name = "activeDataSource",
+query = "select ds from DataSource ds where ds.active=:activeStatus")})
 public class DataSource {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
