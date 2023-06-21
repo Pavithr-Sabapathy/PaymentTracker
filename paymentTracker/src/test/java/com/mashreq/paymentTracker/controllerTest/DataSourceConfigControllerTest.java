@@ -31,12 +31,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.controller.DataSourceConfigController;
+import com.mashreq.paymentTracker.controller.DataSourceController;
+import com.mashreq.paymentTracker.dto.DataSourceDTO;
 import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(DataSourceConfigController.class)
+@WebMvcTest(DataSourceController.class)
 public class DataSourceConfigControllerTest {
 
 	@Autowired
@@ -85,13 +86,13 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testGetDataSourceConfig() throws Exception {
 		long dataSourceId = 1L;
-		DataSource mockDataSourceConfigValue = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
-				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
+		DataSourceDTO mockDataSourceConfigValue = new DataSourceDTO(1L,"sample", "sample", 1L, "sample", "sample",
+				"sample", "sample", 1L, "sample", "sample", "Y");
 		Mockito.when(dataSourceConfigService.getDataSourceConfigById(dataSourceId))
 				.thenReturn(mockDataSourceConfigValue);
 
 		mockMvc.perform(get("/dataSource/1")).andExpect(status().isOk())
-				.andExpect(MockMvcResultMatchers.jsonPath("$.dataSourceName").value("Oracle"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.dataSourceName").value("sample"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1));
 	}
 

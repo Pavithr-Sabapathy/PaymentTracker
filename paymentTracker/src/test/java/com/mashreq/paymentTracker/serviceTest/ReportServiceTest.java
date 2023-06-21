@@ -40,7 +40,7 @@ public class ReportServiceTest {
     private ModelMapper modelMapper;
 
 	@Test
-	public void testSaveReports() {
+	public void testSaveReports() throws Exception {
 		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
@@ -57,13 +57,13 @@ public class ReportServiceTest {
 		mockReportDTORequest.setReportDescription("Search");
 		mockReportDTORequest.setReportName("Refernce_No");
 		mockReportDTORequest.setValid("N");
-		mockReportDTORequest.setModuleId(0);
+		mockReportDTORequest.setModuleName("sample");
 		//Report reportsResponse = modelMapper.map(mockReportDTORequest, Report.class);
 		
 		when(modelMapper.map(mockReportDTORequest, Report.class)).thenReturn(mockReportsResponse);
 		when(mockreportConfigurationRepo.save(mockReportsResponse)).thenReturn(mockReportsResponse);
 		
-		Report Report = reportConfigurationService.saveReportConfiguration(mockReportDTORequest);
+		Report Report = reportConfigurationService.saveReport(mockReportDTORequest);
 		assertEquals(Report.getDisplayName(), "Reference Number");
 		verify(mockreportConfigurationRepo, times(1)).save(mockReportsResponse);
 	}

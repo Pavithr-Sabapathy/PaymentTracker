@@ -54,7 +54,7 @@ public class ReportsControllerTest {
 		mockReportsResponse.setReportName("Refernce_No");
 		mockReportsResponse.setValid("N");
 
-		when(reportConfigurationService.saveReportConfiguration(any(ReportDTORequest.class)))
+		when(reportConfigurationService.saveReport(any(ReportDTORequest.class)))
 				.thenReturn(mockReportsResponse);
 		// execute
 		MvcResult result = mockMvc
@@ -67,7 +67,7 @@ public class ReportsControllerTest {
 		assertEquals(HttpStatus.CREATED.value(), status, "Incorrect Response Status");
 
 		// verify that service method was called once
-		verify(reportConfigurationService).saveReportConfiguration(any(ReportDTORequest.class));
+		verify(reportConfigurationService).saveReport(any(ReportDTORequest.class));
 		String reportResponse = result.getResponse().getContentAsString();
 		assertNotNull(reportResponse);
 		assertEquals(ApplicationConstants.REPORT_CREATION_MSG, reportResponse);
