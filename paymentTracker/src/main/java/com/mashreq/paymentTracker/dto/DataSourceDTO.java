@@ -19,6 +19,10 @@ public class DataSourceDTO implements Serializable{
 	private String owner;
 	private String active;
 
+	public DataSourceDTO() {
+	}
+
+
 	public DataSourceDTO(Long id, String name, String description, Long provider, String userName, String password,
 			String encryptedPassword, String serverIP, Long port, String schemaName, String owner, String active) {
 		super();
