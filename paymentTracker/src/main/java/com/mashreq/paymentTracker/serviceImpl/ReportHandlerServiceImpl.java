@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.EntityDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
@@ -102,16 +103,14 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			ReportExecutionDTO reportExecutionDTO = populateReportExecution(reportContext);
 			ReportExecution reportExecution = createReportExecution(reportExecutionDTO);
 			reportContext.setExecutionId(reportExecution.getId());
-			// TODO-Move to constants
-			if (reportName.equals("flexPostingDetails")) {
+			if (reportName.equals(MashreqFederatedReportConstants.FLEX_REPORT_NAME)) {
 				reportExecuteResponseData = flexFederatedReportService.processFlexReport(reportInstanceDTO,
 						reportContext);
 
-			} else if (reportName.equals("swiftDetails")) {
+			} else if (reportName.equals(MashreqFederatedReportConstants.SWIFT_REPORT_NAME)) {
 				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportInstanceDTO,
 						reportContext);
 			}
-
 		}
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -326,7 +325,6 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		Report report = reportConfigurationService.fetchReportByName(reportName);
 		try {
 			if (null != report) {
-
 				reportInstanceDTO.setReportId(report.getId());
 				reportInstanceDTO.setReportName(report.getReportName());
 				reportInstanceDTO.setRoleId(0L); // TODO fetch the role.

@@ -45,7 +45,7 @@ public class ModuleController {
 	}
 	
 	@GetMapping("{moduleName}")
-	public ResponseEntity<ApplicationModule> fetchModuleByName(String moduleName) {
+	public ResponseEntity<ApplicationModule> fetchModuleByName(@PathVariable("moduleName") String moduleName) {
 		ApplicationModule module = moduleService.fetchModuleByName(moduleName);
 		return ResponseEntity.ok(module);
 

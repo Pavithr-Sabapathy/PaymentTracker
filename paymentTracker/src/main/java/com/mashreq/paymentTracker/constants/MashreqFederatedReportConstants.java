@@ -21,6 +21,11 @@ public class MashreqFederatedReportConstants {
 
 	}
 
+	/***Report Name**/
+	public static final String FLEX_REPORT_NAME="flexPostingDetails";
+	public static final String SWIFT_REPORT_NAME="swiftDetails";
+	public static final String EDMS_REPORT_NAME="";
+	
 	/** Metrics and prompts constant **/
 	public static final String METRIC = "M";
 	public static final String PROMPT = "P";

@@ -35,7 +35,6 @@ import com.mashreq.paymentTracker.dto.PromptDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
-import com.mashreq.paymentTracker.model.ApplicationModule;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
@@ -63,50 +62,45 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	ModuleService moduleService;
 
 	@Override
-	public Report saveReport(ReportDTORequest reportDTORequest) throws Exception {
+	public ReportDTO saveReport(ReportDTORequest reportDTORequest) throws Exception {
+		ReportDTO reportDTO = new ReportDTO();
 		Report reportResponse = new Report();
 		try {
-			if (null != reportDTORequest.getModuleName()) {
-				String moduleName = reportDTORequest.getModuleName();
-				ApplicationModule moduleObject = moduleService.fetchModuleByName(moduleName);
-				Report reportRequest = modelMapper.map(reportDTORequest, Report.class);
-				reportRequest.setModuleId(moduleObject.getId());
-				reportResponse = reportConfigurationRepo.save(reportRequest);
+			Report reportRequest = modelMapper.map(reportDTORequest, Report.class);
+			log.info(FILENAME + "[saveReport]-->" + reportRequest.toString());
+			reportResponse = reportConfigurationRepo.save(reportRequest);
+			if (null != reportResponse.getId()) {
+				reportDTO = modelMapper.map(reportResponse, ReportDTO.class);
 			}
 
 		} catch (Exception exception) {
 			throw new Exception(exception.getMessage());
 		}
 
-		return reportResponse;
+		return reportDTO;
 
 	}
 
-	@Override
-	public List<Report> fetchAllReports() {
-		List<Report> reportsList = reportConfigurationRepo.findAll();
-		return reportsList;
-	}
-
-	@Override
 	public Report fetchReportByName(String reportName) {
 		Report report = reportConfigurationRepo.findByReportName(reportName);
 		return report;
 	}
 
-	@Override
-	public void updateReportById(ReportDTORequest reportUpdateRequest, long reportId) {
+	public ReportDTO updateReportById(ReportDTORequest reportUpdateRequest, long reportId) {
+		ReportDTO reportDTO = new ReportDTO();
 		Optional<Report> reportReponseOptional = reportConfigurationRepo.findById(reportId);
 		if (reportReponseOptional.isEmpty()) {
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 		}
 		Report reportConfigurationRequest = modelMapper.map(reportUpdateRequest, Report.class);
 		reportConfigurationRequest.setId(reportId);
-		reportConfigurationRepo.save(reportConfigurationRequest);
-
+		Report reportResponse = reportConfigurationRepo.save(reportConfigurationRequest);
+		if (null != reportResponse.getId()) {
+			reportDTO = modelMapper.map(reportResponse, ReportDTO.class);
+		}
+		return reportDTO;
 	}
 
-	@Override
 	public void deleteReportById(long reportId) {
 		if (reportConfigurationRepo.existsById(reportId)) {
 			reportConfigurationRepo.deleteById(reportId);
@@ -116,7 +110,6 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 
 	}
 
-	@Override
 	public List<Report> fetchReportsAsExcel() {
 		List<Report> reportsList = reportConfigurationRepo.findAll();
 
@@ -331,7 +324,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			reportDTOList = reportList.stream().map(report -> modelMapper.map(report, ReportDTO.class))
 					.collect(Collectors.toList());
 
-			log.info(FILENAME + "[getDataSourceConfigById] " + reportDTOList.toString());
+			log.info(FILENAME + "[fetchReportsByModule] " + reportDTOList.toString());
 		}
 		return reportDTOList;
 	}
@@ -344,9 +337,23 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			reportDTOList = reportList.stream().map(report -> modelMapper.map(report, ReportDTO.class))
 					.collect(Collectors.toList());
 
-			log.info(FILENAME + "[getDataSourceConfigById] " + reportDTOList.toString());
+			log.info(FILENAME + "[fetchReportsByModuleId] " + reportDTOList.toString());
 		}
 		return reportDTOList;
+	}
+
+	@Override
+	public ReportDTO fetchReportById(Long reportId) {
+		ReportDTO reportDTO = new ReportDTO();
+		Optional<Report> reportDataOptional = reportConfigurationRepo.findById(reportId);
+		if (reportDataOptional.isPresent()) {
+			Report reportObject = reportDataOptional.get();
+			reportDTO = modelMapper.map(reportObject, ReportDTO.class);
+			log.info(FILENAME + "[fetchReportById] " + reportId + "--->" + reportDTO.toString());
+		} else {
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
+		}
+		return reportDTO;
 	}
 
 }

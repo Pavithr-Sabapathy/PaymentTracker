@@ -5,13 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import java.util.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.controller.ReportsController;
+import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
@@ -45,7 +42,7 @@ public class ReportsControllerTest {
 
 	@Test
 	public void testsaveReportConfiguration() throws Exception {
-		Report mockReportsResponse = new Report();
+		ReportDTO mockReportsResponse = new ReportDTO();
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -58,41 +55,20 @@ public class ReportsControllerTest {
 				.thenReturn(mockReportsResponse);
 		// execute
 		MvcResult result = mockMvc
-				.perform(MockMvcRequestBuilders.post("/reports/saveReport").contentType(MediaType.APPLICATION_JSON)
+				.perform(MockMvcRequestBuilders.post("/report/save").contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON).content(TestUtils.objectToJson(mockReportsResponse)))
 				.andReturn();
 
 		// verify
 		int status = result.getResponse().getStatus();
-		assertEquals(HttpStatus.CREATED.value(), status, "Incorrect Response Status");
+		assertEquals(HttpStatus.CREATED.value(), status);
 
 		// verify that service method was called once
 		verify(reportConfigurationService).saveReport(any(ReportDTORequest.class));
 		String reportResponse = result.getResponse().getContentAsString();
 		assertNotNull(reportResponse);
-		assertEquals(ApplicationConstants.REPORT_CREATION_MSG, reportResponse);
 	}
 
-	@Test
-	public void testfetchReports() throws Exception {
-
-		Report mockReportsResponse = new Report();
-		mockReportsResponse.setActive("y");
-		mockReportsResponse.setDisplayName("Reference Number");
-		mockReportsResponse.setId(1L);
-		mockReportsResponse.setReportCategory("Reference");
-		mockReportsResponse.setReportDescription("Search");
-		mockReportsResponse.setReportName("Refernce_No");
-		mockReportsResponse.setValid("N");
-
-		List<Report> mockReportsList = Arrays.asList(mockReportsResponse);
-
-		Mockito.when(reportConfigurationService.fetchAllReports()).thenReturn(mockReportsList);
-
-		mockMvc.perform(get("/Report")).andExpect(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(1)))
-				.andExpect(jsonPath("$[0].reportName", Matchers.is("Refernce_No")));
-	}
 
 	@Test
 	public void testFetchReportByName() throws Exception {
@@ -104,7 +80,7 @@ public class ReportsControllerTest {
 		Mockito.when(reportConfigurationService.fetchReportByName("Test Report")).thenReturn(report);
 
 		// Send a GET request to the endpoint with the "Test Report" name in the URL
-		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/reports/Test Report/execute"))
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/report/name/Test Report"))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andReturn();
 
@@ -121,7 +97,7 @@ public class ReportsControllerTest {
 	@Test
 	public void testdeleteReport() throws Exception {
 		long reportId = 1L;
-		mockMvc.perform(MockMvcRequestBuilders.delete("/reports/deleteReport/{reportId}", reportId))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/report/{reportId}", reportId))
 				.andExpect(status().isAccepted());
 
 	}
@@ -138,7 +114,7 @@ public class ReportsControllerTest {
 		mockReportsResponse.setReportName("Refernce_No");
 		mockReportsResponse.setValid("N");
 
-		mockMvc.perform(MockMvcRequestBuilders.put("/reports/updateReport/{reportId}", reportId)
+		mockMvc.perform(MockMvcRequestBuilders.put("/report/{reportId}", reportId)
 				.content(asJsonString(mockReportsResponse))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isAccepted());

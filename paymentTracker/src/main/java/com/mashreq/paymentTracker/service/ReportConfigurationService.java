@@ -9,9 +9,7 @@ import com.mashreq.paymentTracker.model.Report;
 
 public interface ReportConfigurationService {
 
-	Report saveReport(ReportDTORequest reportDTORequest) throws Exception;
-
-	List<Report> fetchAllReports();
+	ReportDTO saveReport(ReportDTORequest reportDTORequest) throws Exception;
 
 	Report fetchReportByName(String reportName);
 	
@@ -19,13 +17,15 @@ public interface ReportConfigurationService {
 
 	List<Report> fetchReportsAsExcel();
 
-	void updateReportById(ReportDTORequest reportUpdateRequest, long reportId);
+	ReportDTO updateReportById(ReportDTORequest reportUpdateRequest, long reportId);
 	
 	ByteArrayOutputStream generateReportPDF();
 
 	List<ReportDTO> fetchReportsByModule(String moduleName);
 
 	List<ReportDTO> fetchReportsByModuleId(Long moduleId);
+
+	ReportDTO fetchReportById(Long reportId);
 
 
 }

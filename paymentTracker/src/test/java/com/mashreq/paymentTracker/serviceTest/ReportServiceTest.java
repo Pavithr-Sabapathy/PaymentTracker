@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
+import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Report;
@@ -57,40 +58,17 @@ public class ReportServiceTest {
 		mockReportDTORequest.setReportDescription("Search");
 		mockReportDTORequest.setReportName("Refernce_No");
 		mockReportDTORequest.setValid("N");
-		mockReportDTORequest.setModuleName("sample");
+		mockReportDTORequest.setModuleId(1L);
 		//Report reportsResponse = modelMapper.map(mockReportDTORequest, Report.class);
 		
 		when(modelMapper.map(mockReportDTORequest, Report.class)).thenReturn(mockReportsResponse);
 		when(mockreportConfigurationRepo.save(mockReportsResponse)).thenReturn(mockReportsResponse);
 		
-		Report Report = reportConfigurationService.saveReport(mockReportDTORequest);
-		assertEquals(Report.getDisplayName(), "Reference Number");
+		ReportDTO reportDTO = reportConfigurationService.saveReport(mockReportDTORequest);
+		assertEquals(reportDTO.getDisplayName(), "Reference Number");
 		verify(mockreportConfigurationRepo, times(1)).save(mockReportsResponse);
 	}
 
-	@Test
-	public void testfetchAllReports() {
-		List<Report> mockReportsList = new ArrayList<Report>();
-	
-		Report mockReportsResponse = new Report();
-		mockReportsResponse.setActive("y");
-		mockReportsResponse.setDisplayName("Reference Number");
-		mockReportsResponse.setId(1L);
-		mockReportsResponse.setReportCategory("Reference");
-		mockReportsResponse.setReportDescription("Search");
-		mockReportsResponse.setReportName("Refernce_No");
-		mockReportsResponse.setValid("N");
-
-		mockReportsList.add(mockReportsResponse);
-
-		when(mockreportConfigurationRepo.findAll()).thenReturn(mockReportsList);
-
-		// test
-		List<Report> reportsResponse = reportConfigurationService.fetchAllReports();
-
-		assertEquals(1, reportsResponse.size());
-		verify(mockreportConfigurationRepo, times(1)).findAll();
-	}
 	@Test
 	public void fetchReportByName() {
 		String name = "report name";

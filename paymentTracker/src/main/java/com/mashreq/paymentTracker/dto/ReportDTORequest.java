@@ -20,8 +20,8 @@ public class ReportDTORequest implements Serializable {
 	private String active;
 	@NotNull(message = "valid should not be empty")
 	private String valid;
-	@NotNull(message = "Module Name should not be empty")
-	private String moduleName;
+	@NotNull(message = "Module Id should not be empty")
+	private Long moduleId;
 
 	public String getReportName() {
 		return reportName;
@@ -71,12 +71,12 @@ public class ReportDTORequest implements Serializable {
 		this.valid = valid;
 	}
 
-	public String getModuleName() {
-		return moduleName;
+	public Long getModuleId() {
+		return moduleId;
 	}
 
-	public void setModuleName(String moduleName) {
-		this.moduleName = moduleName;
+	public void setModuleId(Long moduleId) {
+		this.moduleId = moduleId;
 	}
 
 	public ReportDTORequest() {
@@ -88,7 +88,8 @@ public class ReportDTORequest implements Serializable {
 	public String toString() {
 		return "ReportDTORequest [reportName=" + reportName + ", displayName=" + displayName + ", reportDescription="
 				+ reportDescription + ", reportCategory=" + reportCategory + ", active=" + active + ", valid=" + valid
-				+ ", moduleName=" + moduleName + "]";
+				+ ", moduleId=" + moduleId + "]";
 	}
+
 
 }
