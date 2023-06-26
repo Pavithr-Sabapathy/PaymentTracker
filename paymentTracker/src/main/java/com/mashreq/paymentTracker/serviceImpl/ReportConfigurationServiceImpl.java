@@ -62,19 +62,14 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 	ModuleService moduleService;
 
 	@Override
-	public ReportDTO saveReport(ReportDTORequest reportDTORequest) throws Exception {
+	public ReportDTO saveReport(ReportDTORequest reportDTORequest) {
 		ReportDTO reportDTO = new ReportDTO();
 		Report reportResponse = new Report();
-		try {
-			Report reportRequest = modelMapper.map(reportDTORequest, Report.class);
-			log.info(FILENAME + "[saveReport]-->" + reportRequest.toString());
-			reportResponse = reportConfigurationRepo.save(reportRequest);
-			if (null != reportResponse.getId()) {
-				reportDTO = modelMapper.map(reportResponse, ReportDTO.class);
-			}
-
-		} catch (Exception exception) {
-			throw new Exception(exception.getMessage());
+		Report reportRequest = modelMapper.map(reportDTORequest, Report.class);
+		log.info(FILENAME + "[saveReport]-->" + reportRequest.toString());
+		reportResponse = reportConfigurationRepo.save(reportRequest);
+		if (null != reportResponse.getId()) {
+			reportDTO = modelMapper.map(reportResponse, ReportDTO.class);
 		}
 
 		return reportDTO;
@@ -83,13 +78,20 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 
 	public Report fetchReportByName(String reportName) {
 		Report report = reportConfigurationRepo.findByReportName(reportName);
+		if (null == report) {
+			log.error(FILENAME + "[fetchReportByName]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportName);
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportName);
+		}
+		log.info(FILENAME + "[fetchReportByName]" + reportName + "-->" + report.toString());
 		return report;
+
 	}
 
 	public ReportDTO updateReportById(ReportDTORequest reportUpdateRequest, long reportId) {
 		ReportDTO reportDTO = new ReportDTO();
 		Optional<Report> reportReponseOptional = reportConfigurationRepo.findById(reportId);
 		if (reportReponseOptional.isEmpty()) {
+			log.error(FILENAME + "[updateReportById]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 		}
 		Report reportConfigurationRequest = modelMapper.map(reportUpdateRequest, Report.class);
@@ -98,6 +100,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 		if (null != reportResponse.getId()) {
 			reportDTO = modelMapper.map(reportResponse, ReportDTO.class);
 		}
+		log.info(FILENAME + "[updateReportById]" + reportId + "-->" + reportDTO.toString());
 		return reportDTO;
 	}
 
@@ -105,9 +108,10 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 		if (reportConfigurationRepo.existsById(reportId)) {
 			reportConfigurationRepo.deleteById(reportId);
 		} else {
+			log.error(FILENAME + "[deleteReportById]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 		}
-
+		log.info(FILENAME + "[deleteReportById]" + reportId + "-->" + ApplicationConstants.REPORT_DELETION_MSG);
 	}
 
 	public List<Report> fetchReportsAsExcel() {
@@ -338,6 +342,9 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 					.collect(Collectors.toList());
 
 			log.info(FILENAME + "[fetchReportsByModuleId] " + reportDTOList.toString());
+		} else {
+			log.error(FILENAME + "[fetchReportsByModuleId]" + ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
+			throw new ResourceNotFoundException(ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
 		}
 		return reportDTOList;
 	}
@@ -351,6 +358,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			reportDTO = modelMapper.map(reportObject, ReportDTO.class);
 			log.info(FILENAME + "[fetchReportById] " + reportId + "--->" + reportDTO.toString());
 		} else {
+			log.error(FILENAME + "[fetchReportById]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
 		}
 		return reportDTO;

@@ -5,10 +5,13 @@ import java.util.*;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.controller.ReportsController;
 import com.mashreq.paymentTracker.dto.MetricsDTO;
 import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
@@ -22,6 +25,9 @@ import com.mashreq.paymentTracker.service.MetricsService;
 @Component
 public class MetricsServiceImpl implements MetricsService {
 
+	private static final Logger log = LoggerFactory.getLogger(MetricsServiceImpl.class);
+	private static final String FILENAME = "MetricsServiceImpl";
+
 	@Autowired
 	MetricsRepository metricsRepository;
 
@@ -32,18 +38,17 @@ public class MetricsServiceImpl implements MetricsService {
 	public void saveMetrics(MetricsDTO metricsRequest) {
 		// code goes here
 		Optional<Report> optionalReport = reportConfigurationRepo.findById(metricsRequest.getReportId());
-		
-		if(optionalReport.isPresent()) {
+
+		if (optionalReport.isPresent()) {
 			Metrics metric = new Metrics();
 			metric.setDisplayName(metricsRequest.getDisplayName());
 			metric.setMetricsOrder(metricsRequest.getMetricsOrder());
-			
+
 			BigInteger lastMetricsOrder = BigInteger.ZERO;
 			Long metricOrder = metricsRepository.findMetricsOrderByReportId(metricsRequest.getReportId());
-			if(metricOrder== null) {
-					lastMetricsOrder = BigInteger.valueOf(1L);
-			} 
-			else {
+			if (metricOrder == null) {
+				lastMetricsOrder = BigInteger.valueOf(1L);
+			} else {
 				lastMetricsOrder = BigInteger.valueOf(metricOrder);
 				lastMetricsOrder = lastMetricsOrder.add(BigInteger.ONE);
 			}
@@ -53,18 +58,22 @@ public class MetricsServiceImpl implements MetricsService {
 			metric.setEntityId(metricsRequest.getEntityId());
 
 			metricsRepository.save(metric);
-			
-		}else {
-			throw new ResourceNotFoundException(ApplicationConstants.METRICS_DOES_NOT_EXISTS + metricsRequest.getReportId());
+
+		} else {
+			log.error(FILENAME + "[saveMetrics]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS
+					+ metricsRequest.getReportId());
+			throw new ResourceNotFoundException(
+					ApplicationConstants.REPORT_DOES_NOT_EXISTS + metricsRequest.getReportId());
 		}
-		
-		}
+
+	}
 
 	@Override
 	public void deleteMetricsById(long metricsId) {
 		if (metricsRepository.existsById(metricsId)) {
 			metricsRepository.deleteById(metricsId);
 		} else {
+			log.error(FILENAME + "[deleteMetricsById]" + ApplicationConstants.METRICS_DOES_NOT_EXISTS + metricsId);
 			throw new ResourceNotFoundException(ApplicationConstants.METRICS_DOES_NOT_EXISTS + metricsId);
 		}
 	}
@@ -74,66 +83,56 @@ public class MetricsServiceImpl implements MetricsService {
 		Metrics metricsObject = new Metrics();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(metricsDTORequest.getReportId());
 		if (reportOptional.isEmpty()) {
+			log.error(FILENAME + "[updateMetricsById]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS
+					+ metricsDTORequest.getReportId());
 			throw new ResourceNotFoundException(
-					ApplicationConstants.METRICS_DOES_NOT_EXISTS + metricsDTORequest.getReportId());
+					ApplicationConstants.REPORT_DOES_NOT_EXISTS + metricsDTORequest.getReportId());
 		} else {
 			Optional<Metrics> metricsResponseOptional = metricsRepository.findById(metricsId);
 			if (metricsResponseOptional.isEmpty()) {
+				log.error(FILENAME + "[updateMetricsById]" + ApplicationConstants.METRICS_DOES_NOT_EXISTS + metricsId);
 				throw new ResourceNotFoundException(ApplicationConstants.METRICS_DOES_NOT_EXISTS + metricsId);
 			}
 			metricsObject.setDisplayName(metricsDTORequest.getDisplayName());
 			metricsObject.setEntityId(metricsDTORequest.getEntityId());
 			metricsObject.setId(metricsId);
 			metricsObject.setMetricsOrder(metricsDTORequest.getMetricsOrder());
-			metricsRepository.save(metricsObject);
+			metricsObject = metricsRepository.save(metricsObject);
 		}
-
+		log.info(FILENAME + "[updateMetricsById]" + metricsObject.toString());
 	}
 
 	@Override
 	public List<MetricsResponseDTO> fetchAllMetrics() {
-		// code goes here
-     List<MetricsResponseDTO> metricsResponseDtoList = new ArrayList<MetricsResponseDTO>();
-		
+		List<MetricsResponseDTO> metricsResponseDtoList = new ArrayList<MetricsResponseDTO>();
+
 		List<Metrics> mertricsList = metricsRepository.findAll();
-		
-		if(mertricsList == null) {
+
+		if (mertricsList == null) {
 			throw new ResourceNotFoundException(ApplicationConstants.METRICS_NOT_AVAILABLE);
 		}
-		
-		HashMap<Report, List<Metrics>> metricsReportMap = (HashMap<Report, List<Metrics>>) mertricsList.
-												stream().
-												collect(Collectors.groupingBy(Metrics::getReport));
-		
-		metricsReportMap.forEach((report, metrics)-> {
+
+		HashMap<Report, List<Metrics>> metricsReportMap = (HashMap<Report, List<Metrics>>) mertricsList.stream()
+				.collect(Collectors.groupingBy(Metrics::getReport));
+
+		metricsReportMap.forEach((report, metrics) -> {
 			MetricsResponseDTO metricsResponseDto = new MetricsResponseDTO();
-			
-			ReportDTO reportResponseDto = new ReportDTO(report.getId(),
-														report.getReportName(),
-														report.getDisplayName(),
-														report.getReportDescription(),
-														report.getReportCategory(),
-														report.getActive(),
-														report.getValid(),
-														report.getModuleId());
+
+			ReportDTO reportResponseDto = new ReportDTO(report.getId(), report.getReportName(), report.getDisplayName(),
+					report.getReportDescription(), report.getReportCategory(), report.getActive(), report.getValid(),
+					report.getModuleId());
 			reportResponseDto.setId(report.getId());
-			
-			
+
 			List<MetricsDTO> metric = metrics.stream().map(obj -> new MetricsDTO(obj.getDisplayName(),
-					                                                             obj.getMetricsOrder(),
-					                                                             obj.getDisplay(),
-					                                                             obj.getReport().getId(),
-					                                                             obj.getEntityId()))
-										                           .collect(Collectors.toList());
+					obj.getMetricsOrder(), obj.getDisplay(), obj.getReport().getId(), obj.getEntityId()))
+					.collect(Collectors.toList());
 			metricsResponseDto.setReports(reportResponseDto);
 			metricsResponseDto.setMetricsList(metric);
 			metricsResponseDtoList.add(metricsResponseDto);
-		});		
-		
-		return metricsResponseDtoList;	
-		
-		
-		
+		});
+
+		return metricsResponseDtoList;
+
 	}
 
 	@Override
@@ -141,25 +140,31 @@ public class MetricsServiceImpl implements MetricsService {
 		// code goes here
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(reportId);
 		if (reportOptional.isPresent()) {
-          List<MetricsDTO> metricsDtoList = new ArrayList<MetricsDTO>();
-			
+			List<MetricsDTO> metricsDtoList = new ArrayList<MetricsDTO>();
+
 			List<Metrics> metricsByReportId = metricsRepository.findMetricsByReportId(reportId);
-			metricsByReportId.forEach(metric->{
-				MetricsDTO metricsDto = new MetricsDTO();
-				metricsDto.setDisplayName(metric.getDisplayName());
-				metricsDto.setMetricsOrder(metric.getMetricsOrder());
-				metricsDto.setDisplay(metric.getDisplay());
-				metricsDto.setReportId(metric.getReport().getId());
-				metricsDto.setEntityId(metric.getEntityId());
-				metricsDtoList.add(metricsDto);
-			});
+			if (!metricsByReportId.isEmpty()) {
+				metricsByReportId.forEach(metric -> {
+					MetricsDTO metricsDto = new MetricsDTO();
+					metricsDto.setDisplayName(metric.getDisplayName());
+					metricsDto.setMetricsOrder(metric.getMetricsOrder());
+					metricsDto.setDisplay(metric.getDisplay());
+					metricsDto.setReportId(metric.getReport().getId());
+					metricsDto.setEntityId(metric.getEntityId());
+					metricsDtoList.add(metricsDto);
+				});
+			} else {
+				log.error(FILENAME + "[fetchMetricsByReportId]"
+						+ ApplicationConstants.METRICS_DOES_NOT_EXISTS_FOR_REPORT + reportId);
+				throw new ResourceNotFoundException(ApplicationConstants.METRICS_DOES_NOT_EXISTS_FOR_REPORT + reportId);
+
+			}
 			return metricsDtoList;
-			
-		}
-		else {
-			throw new ResourceNotFoundException(
-					ApplicationConstants.METRICS_DOES_NOT_EXISTS + reportId);
-			
+
+		} else {
+			log.error(FILENAME + "[fetchMetricsByReportId]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportId);
+
 		}
 	}
 

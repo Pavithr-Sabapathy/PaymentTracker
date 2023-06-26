@@ -4,20 +4,19 @@ import java.io.Serializable;
 import java.math.BigInteger;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 public class PromptDTO implements Serializable {
 	private static final long serialVersionUID = 6394517087984821262L;
-	@NotEmpty
+	@NotNull(message = "Prompt Key should not be empty")
 	private String promptKey;
-	@NotEmpty
+	@NotNull(message = "Display name should not be empty")
 	private String displayName;
-	// @NotEmpty
 	private BigInteger promptOrder;
-	@NotEmpty
+	@NotNull(message = "Prompt required should not be empty")
 	private String promptRequired;
-	@NotEmpty
+	@NotNull(message = "Report Id should not be empty")
 	private long reportId;
-	// TODO @NotEmpty
 	private BigInteger entityId;
 
 	public String getPromptKey() {

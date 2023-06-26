@@ -4,24 +4,18 @@ import java.io.Serializable;
 import java.math.BigInteger;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 public class MetricsDTO implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2260273551352016731L;
-	/**
-	 * 
-	 */
 
-	@NotEmpty
+	@NotNull(message = "Display name should not be empty")
 	private String displayName;
 	private BigInteger metricsOrder;
-	@NotEmpty
+	@NotNull(message = "Display should not be empty")
 	private String display;
-	@NotEmpty
+	@NotNull(message = "Report Id should not be empty")
 	private long reportId;
-	// TODO @NotEmpty
 	private BigInteger entityId;
 
 	public String getDisplayName() {
@@ -63,7 +57,6 @@ public class MetricsDTO implements Serializable {
 	public void setEntityId(BigInteger entityId) {
 		this.entityId = entityId;
 	}
-
 
 	@Override
 	public String toString() {

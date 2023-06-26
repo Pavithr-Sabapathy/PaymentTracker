@@ -22,6 +22,8 @@ import com.mashreq.paymentTracker.dto.MetricsDTO;
 import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.service.MetricsService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @Component
 @RequestMapping("/metrics")
@@ -50,16 +52,11 @@ public class MetricsController {
 	}
 
 	@PostMapping("/saveMetrics")
-	public ResponseEntity<String> saveMetrics(@RequestBody MetricsDTO metricsRequest) {
+	public ResponseEntity<String> saveMetrics(@Valid @RequestBody MetricsDTO metricsRequest) {
 		
-		try {
 			log.info(FILENAME + "[saveMetrics Request]--->" + metricsRequest.toString());
 			metricsService.saveMetrics(metricsRequest);
 			return new ResponseEntity<String>(ApplicationConstants.METRICS_CREATION_MSG, HttpStatus.CREATED);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
 	}
 
 	@DeleteMapping("/{metricsId}")

@@ -7,8 +7,6 @@ import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.model.Metrics;
 
 public interface MetricsService {
-
-	void saveMetrics(MetricsDTO metricsRequest);
 	
 	void deleteMetricsById(long metricsId);
 
@@ -17,5 +15,7 @@ public interface MetricsService {
 	List<MetricsResponseDTO> fetchAllMetrics();
 
 	List<MetricsDTO> fetchMetricsByReportId(long reportId);
+
+	void saveMetrics(MetricsDTO metricsRequest);
 
 }

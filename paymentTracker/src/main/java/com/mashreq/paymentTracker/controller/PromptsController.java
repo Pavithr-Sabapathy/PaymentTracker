@@ -22,6 +22,8 @@ import com.mashreq.paymentTracker.dto.PromptDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.service.promptService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @Component
 @RequestMapping("/prompt")
@@ -46,13 +48,9 @@ public class PromptsController {
 	}
 
 	@PostMapping("/savePrompt")
-	public ResponseEntity<String> savePrompt(@RequestBody PromptDTO promptRequest) {
-		try {
-			promptService.savePrompt(promptRequest);
-			return new ResponseEntity<String>(ApplicationConstants.PROMPTS_CREATION_MSG, HttpStatus.CREATED);
-		} catch (Exception e) {
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<String> savePrompt(@Valid @RequestBody PromptDTO promptRequest) {
+		promptService.savePrompt(promptRequest);
+		return new ResponseEntity<String>(ApplicationConstants.PROMPTS_CREATION_MSG, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{promptId}")
@@ -66,7 +64,7 @@ public class PromptsController {
 	}
 
 	@PutMapping("/{promptId}")
-	public ResponseEntity<String> updatePrompt(@RequestBody PromptDTO promptRequest, @PathVariable long promptId) {
+	public ResponseEntity<String> updatePrompt(@Valid @RequestBody PromptDTO promptRequest, @PathVariable long promptId) {
 		log.info(FILENAME + "[updatePrompt Request prompt Id]--->" + promptId);
 		log.info(FILENAME + "[updatePrompt RequestBody]--->" + promptRequest.toString());
 		promptService.updatePromptById(promptRequest, promptId);

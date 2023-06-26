@@ -62,13 +62,8 @@ public class ReportsController {
 
 	@PostMapping("/save")
 	public ResponseEntity<ReportDTO> saveReportConfiguration(@Valid @RequestBody ReportDTORequest reportDTORequest) {
-		try {
 			ReportDTO reportRespone = reportConfigurationService.saveReport(reportDTORequest);
 			return new ResponseEntity<ReportDTO>(reportRespone, HttpStatus.CREATED);
-		} catch (Exception exception) {
-			log.error(FILENAME + "[Exception Occured]" + exception.getMessage());
-			return new ResponseEntity<ReportDTO>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
 	}
 
 	@PutMapping("/{reportId}")

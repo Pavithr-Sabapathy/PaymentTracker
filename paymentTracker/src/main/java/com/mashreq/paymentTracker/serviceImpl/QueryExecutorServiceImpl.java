@@ -40,7 +40,6 @@ import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportQueryInfoService;
 import com.mashreq.paymentTracker.utility.CheckType;
-import com.mashreq.paymentTracker.utility.SourceConnectionUtil;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Component

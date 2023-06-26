@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -30,6 +32,9 @@ public class PromptServiceImpl implements promptService {
 	@Autowired
 	ReportConfigurationRepository reportConfigurationRepo;
 
+	private static final Logger log = LoggerFactory.getLogger(PromptServiceImpl.class);
+	private static final String FILENAME = "PromptServiceImpl";
+
 	@Override
 	public List<PromptResponseDTO> fetchAllPrompts() {
 		List<PromptResponseDTO> promptResponseDTOList = new ArrayList<PromptResponseDTO>();
@@ -48,7 +53,7 @@ public class PromptServiceImpl implements promptService {
 			promptListMap.forEach(prompts -> {
 				PromptDTO promptDTO = new PromptDTO();
 				promptDTO.setDisplayName(prompts.getDisplayName());
-				//promptDTO.setEntityId(prompts.getEntityId());
+				// promptDTO.setEntityId(prompts.getEntityId());
 				promptDTO.setPromptKey(prompts.getPromptKey());
 				promptDTO.setPromptOrder(prompts.getPromptOrder());
 				promptDTO.setPromptRequired(prompts.getPromptRequired());
@@ -68,12 +73,14 @@ public class PromptServiceImpl implements promptService {
 		Prompts promptsObject = new Prompts();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(promptRequest.getReportId());
 		if (reportOptional.isEmpty()) {
+			log.error(FILENAME + "[savePrompt]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS
+					+ promptRequest.getReportId());
 			throw new ResourceNotFoundException(
 					ApplicationConstants.REPORT_DOES_NOT_EXISTS + promptRequest.getReportId());
 		} else {
 			Long promptOrderId = promptsRepository.findPromptOrderByReportId(promptRequest.getReportId());
 			promptsObject.setPromptOrder(
-					promptOrderId != null ? BigInteger.valueOf(promptOrderId).add(BigInteger.ONE) : BigInteger.ONE );
+					promptOrderId != null ? BigInteger.valueOf(promptOrderId).add(BigInteger.ONE) : BigInteger.ONE);
 			promptsObject.setDisplayName(promptRequest.getDisplayName());
 			promptsObject.setEntity(null);
 			promptsObject.setPromptKey(promptRequest.getPromptKey());
@@ -106,7 +113,7 @@ public class PromptServiceImpl implements promptService {
 				throw new ResourceNotFoundException(ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + promptId);
 			}
 			promptsObject.setDisplayName(promptRequest.getDisplayName());
-		//	promptsObject.setEntity(promptRequest.getEntityId());
+			// promptsObject.setEntity(promptRequest.getEntityId());
 			promptsObject.setId(promptId);
 			promptsObject.setPromptKey(promptRequest.getPromptKey());
 			promptsObject.setPromptOrder(promptRequest.getPromptOrder());
@@ -125,7 +132,7 @@ public class PromptServiceImpl implements promptService {
 			PromptDTO promptDTO = new PromptDTO();
 			promptsListResponse.stream().forEach(promptsResponse -> {
 				promptDTO.setDisplayName(promptsResponse.getDisplayName());
-			//	promptDTO.setEntityId(promptsResponse.getEntityId());
+				// promptDTO.setEntityId(promptsResponse.getEntityId());
 				promptDTO.setPromptKey(promptsResponse.getPromptKey());
 				promptDTO.setPromptOrder(promptsResponse.getPromptOrder());
 				promptDTO.setPromptRequired(promptsResponse.getPromptRequired());
@@ -133,6 +140,7 @@ public class PromptServiceImpl implements promptService {
 				promptDTOList.add(promptDTO);
 			});
 		}
+		log.info(FILENAME + "[fetchPromptsByReportId]-->" + promptDTOList.toString());
 		return promptDTOList;
 
 	}

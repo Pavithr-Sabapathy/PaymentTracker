@@ -9,7 +9,7 @@ import com.mashreq.paymentTracker.model.Report;
 
 public interface ReportConfigurationService {
 
-	ReportDTO saveReport(ReportDTORequest reportDTORequest) throws Exception;
+	ReportDTO saveReport(ReportDTORequest reportDTORequest);
 
 	Report fetchReportByName(String reportName);
 	
