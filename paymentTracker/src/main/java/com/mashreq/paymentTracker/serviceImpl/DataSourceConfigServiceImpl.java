@@ -61,6 +61,11 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		} else {
 			DataSource dataSourceConfigResponse = dataSourceConfigurationOptional.get();
 			dataSourceDTOResponse = modelMapper.map(dataSourceConfigResponse, DataSourceDTO.class);
+			AesUtil aesUtil = new AesUtil();
+			if (dataSourceDTOResponse.getEncryptedPassword().equals("Y")) {
+				String decryptPassword = aesUtil.decrypt(dataSourceDTOResponse.getPassword());
+				dataSourceDTOResponse.setPassword(decryptPassword);
+			}
 			log.info(FILENAME + "[getDataSourceConfigById] " + dataSourceDTOResponse.toString());
 		}
 		return dataSourceDTOResponse;
@@ -106,7 +111,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	}
 
 	@Override
-	public DataSource updateDataSourceById(@Valid DataSourceDTO dataSourceRequest, Long datasourceId) {
+	public DataSource updateDataSourceById(DataSourceDTO dataSourceRequest, Long datasourceId) {
 		AesUtil aesUtil = new AesUtil();
 		DataSource dataSourceResponse = new DataSource();
 		Optional<DataSource> dataSourceOptional = dataSourceConfigRepository.findById(datasourceId);

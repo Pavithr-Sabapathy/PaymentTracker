@@ -1,6 +1,7 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -14,6 +15,7 @@ import com.mashreq.paymentTracker.dto.ModuleDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ApplicationModule;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ModuleRepository;
 import com.mashreq.paymentTracker.service.ModuleService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
@@ -40,24 +42,18 @@ public class ModuleServiceImpl implements ModuleService {
 	}
 
 	@Override
-	public ModuleDTO saveModule(ModuleDTO moduleRequest) {
+	public ApplicationModule saveModule(ModuleDTO moduleRequest) {
 		ModuleDTO moduleDTOResponse = new ModuleDTO();
 		ApplicationModule applicationModule = modelMapper.map(moduleRequest, ApplicationModule.class);
 		List<ReportDTO> reportList = reportConfigurationService.fetchReportsByModule(moduleRequest.getName());
-		if (!reportList.isEmpty()) {
-			applicationModule.setError((reportList.isEmpty()) ? ApplicationConstants.REPORT_ERROR_DESCRIPTION : null);
-			List<ReportDTO> activeReportList = reportList.stream()
-					.filter(report -> report.getActive().equalsIgnoreCase("Y")).collect(Collectors.toList());
-			applicationModule
-					.setError((activeReportList.isEmpty() ? ApplicationConstants.REPORT_WARNING_DESCRIPTION : null));
-		}
+		applicationModule.setError((reportList.isEmpty()) ? ApplicationConstants.REPORT_ERROR_DESCRIPTION : null);
+		List<ReportDTO> activeReportList = reportList.stream()
+				.filter(report -> report.getActive().equalsIgnoreCase("Y")).collect(Collectors.toList());
+		applicationModule
+				.setWarning((activeReportList.isEmpty() ? ApplicationConstants.REPORT_WARNING_DESCRIPTION : null));
 		log.info(FILENAME + "[saveModule]" + moduleDTOResponse.toString());
 		applicationModule = moduleRepository.save(applicationModule);
-		if (null != applicationModule.getId()) {
-			moduleDTOResponse = modelMapper.map(applicationModule, ModuleDTO.class);
-		}
-
-		return moduleDTOResponse;
+		return applicationModule;
 	}
 
 	@Override
@@ -85,17 +81,25 @@ public class ModuleServiceImpl implements ModuleService {
 	}
 
 	@Override
-	public ModuleDTO updateModule(ModuleDTO moduleRequest, Long moduleId) {
+	public ApplicationModule updateModule(ModuleDTO moduleRequest, Long moduleId) {
 		ApplicationModule applicationModule = new ApplicationModule();
-		ModuleDTO moduleDTOResponse = new ModuleDTO();
-		if (null != moduleRequest) {
+
+		Optional<ApplicationModule> moduleOptional = moduleRepository.findById(moduleId);
+		if (moduleOptional.isEmpty()) {
+			log.error(FILENAME + "[updateReportById]" + ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
+			throw new ResourceNotFoundException(ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
+		} else {
 			applicationModule = modelMapper.map(moduleRequest, ApplicationModule.class);
+			List<ReportDTO> reportList = reportConfigurationService
+					.fetchReportsByModule(applicationModule.getModuleName());
+			applicationModule.setError((reportList.isEmpty()) ? ApplicationConstants.REPORT_ERROR_DESCRIPTION : null);
+			List<ReportDTO> activeReportList = reportList.stream()
+					.filter(report -> report.getActive().equalsIgnoreCase("Y")).collect(Collectors.toList());
+			applicationModule
+					.setWarning((activeReportList.isEmpty() ? ApplicationConstants.REPORT_WARNING_DESCRIPTION : null));
 			applicationModule.setId(moduleId);
 			applicationModule = moduleRepository.save(applicationModule);
-
-			moduleDTOResponse = modelMapper.map(applicationModule, ModuleDTO.class);
-			log.info(FILENAME + "[updateModule]" + moduleDTOResponse.toString());
 		}
-		return moduleDTOResponse;
+		return applicationModule;
 	}
 }

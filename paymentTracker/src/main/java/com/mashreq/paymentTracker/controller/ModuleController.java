@@ -38,16 +38,16 @@ public class ModuleController {
 	}
 
 	@PostMapping
-	public ResponseEntity<ModuleDTO> saveModule(@Valid @RequestBody ModuleDTO moduleRequest) {
-		ModuleDTO moduleDTOResponse = moduleService.saveModule(moduleRequest);
-		return new ResponseEntity<ModuleDTO>(moduleDTOResponse, HttpStatus.OK);
+	public ResponseEntity<ApplicationModule> saveModule(@Valid @RequestBody ModuleDTO moduleRequest) {
+		ApplicationModule moduleDTOResponse = moduleService.saveModule(moduleRequest);
+		return new ResponseEntity<ApplicationModule>(moduleDTOResponse, HttpStatus.OK);
 	}
-	
-	@PutMapping("/{moduleId}")
-	public ResponseEntity<ModuleDTO> updateReport(@Valid @RequestBody ModuleDTO moduleRequest,
+
+	@PutMapping("id/{moduleId}")
+	public ResponseEntity<ApplicationModule> updateReport(@Valid @RequestBody ModuleDTO moduleRequest,
 			@PathVariable Long moduleId) {
-		ModuleDTO moduleDTOResponse = moduleService.updateModule(moduleRequest,moduleId);
-		return new ResponseEntity<ModuleDTO>(moduleDTOResponse, HttpStatus.OK);
+		ApplicationModule moduleDTOResponse = moduleService.updateModule(moduleRequest, moduleId);
+		return new ResponseEntity<ApplicationModule>(moduleDTOResponse, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{moduleId}")

@@ -41,8 +41,8 @@ public class DataSourceController {
 		return new ResponseEntity<DataSource>(dataSourceReponse, HttpStatus.CREATED);
 	}
 
-	@GetMapping("/{dataSourceId}")
-	public ResponseEntity<DataSourceDTO> getDataSourceById(@PathVariable Long dataSourceId) {
+	@GetMapping("id/{dataSourceId}")
+	public ResponseEntity<DataSourceDTO> getDataSourceById(@PathVariable("dataSourceId") Long dataSourceId) {
 		DataSourceDTO dataSourceConfigResponse = new DataSourceDTO();
 		dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
 		return ResponseEntity.ok(dataSourceConfigResponse);
@@ -66,11 +66,11 @@ public class DataSourceController {
 		return ResponseEntity.ok(dataSourceConfigurationListResponse);
 	}
 
-	@PutMapping("{dataSourceId}")
+	@PutMapping("/{dataSourceId}")
 	public ResponseEntity<DataSource> updateDataSourceById(@Valid @RequestBody DataSourceDTO dataSourceRequest,
-			@PathVariable Long datasourceId) {
+			@PathVariable("dataSourceId") Long dataSourceId) {
 		log.info(FILENAME + "[updateDataSourceConfig] Request from UI-->" + dataSourceRequest.toString());
-		DataSource dataSourceReponse = dataSourceConfigService.updateDataSourceById(dataSourceRequest, datasourceId);
+		DataSource dataSourceReponse = dataSourceConfigService.updateDataSourceById(dataSourceRequest, dataSourceId);
 		log.info(FILENAME + "[updateDataSourceConfig] Response-->" + ApplicationConstants.DATA_SOURCE_UPDATE_MSG);
 		return new ResponseEntity<DataSource>(dataSourceReponse, HttpStatus.ACCEPTED);
 

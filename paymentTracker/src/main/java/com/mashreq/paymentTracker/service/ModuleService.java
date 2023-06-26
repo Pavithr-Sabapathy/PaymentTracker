@@ -11,12 +11,12 @@ public interface ModuleService{
 
 	List<ApplicationModule> fetchAllModule();
 
-	ModuleDTO saveModule(@Valid ModuleDTO moduleRequest);
+	ApplicationModule saveModule(@Valid ModuleDTO moduleRequest);
 
 	void deleteModule(long moduleId);
 
 	ApplicationModule fetchModuleByName(String moduleName);
 
-	ModuleDTO updateModule(@Valid ModuleDTO moduleRequest, Long moduleId);
+	ApplicationModule updateModule(@Valid ModuleDTO moduleRequest, Long moduleId);
 	
 }

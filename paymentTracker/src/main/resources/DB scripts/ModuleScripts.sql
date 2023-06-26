@@ -7,3 +7,7 @@
 	valid VARCHAR(1) null
 	 CONSTRAINT [pk_conf_module_id] PRIMARY KEY ([id])
 	)
+	
+Alter table conf_module add error varchar(500)
+
+Alter table conf_module add warning varchar(500)
