@@ -39,7 +39,6 @@ import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
-import com.mashreq.paymentTracker.service.ModuleService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
@@ -57,9 +56,6 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 
 	@Autowired
 	private ModelMapper modelMapper;
-
-	@Autowired
-	ModuleService moduleService;
 
 	@Override
 	public ReportDTO saveReport(ReportDTORequest reportDTORequest) {

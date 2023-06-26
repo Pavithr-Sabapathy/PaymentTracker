@@ -2,8 +2,6 @@ package com.mashreq.paymentTracker.controller;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +27,6 @@ import jakarta.validation.Valid;
 @Component
 @RequestMapping("/report")
 public class ReportsController {
-
-	private static final Logger log = LoggerFactory.getLogger(ReportsController.class);
-	private static final String FILENAME = "ReportsController";
 
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
@@ -62,33 +57,22 @@ public class ReportsController {
 
 	@PostMapping("/save")
 	public ResponseEntity<ReportDTO> saveReportConfiguration(@Valid @RequestBody ReportDTORequest reportDTORequest) {
-			ReportDTO reportRespone = reportConfigurationService.saveReport(reportDTORequest);
-			return new ResponseEntity<ReportDTO>(reportRespone, HttpStatus.CREATED);
+		ReportDTO reportRespone = reportConfigurationService.saveReport(reportDTORequest);
+		return new ResponseEntity<ReportDTO>(reportRespone, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/{reportId}")
 	public ResponseEntity<ReportDTO> updateReport(@Valid @RequestBody ReportDTORequest reportUpdateRequest,
 			@PathVariable long reportId) {
 		ReportDTO reportDTO = new ReportDTO();
-		try {
-			reportDTO = reportConfigurationService.updateReportById(reportUpdateRequest, reportId);
-			return new ResponseEntity<ReportDTO>(reportDTO, HttpStatus.ACCEPTED);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<ReportDTO>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		reportDTO = reportConfigurationService.updateReportById(reportUpdateRequest, reportId);
+		return new ResponseEntity<ReportDTO>(reportDTO, HttpStatus.ACCEPTED);
 	}
 
 	@DeleteMapping("/{reportId}")
 	public ResponseEntity<String> deleteReport(@PathVariable long reportId) {
-		try {
-			reportConfigurationService.deleteReportById(reportId);
-			return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
+		reportConfigurationService.deleteReportById(reportId);
+		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
 	}
 
 	/*

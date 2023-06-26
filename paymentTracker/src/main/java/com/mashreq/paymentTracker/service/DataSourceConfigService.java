@@ -5,9 +5,11 @@ import java.util.List;
 import com.mashreq.paymentTracker.dto.DataSourceDTO;
 import com.mashreq.paymentTracker.model.DataSource;
 
+import jakarta.validation.Valid;
+
 public interface DataSourceConfigService {
 
-	DataSource saveDataSourceConfiguration(DataSource dataSourceConfigurationRequest) throws Exception;
+	DataSource saveDataSourceConfiguration(DataSourceDTO dataSourceConfigurationRequest);
 
 	DataSourceDTO getDataSourceConfigById(long dataSourceId);
 
@@ -15,7 +17,7 @@ public interface DataSourceConfigService {
 
 	List<DataSource> allDataSourceConfig();
 
-	void updateDataSourceById(DataSource dataSourceupdateRequest);
-
 	List<DataSourceDTO> allActiveDataSource();
+
+	DataSource updateDataSourceById(@Valid DataSourceDTO dataSourceRequest, Long datasourceId);
 }

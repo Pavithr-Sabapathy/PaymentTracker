@@ -17,6 +17,10 @@ import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.repository.DataSourceRepository;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
+import com.mashreq.paymentTracker.utility.AesUtil;
+
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 
 @Component
 public class DataSourceConfigServiceImpl implements DataSourceConfigService {
@@ -31,15 +35,18 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	private DataSourceRepository dataSourceConfigRepository;
 
 	@Override
-	public DataSource saveDataSourceConfiguration(DataSource dataSourceConfigurationRequest) throws Exception {
+	public DataSource saveDataSourceConfiguration(DataSourceDTO dataSourceRequest) {
 		DataSource dataSourceResponse = new DataSource();
-		try {
-			/** how to handle password encrypted and active column **/
-			dataSourceResponse = dataSourceConfigRepository.save(dataSourceConfigurationRequest);
-		} catch (Exception exception) {
-			throw new Exception("Exception throw at [saveDataSourceConfiguration]-->" + exception);
-
+		/** Encrypt the password and save into Database **/
+		AesUtil aesUtil = new AesUtil();
+		if (null != dataSourceRequest.getPassword()) {
+			String password = dataSourceRequest.getPassword();
+			String encryptedPassword = aesUtil.encrypt(password);
+			dataSourceRequest.setEncryptedPassword("Y");
+			dataSourceRequest.setPassword(encryptedPassword);
+			dataSourceResponse = modelMapper.map(dataSourceRequest, DataSource.class);
 		}
+		dataSourceResponse = dataSourceConfigRepository.save(dataSourceResponse);
 		return dataSourceResponse;
 	}
 
@@ -78,32 +85,47 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	}
 
 	@Override
-	public void updateDataSourceById(DataSource dataSourceupdateRequest) {
-		Optional<DataSource> dataSourceOptional = dataSourceConfigRepository.findById(dataSourceupdateRequest.getId());
-		if (dataSourceOptional.isEmpty()) {
-			log.error(FILENAME + "[updateDataSourceConfigById] "
-					+ ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceupdateRequest.getId());
-
-			throw new ResourceNotFoundException(
-					ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceupdateRequest.getId());
-		}
-		dataSourceConfigRepository.save(dataSourceupdateRequest);
-	}
-
-	@Override
 	public List<DataSourceDTO> allActiveDataSource() {
 		List<DataSourceDTO> dataSourceDTOList = new ArrayList<DataSourceDTO>();
 		String activeStatus = "Y";
 		List<DataSource> dataSourceList = dataSourceConfigRepository.findByActive(activeStatus);
 		if (!dataSourceList.isEmpty()) {
-			dataSourceDTOList = dataSourceList
-					  .stream()
-					  .map(dataSource -> modelMapper.map(dataSource, DataSourceDTO.class))
-					  .collect(Collectors.toList());
-			
+			dataSourceList.stream().forEach(datasource -> {
+				AesUtil aesUtil = new AesUtil();
+				DataSourceDTO dataSourceMapper = modelMapper.map(datasource, DataSourceDTO.class);
+				if (dataSourceMapper.getEncryptedPassword().equals("Y")) {
+					String decryptPassword = aesUtil.decrypt(dataSourceMapper.getPassword());
+					dataSourceMapper.setPassword(decryptPassword);
+				}
+				dataSourceDTOList.add(dataSourceMapper);
+			});
+
 			log.info(FILENAME + "[getDataSourceConfigById] " + dataSourceDTOList.toString());
 		}
 		return dataSourceDTOList;
+	}
+
+	@Override
+	public DataSource updateDataSourceById(@Valid DataSourceDTO dataSourceRequest, Long datasourceId) {
+		AesUtil aesUtil = new AesUtil();
+		DataSource dataSourceResponse = new DataSource();
+		Optional<DataSource> dataSourceOptional = dataSourceConfigRepository.findById(datasourceId);
+		if (dataSourceOptional.isEmpty()) {
+			log.error(FILENAME + "[updateDataSourceConfigById] "
+					+ ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + datasourceId);
+
+			throw new ResourceNotFoundException(ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + datasourceId);
+		}
+
+		if (null != dataSourceRequest.getPassword()) {
+			String password = dataSourceRequest.getPassword();
+			String encryptedPassword = aesUtil.encrypt(password);
+			dataSourceRequest.setEncryptedPassword("Y");
+			dataSourceRequest.setPassword(encryptedPassword);
+			dataSourceResponse = modelMapper.map(dataSourceRequest, DataSource.class);
+		}
+		dataSourceResponse = dataSourceConfigRepository.save(dataSourceResponse);
+		return dataSourceResponse;
 	}
 
 }

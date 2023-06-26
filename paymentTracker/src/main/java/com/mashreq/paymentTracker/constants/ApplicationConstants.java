@@ -56,4 +56,7 @@ public class ApplicationConstants {
 	public static final String TILDE = "~";
 	public static final String COMMA = ",";
 	public static final String SINGLE_QUOTE = "'";
+	
+	public static final String REPORT_ERROR_DESCRIPTION = "No Reports Configured";
+	public static final String REPORT_WARNING_DESCRIPTION = "No Active Reports";
 }

@@ -35,26 +35,16 @@ public class DataSourceController {
 	private DataSourceConfigService dataSourceConfigService;
 
 	@PostMapping("/save")
-	public ResponseEntity<String> saveDataSource(@Valid @RequestBody DataSource dataSourceConfigurationRequest) {
-		try {
-			log.info(FILENAME + "[saveDataSourceConfig Request]--->" + dataSourceConfigurationRequest.toString());
-			dataSourceConfigService.saveDataSourceConfiguration(dataSourceConfigurationRequest);
-			return new ResponseEntity<String>(ApplicationConstants.DATA_SOURCE_CREATION_MSG, HttpStatus.CREATED);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<DataSource> saveDataSource(@Valid @RequestBody DataSourceDTO dataSourceRequest) {
+		log.info(FILENAME + "[saveDataSourceConfig Request]--->" + dataSourceRequest.toString());
+		DataSource dataSourceReponse = dataSourceConfigService.saveDataSourceConfiguration(dataSourceRequest);
+		return new ResponseEntity<DataSource>(dataSourceReponse, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/{dataSourceId}")
 	public ResponseEntity<DataSourceDTO> getDataSourceById(@PathVariable Long dataSourceId) {
 		DataSourceDTO dataSourceConfigResponse = new DataSourceDTO();
-		try {
-			dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<DataSourceDTO>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
 		return ResponseEntity.ok(dataSourceConfigResponse);
 	}
 
@@ -76,12 +66,13 @@ public class DataSourceController {
 		return ResponseEntity.ok(dataSourceConfigurationListResponse);
 	}
 
-	@PutMapping()
-	public ResponseEntity<String> updateDataSourceById(@Valid @RequestBody DataSource dataSourceupdateRequest) {
-		log.info(FILENAME + "[updateDataSourceConfig] Request from UI-->" + dataSourceupdateRequest.toString());
-		dataSourceConfigService.updateDataSourceById(dataSourceupdateRequest);
+	@PutMapping("{dataSourceId}")
+	public ResponseEntity<DataSource> updateDataSourceById(@Valid @RequestBody DataSourceDTO dataSourceRequest,
+			@PathVariable Long datasourceId) {
+		log.info(FILENAME + "[updateDataSourceConfig] Request from UI-->" + dataSourceRequest.toString());
+		DataSource dataSourceReponse = dataSourceConfigService.updateDataSourceById(dataSourceRequest, datasourceId);
 		log.info(FILENAME + "[updateDataSourceConfig] Response-->" + ApplicationConstants.DATA_SOURCE_UPDATE_MSG);
-		return new ResponseEntity<String>(ApplicationConstants.DATA_SOURCE_UPDATE_MSG, HttpStatus.ACCEPTED);
+		return new ResponseEntity<DataSource>(dataSourceReponse, HttpStatus.ACCEPTED);
 
 	}
 

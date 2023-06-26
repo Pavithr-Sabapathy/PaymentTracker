@@ -57,7 +57,17 @@ public class AesUtil {
 			throw fail(e);
 		}
 	}
-
+	
+	public String encrypt(String plaintext) {
+		try {
+			SecretKey key = generateKey(salt, passPhrase);
+			byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, key, iv, plaintext.getBytes("UTF-8"));
+			return base64(encrypted);
+		} catch (UnsupportedEncodingException e) {
+			throw fail(e);
+		}
+	}
+	
 	public String decrypt(String salt, String iv, String passphrase, String ciphertext) {
 		try {
 			SecretKey key = generateKey(salt, passphrase);

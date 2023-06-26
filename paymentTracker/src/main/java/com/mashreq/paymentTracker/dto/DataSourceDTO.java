@@ -2,31 +2,39 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
-public class DataSourceDTO implements Serializable{
+import jakarta.validation.constraints.NotNull;
+
+public class DataSourceDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-	private Long id;
+	@NotNull(message = "Datasource name should not be empty")
 	private String name;
+	@NotNull(message = "Description should not be empty")
 	private String description;
+	@NotNull(message = "provider should not be empty")
 	private Long provider;
+	@NotNull(message = "UserName should not be empty")
 	private String userName;
+	@NotNull(message = "Password should not be empty")
 	private String password;
 	private String encryptedPassword;
+	@NotNull(message = "Server IP should not be empty")
 	private String serverIP;
+	@NotNull(message = "Port should not be empty")
 	private Long port;
+	@NotNull(message = "Schema name should not be empty")
 	private String schemaName;
+	@NotNull(message = "Owner should not be empty")
 	private String owner;
+	@NotNull(message = "Active should not be empty")
 	private String active;
 
 	public DataSourceDTO() {
 	}
 
-
-	public DataSourceDTO(Long id, String name, String description, Long provider, String userName, String password,
+	public DataSourceDTO(String name, String description, Long provider, String userName, String password,
 			String encryptedPassword, String serverIP, Long port, String schemaName, String owner, String active) {
 		super();
-		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.provider = provider;
@@ -38,15 +46,6 @@ public class DataSourceDTO implements Serializable{
 		this.schemaName = schemaName;
 		this.owner = owner;
 		this.active = active;
-	}
-
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getName() {
@@ -139,7 +138,7 @@ public class DataSourceDTO implements Serializable{
 
 	@Override
 	public String toString() {
-		return "DataSourceDTO [id=" + id + ", name=" + name + ", description=" + description + ", provider=" + provider
+		return "DataSourceDTO [ name=" + name + ", description=" + description + ", provider=" + provider
 				+ ", userName=" + userName + ", password=" + password + ", encryptedPassword=" + encryptedPassword
 				+ ", serverIP=" + serverIP + ", port=" + port + ", schemaName=" + schemaName + ", owner=" + owner
 				+ ", active=" + active + "]";

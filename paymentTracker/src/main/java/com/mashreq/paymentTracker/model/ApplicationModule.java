@@ -16,7 +16,7 @@ import jakarta.validation.constraints.NotNull;
 public class ApplicationModule {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id;
 
 	@NotNull(message = "Module Name should not be empty")
 	@Column(name = "mod_name")
@@ -30,6 +30,7 @@ public class ApplicationModule {
 	@Column(name = "mod_description")
 	private String moduleDescription;
 
+	
 	@NotNull(message = "active should not be empty")
 	@Column(name = "active")
 	private String active;
@@ -37,11 +38,17 @@ public class ApplicationModule {
 	@Column(name = "valid")
 	private String valid;
 
-	public long getId() {
+	@Column(name = "error")
+	private String error;
+	
+	@Column(name = "warning")
+	private String warning;
+	
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -85,16 +92,35 @@ public class ApplicationModule {
 		this.valid = valid;
 	}
 
-	@Override
-	public String toString() {
-		return "Module [id=" + id + ", moduleName=" + moduleName + ", displayName=" + displayName
-				+ ", moduleDescription=" + moduleDescription + ", active=" + active + ", valid=" + valid + "]";
+	public String getError() {
+		return error;
 	}
 
-	public ApplicationModule(long id, @NotNull(message = "Module Name should not be empty") String moduleName,
+	public void setError(String error) {
+		this.error = error;
+	}
+
+	public String getWarning() {
+		return warning;
+	}
+
+	public void setWarning(String warning) {
+		this.warning = warning;
+	}
+
+	@Override
+	public String toString() {
+		return "ApplicationModule [id=" + id + ", moduleName=" + moduleName + ", displayName=" + displayName
+				+ ", moduleDescription=" + moduleDescription + ", active=" + active + ", valid=" + valid + ", error="
+				+ error + ", warning=" + warning + "]";
+	}
+
+
+	public ApplicationModule(Long id, @NotNull(message = "Module Name should not be empty") String moduleName,
 			@NotNull(message = "Display Name should not be empty") String displayName,
 			@NotNull(message = "Description should not be empty") String moduleDescription,
-			@NotNull(message = "active should not be empty") String active, String valid) {
+			@NotNull(message = "active should not be empty") String active, String valid, String error,
+			String warning) {
 		super();
 		this.id = id;
 		this.moduleName = moduleName;
@@ -102,11 +128,15 @@ public class ApplicationModule {
 		this.moduleDescription = moduleDescription;
 		this.active = active;
 		this.valid = valid;
+		this.error = error;
+		this.warning = warning;
 	}
 
 	public ApplicationModule() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	
+	
 
 }
