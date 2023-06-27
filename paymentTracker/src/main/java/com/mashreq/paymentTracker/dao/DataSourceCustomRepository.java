@@ -13,4 +13,5 @@ public interface DataSourceCustomRepository {
 	@Query("select ds from DataSource ds where ds.active=:activeStatus")
 	List<DataSource> findByActive(String activeStatus);
 
+	
 }

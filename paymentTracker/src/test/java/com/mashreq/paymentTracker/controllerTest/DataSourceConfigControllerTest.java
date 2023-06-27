@@ -48,7 +48,7 @@ public class DataSourceConfigControllerTest {
 
 	@Test
 	public void testSaveDataSourceConfig() throws Exception {
-		DataSource mockDataSourceConfig = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle",
+		DataSourceDTO mockDataSourceConfig = new DataSourceDTO("Oracle", "null", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
 
 		when(dataSourceConfigService.saveDataSourceConfiguration(any(DataSource.class)))
@@ -86,7 +86,7 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testGetDataSourceConfig() throws Exception {
 		long dataSourceId = 1L;
-		DataSourceDTO mockDataSourceConfigValue = new DataSourceDTO(1L,"sample", "sample", 1L, "sample", "sample",
+		DataSourceDTO mockDataSourceConfigValue = new DataSourceDTO("sample", "sample", 1L, "sample", "sample",
 				"sample", "sample", 1L, "sample", "sample", "Y");
 		Mockito.when(dataSourceConfigService.getDataSourceConfigById(dataSourceId))
 				.thenReturn(mockDataSourceConfigValue);

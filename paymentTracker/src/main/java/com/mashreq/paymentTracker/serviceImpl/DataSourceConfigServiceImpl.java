@@ -1,14 +1,21 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
@@ -18,9 +25,6 @@ import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.repository.DataSourceRepository;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 import com.mashreq.paymentTracker.utility.AesUtil;
-
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import jakarta.validation.Valid;
 
 @Component
 public class DataSourceConfigServiceImpl implements DataSourceConfigService {
@@ -90,24 +94,44 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	}
 
 	@Override
-	public List<DataSourceDTO> allActiveDataSource() {
+	public Map<String, Object> allActiveDataSource(int page, int size, List<String> sort) {
+		Map<String, Object> response = new HashMap<>();
 		List<DataSourceDTO> dataSourceDTOList = new ArrayList<DataSourceDTO>();
 		String activeStatus = "Y";
-		List<DataSource> dataSourceList = dataSourceConfigRepository.findByActive(activeStatus);
+		List<Order> orders = new ArrayList<Order>();
+
+		if (sort.get(0).contains(",")) {
+			// will sort more than 2 fields
+			// sortOrder="field, direction"
+			for (String sortOrder : sort) {
+				String[] _sort = sortOrder.split(",");
+				orders.add(new Order(getSortDirection(_sort[1]), _sort[0]));
+			}
+		} else {
+			// sort=[field, direction]
+			orders.add(new Order(getSortDirection(sort.get(1)), sort.get(0)));
+		}
+
+		Pageable pagingSort = PageRequest.of(page, size, Sort.by(orders));
+		Page<DataSource> dataSourceList = dataSourceConfigRepository.findByActiveContaining(activeStatus, pagingSort);
 		if (!dataSourceList.isEmpty()) {
+
 			dataSourceList.stream().forEach(datasource -> {
-				AesUtil aesUtil = new AesUtil();
 				DataSourceDTO dataSourceMapper = modelMapper.map(datasource, DataSourceDTO.class);
-				if (dataSourceMapper.getEncryptedPassword().equals("Y")) {
-					String decryptPassword = aesUtil.decrypt(dataSourceMapper.getPassword());
-					dataSourceMapper.setPassword(decryptPassword);
-				}
 				dataSourceDTOList.add(dataSourceMapper);
 			});
-
-			log.info(FILENAME + "[getDataSourceConfigById] " + dataSourceDTOList.toString());
+			response.put("dataSource", dataSourceDTOList);
+			response.put("currentPage", dataSourceList.getNumber());
+			response.put("totalItems", dataSourceList.getTotalElements());
+			response.put("totalPages", dataSourceList.getTotalPages());
+			log.info(FILENAME + "[getDataSourceConfigById] " + response.toString());
 		}
-		return dataSourceDTOList;
+		return response;
+	}
+
+	private Direction getSortDirection(String _sort) {
+		Sort.Direction dire = _sort.contains("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+		return dire;
 	}
 
 	@Override

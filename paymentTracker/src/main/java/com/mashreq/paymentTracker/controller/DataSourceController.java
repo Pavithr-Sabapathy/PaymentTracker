@@ -1,6 +1,7 @@
 package com.mashreq.paymentTracker.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
@@ -77,8 +79,9 @@ public class DataSourceController {
 	}
 
 	@GetMapping("/allActive")
-	public ResponseEntity<List<DataSourceDTO>> allActive() {
-		List<DataSourceDTO> dataSourceDTOList = dataSourceConfigService.allActiveDataSource();
+	public ResponseEntity<Map<String, Object>> allActive(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id,desc") List<String> sort) {
+		Map<String, Object> dataSourceDTOList = dataSourceConfigService.allActiveDataSource(page, size, sort);
 		log.info(FILENAME + "[allDataSourceConfig] Ended with this response-->" + dataSourceDTOList.toString());
 		return ResponseEntity.ok(dataSourceDTOList);
 	}
