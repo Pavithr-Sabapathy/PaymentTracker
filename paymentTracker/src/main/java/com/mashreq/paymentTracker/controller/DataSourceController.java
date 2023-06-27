@@ -60,9 +60,11 @@ public class DataSourceController {
 	}
 
 	@GetMapping("/allDataSource")
-	public ResponseEntity<List<DataSource>> getAllDataSource() {
+	public ResponseEntity<Map<String, Object>> getAllDataSource(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id,desc") List<String> sort) {
 		log.info(FILENAME + "[allDataSourceConfig] Started");
-		List<DataSource> dataSourceConfigurationListResponse = dataSourceConfigService.allDataSourceConfig();
+		Map<String, Object> dataSourceConfigurationListResponse = dataSourceConfigService.allDataSourceConfig(page,
+				size, sort);
 		log.info(FILENAME + "[allDataSourceConfig] Ended with this response-->"
 				+ dataSourceConfigurationListResponse.toString());
 		return ResponseEntity.ok(dataSourceConfigurationListResponse);

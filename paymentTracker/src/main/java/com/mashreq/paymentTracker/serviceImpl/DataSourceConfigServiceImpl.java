@@ -88,9 +88,33 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	}
 
 	@Override
-	public List<DataSource> allDataSourceConfig() {
-		List<DataSource> dataSourceConfigurationResponse = dataSourceConfigRepository.findAll();
-		return dataSourceConfigurationResponse;
+	public Map<String, Object> allDataSourceConfig(int page, int size, List<String> sort) {
+		List<DataSourceDTO> dataSourceDTOList = new ArrayList<DataSourceDTO>();
+		List<Order> orders = new ArrayList<Order>();
+		Map<String, Object> response = new HashMap<>();
+		if (sort.get(0).contains(",")) {
+			for (String sortOrder : sort) {
+				String[] _sort = sortOrder.split(",");
+				orders.add(new Order(getSortDirection(_sort[1]), _sort[0]));
+			}
+		} else {
+			orders.add(new Order(getSortDirection(sort.get(1)), sort.get(0)));
+		}
+
+		Pageable pagingSort = PageRequest.of(page, size, Sort.by(orders));
+		Page<DataSource> dataSourceList = dataSourceConfigRepository.findAll(pagingSort);
+		if (!dataSourceList.isEmpty()) {
+			dataSourceList.stream().forEach(datasource -> {
+				DataSourceDTO dataSourceMapper = modelMapper.map(datasource, DataSourceDTO.class);
+				dataSourceDTOList.add(dataSourceMapper);
+			});
+			response.put("dataSource", dataSourceDTOList);
+			response.put("currentPage", dataSourceList.getNumber());
+			response.put("totalItems", dataSourceList.getTotalElements());
+			response.put("totalPages", dataSourceList.getTotalPages());
+			log.info(FILENAME + "[getDataSourceConfigById] " + response.toString());
+		}
+		return response;
 	}
 
 	@Override

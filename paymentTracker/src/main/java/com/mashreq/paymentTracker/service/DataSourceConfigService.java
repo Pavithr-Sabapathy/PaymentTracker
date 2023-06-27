@@ -16,7 +16,7 @@ public interface DataSourceConfigService {
 
 	void deleteDataSourceById(long dataSourceId);
 
-	List<DataSource> allDataSourceConfig();
+	Map<String, Object> allDataSourceConfig(int page, int size, List<String> sort);
 
 	Map<String, Object> allActiveDataSource(int page, int size, List<String> sort);
 
