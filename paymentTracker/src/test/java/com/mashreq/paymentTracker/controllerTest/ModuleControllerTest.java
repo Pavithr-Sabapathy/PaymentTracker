@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.controller.ModuleController;
+import com.mashreq.paymentTracker.dto.ModuleDTO;
 import com.mashreq.paymentTracker.model.ApplicationModule;
 import com.mashreq.paymentTracker.serviceImpl.ModuleServiceImpl;
 
@@ -58,12 +59,13 @@ public class ModuleControllerTest {
 	public void testSaveModule() throws Exception {
 		
 		ApplicationModule moduleMockObject = new ApplicationModule();
-		moduleMockObject.setModuleName("module1");
-		moduleMockObject.setDisplayName("sampleModule");
-		moduleMockObject.setModuleDescription("ModuleDesc");
-		moduleMockObject.setActive("active");
-		moduleMockObject.setValid("valid");
-	        doNothing().when(mockModuleService).saveModule(moduleMockObject);;
+		ModuleDTO moduleDTO = new ModuleDTO();
+		moduleDTO.setName("module1");
+		moduleDTO.setDisplayName("sampleModule");
+		moduleDTO.setDescription("ModuleDesc");
+		moduleDTO.setActive("active");
+		moduleDTO.setValid("valid");
+	        doNothing().when(mockModuleService).saveModule(moduleDTO);;
 
 	        MvcResult result =   mockMvc.perform(MockMvcRequestBuilders.post("/module")
 	        		.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)

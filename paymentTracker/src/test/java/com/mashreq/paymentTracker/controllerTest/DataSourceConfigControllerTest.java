@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -48,22 +49,26 @@ public class DataSourceConfigControllerTest {
 
 	@Test
 	public void testSaveDataSourceConfig() throws Exception {
-		DataSourceDTO mockDataSourceConfig = new DataSourceDTO("Oracle", "null", BigInteger.ZERO, "Oracle",
-				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
+		DataSourceDTO mockDataSourceDTO = new DataSourceDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
+				"@!@#234", 1L, "123.13.34.56", "PT", "y");
 
-		when(dataSourceConfigService.saveDataSourceConfiguration(any(DataSource.class)))
-				.thenReturn(mockDataSourceConfig);
+		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
+
+		when(dataSourceConfigService.saveDataSourceConfiguration(mockDataSourceDTO))
+				.thenReturn(mockdataSourceConfigValue);
 		// execute
-		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/dataSource/save")
-				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
-				.content(TestUtils.objectToJson(mockDataSourceConfig))).andReturn();
+		MvcResult result = mockMvc
+				.perform(MockMvcRequestBuilders.post("/dataSource/save").contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON).content(TestUtils.objectToJson(mockdataSourceConfigValue)))
+				.andReturn();
 
 		// verify
 		int status = result.getResponse().getStatus();
 		assertEquals(HttpStatus.CREATED.value(), status, "Incorrect Response Status");
 
 		// verify that service method was called once
-		verify(dataSourceConfigService).saveDataSourceConfiguration(mockDataSourceConfig);
+		verify(dataSourceConfigService).saveDataSourceConfiguration(mockDataSourceDTO);
 		String dataSourceConfigResponse = result.getResponse().getContentAsString();
 		assertNotNull(dataSourceConfigResponse);
 		assertEquals(ApplicationConstants.DATA_SOURCE_CREATION_MSG, dataSourceConfigResponse);
@@ -72,11 +77,14 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testAllDataSourceConfig() throws Exception {
 
-		DataSource dataSourceConfigValue = new DataSource(1L, "Oracle", "null",BigInteger.ZERO, "Oracle",
-				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE");
+		DataSource dataSourceConfigValue = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle", "ReadOnly",
+				"12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
+		DataSourceDTO mockDataSourceDTO = new DataSourceDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
+				"@!@#234", 1L, "123.13.34.56", "PT", "y");
+
 		List<DataSource> mockDatasourceConfigList = Arrays.asList(dataSourceConfigValue);
 
-		Mockito.when(dataSourceConfigService.allDataSourceConfig()).thenReturn(mockDatasourceConfigList);
+		Mockito.when(dataSourceConfigService.allDataSourceConfig(0, 0, null)).thenReturn((Map<String, Object>) mockDataSourceDTO);
 
 		mockMvc.perform(get("/dataSource/allDataSource")).andExpect(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(1)))
@@ -107,10 +115,11 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testUpdateDataSourceConfig() throws Exception {
 		long dataSourceId = 1L;
-	//	mockMvc.perform(MockMvcRequestBuilders.put("/dataSource/updateDataSourceConfig/{dataSourceId}", dataSourceId)       --->  to be check
+		// mockMvc.perform(MockMvcRequestBuilders.put("/dataSource/updateDataSourceConfig/{dataSourceId}",
+		// dataSourceId) ---> to be check
 		mockMvc.perform(MockMvcRequestBuilders.put("/dataSource", dataSourceId)
-				.content(asJsonString(new DataSource(1L, "Oracle1", "ReadValue", BigInteger.ZERO, "Oracle",
-						"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y","UAE")))
+				.content(asJsonString(new DataSource(1L, "Oracle1", "ReadValue", BigInteger.ZERO, "Oracle", "ReadOnly",
+						"12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE")))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isAccepted());
 	}

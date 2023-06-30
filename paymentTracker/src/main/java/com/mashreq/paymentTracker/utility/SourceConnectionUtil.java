@@ -17,10 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mashreq.paymentTracker.configuration.TrackerConfiguration;
+import com.mashreq.paymentTracker.exception.CryptographyException;
 import com.mashreq.paymentTracker.exception.DataAccessException;
 import com.mashreq.paymentTracker.exception.ExceptionCodes;
 import com.mashreq.paymentTracker.model.DataSource;
-import com.mashreq.paymentTracker.service.DataSourceConfigService;
+import com.mashreq.paymentTracker.repository.DataSourceRepository;
+import com.mashreq.paymentTracker.type.EncryptionAlgorithm;
 
 import jakarta.annotation.PostConstruct;
 
@@ -29,7 +31,7 @@ public class SourceConnectionUtil {
 	private static final Logger log = LoggerFactory.getLogger(SourceConnectionUtil.class);
 
 	@Autowired
-	private DataSourceConfigService dataSourceConfigService;
+	private DataSourceRepository dataSourceConfigRepository;
 
 	@Autowired
 	private TrackerConfiguration trackerConfig;
@@ -39,8 +41,7 @@ public class SourceConnectionUtil {
 
 	@PostConstruct
 	void loadDataSources() throws DataAccessException {
-
-		List<DataSource> dataSources = dataSourceConfigService.allDataSourceConfig();
+		List<DataSource> dataSources = dataSourceConfigRepository.findAll();
 
 		try {
 			setupDataSources(dataSources);
@@ -107,8 +108,12 @@ public class SourceConnectionUtil {
 		ObjectPool connectionPool = genericObjectPool;
 		String password = dataSource.getPassword();
 		if (dataSource.getEncryptedPassword().equals("Y")) {
-			AesUtil aesUtil = new AesUtil();
-			password = aesUtil.decrypt(dataSource.getPassword());
+			try {
+				password = AesUtil.decryptBase64(dataSource.getPassword(), "execueDatasourceConnection",
+						EncryptionAlgorithm.TRIPLE_DES);
+			} catch (CryptographyException e) {
+				e.getMessage();
+			}
 		}
 		ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(dbConURL,
 				dataSource.getUserName(), password);

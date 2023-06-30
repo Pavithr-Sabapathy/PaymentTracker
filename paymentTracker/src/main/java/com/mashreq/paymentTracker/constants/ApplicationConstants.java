@@ -33,6 +33,7 @@ public class ApplicationConstants {
 	public static final String COMPONENT_CREATION_MSG = "Component Created Successfully";
 	public static final String COMPONENT_DELETION_MSG = "Component deleted for this Id";
 	public static final String COMPONENT_DOES_NOT_EXISTS = "Component not exist with this id :";
+	public static final String COMPONENT_REPORT_DOES_NOT_EXISTS = "Component not exist for this reportId";
 	public static final String COMPONENT_DETAILS_CREATION_MSG = "Component Details Created Successfully";
 	public static final String COMPONENT_DETAILS_DELETION_MSG = "Component Details deleted for this Id";
 	public static final String COMPONENT_DETAILS_DOES_NOT_EXISTS = "Component Details not exist";

@@ -15,7 +15,7 @@ public class ModuleDTO implements Serializable {
 	private String displayName;
 
 	@NotNull(message = "Description should not be empty")
-	private String description;
+	private String moduleDescription;
 
 	@NotNull(message = "active should not be empty")
 	private String active;
@@ -39,12 +39,12 @@ public class ModuleDTO implements Serializable {
 		this.displayName = displayName;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getModuleDescription() {
+		return moduleDescription;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
+	public void setModuleDescription(String moduleDescription) {
+		this.moduleDescription = moduleDescription;
 	}
 
 	public String getActive() {
@@ -65,7 +65,7 @@ public class ModuleDTO implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ModuleRequestDTO [name=" + name + ", displayName=" + displayName + ", description=" + description
+		return "ModuleRequestDTO [name=" + name + ", displayName=" + displayName + ", description=" + moduleDescription
 				+ ", active=" + active + ", valid=" + valid + "]";
 	}
 

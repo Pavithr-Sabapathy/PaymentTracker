@@ -1,162 +1,108 @@
 package com.mashreq.paymentTracker.utility;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
+import java.util.Properties;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
+import org.springframework.util.StringUtils;
 
-// TODO: Implement 256-bit version like: http://securejava.wordpress.com/2012/10/25/aes-256/
+import com.mashreq.paymentTracker.exception.CryptographyException;
+import com.mashreq.paymentTracker.type.EncryptionAlgorithm;
+
 public class AesUtil {
 
-	private static final String passPhrase = "semantifykey";
-	private static final String iv = "e21534bbd56aa4cd4a8f0136a930f4dc";
-	private static final String salt = "6b35b41531f9e0d6f22a086b5960c649";
-	private final int keySize;
-	private final int iterationCount;
-	private final Cipher cipher;
+	private static final String ENCRYPTION_DECRYPTION_KEY = "execueDatasourceConnection";
 
-	public AesUtil(int keySize, int iterationCount) {
-		this.keySize = keySize;
-		this.iterationCount = iterationCount;
+
+	public static String encryptDecrypt(String password, String flag) {
+
+		String stringToBeEncryptDecrypt = password;
+		String flagToSpecifyEncryptDecrypt = flag;
+
+		String encryptDecryptedString = null;
 		try {
-			cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-		} catch (NoSuchAlgorithmException nsae) {
-			throw fail(nsae);
-		} catch (NoSuchPaddingException nspe) {
-			throw fail(nspe);
+			if (flagToSpecifyEncryptDecrypt.equalsIgnoreCase("e")) {
+				encryptDecryptedString = encryptBase64(stringToBeEncryptDecrypt, ENCRYPTION_DECRYPTION_KEY,
+						EncryptionAlgorithm.TRIPLE_DES);
+			} else if (flagToSpecifyEncryptDecrypt.equalsIgnoreCase("d")) {
+				encryptDecryptedString = decryptBase64(stringToBeEncryptDecrypt, ENCRYPTION_DECRYPTION_KEY,
+						EncryptionAlgorithm.TRIPLE_DES);
+			}
+		} catch (CryptographyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
+		return encryptDecryptedString;
 	}
 
-	public AesUtil() {
-		this(128, 1000);
-	}
-
-	public String encrypt(String salt, String iv, String passphrase, String plaintext) {
+	public static String decryptBase64(String encryptedString, String encryptionKey,
+			EncryptionAlgorithm encryptionAlgorithm) throws CryptographyException {
 		try {
-			SecretKey key = generateKey(salt, passphrase);
-			byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, key, iv, plaintext.getBytes("UTF-8"));
-			return base64(encrypted);
+			if (StringUtils.isEmpty(encryptedString)) {
+				return encryptedString;
+			}
+			Cipher decryptCipher = Cipher.getInstance(encryptionAlgorithm.getValue());
+
+			decryptCipher.init(Cipher.DECRYPT_MODE, TripleDESKeyGenerationService.generateSecretKey(encryptionKey));
+			// Encode bytes to base64 to get a string
+			byte[] decodedBytes = Base64.decodeBase64(encryptedString.getBytes());
+			// Decrypt
+			byte[] unencryptedByteArray = decryptCipher.doFinal(decodedBytes);
+			// Decode using utf-8
+			return new String(unencryptedByteArray, "UTF8");
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptographyException(10903, e);
+		} catch (NoSuchPaddingException e) {
+			throw new CryptographyException(10903, e);
+		} catch (InvalidKeyException e) {
+			throw new CryptographyException(10903, e);
 		} catch (UnsupportedEncodingException e) {
-			throw fail(e);
+			throw new CryptographyException(10903, e);
+		} catch (IllegalBlockSizeException e) {
+			throw new CryptographyException(10903, e);
+		} catch (BadPaddingException e) {
+			throw new CryptographyException(10903, e);
 		}
 	}
-	
-	public String encrypt(String plaintext) {
+
+	public static String encryptBase64(String unencryptedString, String decryptionKey,
+			EncryptionAlgorithm encryptionAlgorithm) throws CryptographyException {
 		try {
-			SecretKey key = generateKey(salt, passPhrase);
-			byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, key, iv, plaintext.getBytes("UTF-8"));
-			return base64(encrypted);
+			if (StringUtils.isEmpty(unencryptedString)) {
+				return unencryptedString;
+			}
+			Cipher encryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		//	Cipher encryptCipher = Cipher.getInstance(encryptionAlgorithm.getValue());
+			encryptCipher.init(Cipher.ENCRYPT_MODE, TripleDESKeyGenerationService.generateSecretKey(decryptionKey));
+			// Encode the string into bytes using utf-8
+			byte[] unencryptedByteArray = unencryptedString.getBytes("UTF8");
+			// Encrypt
+			byte[] encryptedBytes = encryptCipher.doFinal(unencryptedByteArray);
+			// Encode bytes to base64 to get a string
+			return new String(Base64.encodeBase64(encryptedBytes));
+		} catch (NoSuchAlgorithmException e) {
+			throw new CryptographyException(10902, e);
+		} catch (NoSuchPaddingException e) {
+			throw new CryptographyException(10902, e);
+		} catch (InvalidKeyException e) {
+			throw new CryptographyException(10902, e);
 		} catch (UnsupportedEncodingException e) {
-			throw fail(e);
-		}
-	}
-	
-	public String decrypt(String salt, String iv, String passphrase, String ciphertext) {
-		try {
-			SecretKey key = generateKey(salt, passphrase);
-			byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, base64(ciphertext));
-			return new String(decrypted, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw fail(e);
+			throw new CryptographyException(10902, e);
+		} catch (IllegalBlockSizeException e) {
+			throw new CryptographyException(10902, e);
+		} catch (BadPaddingException e) {
+			throw new CryptographyException(10902, e);
 		}
 	}
 
-	public String decrypt(String ciphertext) {
-		try {
-			SecretKey key = generateKey(salt, passPhrase);
-			byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, base64(ciphertext));
-			return new String(decrypted, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw fail(e);
-		}
-	}
-
-	private byte[] doFinal(int encryptMode, SecretKey key, String iv, byte[] bytes) {
-		try {
-			cipher.init(encryptMode, key, new IvParameterSpec(hex(iv)));
-			return cipher.doFinal(bytes);
-		} catch (InvalidKeyException ike) {
-			throw fail(ike);
-		} catch (InvalidAlgorithmParameterException iape) {
-			throw fail(iape);
-		} catch (IllegalBlockSizeException ibse) {
-			throw fail(ibse);
-		} catch (BadPaddingException bpe) {
-			throw fail(bpe);
-		}
-
-	}
-
-	private SecretKey generateKey(String salt, String passphrase) {
-		try {
-			SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-			KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt), iterationCount, keySize);
-			SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-			return key;
-		} catch (NoSuchAlgorithmException nsae) {
-			throw fail(nsae);
-		} catch (InvalidKeySpecException ikse) {
-			throw fail(ikse);
-		}
-	}
-
-	public static String random(int length) {
-		byte[] salt = new byte[length];
-		new SecureRandom().nextBytes(salt);
-		return hex(salt);
-	}
-
-	public static String base64(byte[] bytes) {
-		return Base64.encodeBase64String(bytes);
-	}
-
-	public static byte[] base64(String str) {
-		return Base64.decodeBase64(str);
-	}
-
-	public static String hex(byte[] bytes) {
-		return Hex.encodeHexString(bytes);
-	}
-
-	public static byte[] hex(String str) {
-		try {
-			return Hex.decodeHex(str.toCharArray());
-		} catch (DecoderException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	private IllegalStateException fail(Exception e) {
-		return new IllegalStateException(e);
-	}
-
-	/*
-	 * public static void main (String[] args) {
-	 * 
-	 * AesUtil ut = new AesUtil(); String enc = ut.encrypt(salt, iv, passPhrase,
-	 * "mashreq");
-	 * 
-	 * System.out.println(enc);
-	 * 
-	 * String ppw = "RKXL87+cu7VD20ASHiCpXw==";
-	 * 
-	 * //System.out.println(ut.decrypt(ppw)); // System.out.println(bcry); }
-	 */
 }

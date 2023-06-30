@@ -1,5 +1,8 @@
 package com.mashreq.paymentTracker.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dto.ComponentDTO;
 import com.mashreq.paymentTracker.dto.ComponentDetailsRequestDTO;
 import com.mashreq.paymentTracker.dto.ComponentsRequestDTO;
 import com.mashreq.paymentTracker.service.ComponentsService;
@@ -29,23 +33,19 @@ public class ComponentsController {
 
 	@Autowired
 	private ComponentsService componentService;
-	
-	@GetMapping
-	public ResponseEntity fetchComponentByReportId() {
-		return null;
-		
-	}
-	
+
 	@PostMapping("/saveComponents")
 	public ResponseEntity<String> saveComponents(@RequestBody ComponentsRequestDTO componentsRequest) {
-		try {
-			log.info(FILENAME + "[saveMetrics Request]--->" + componentsRequest.toString());
-			componentService.saveComponents(componentsRequest);
-			return new ResponseEntity<String>(ApplicationConstants.COMPONENT_CREATION_MSG, HttpStatus.CREATED);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		log.info(FILENAME + "[saveMetrics Request]--->" + componentsRequest.toString());
+		componentService.saveComponents(componentsRequest);
+		return new ResponseEntity<String>(ApplicationConstants.COMPONENT_CREATION_MSG, HttpStatus.CREATED);
+	}
+
+	@GetMapping("/{componentId}")
+	public ResponseEntity<Map<String, Object>> fetchComponentById(@PathVariable("componentId") long componentId) {
+		Map<String, Object> componentDetailsResponse = componentService.fetchComponentById(componentId);
+		return new ResponseEntity<Map<String, Object>>(componentDetailsResponse, HttpStatus.CREATED);
+
 	}
 
 	@DeleteMapping("/{componentId}")
@@ -55,9 +55,10 @@ public class ComponentsController {
 		log.info(FILENAME + "[deleteComponents deleted for this ID]--->" + componentId);
 		return new ResponseEntity<String>(ApplicationConstants.COMPONENT_DELETION_MSG, HttpStatus.ACCEPTED);
 	}
-	
+
 	@PostMapping("/saveDetails")
-	public ResponseEntity<String> saveComponentsDetails(@RequestBody ComponentDetailsRequestDTO componentDetailsRequest) {
+	public ResponseEntity<String> saveComponentsDetails(
+			@RequestBody ComponentDetailsRequestDTO componentDetailsRequest) {
 		try {
 			log.info(FILENAME + "[saveComponentsDetails Request]--->" + componentDetailsRequest.toString());
 			componentService.saveComponentsDetails(componentDetailsRequest);
@@ -67,7 +68,7 @@ public class ComponentsController {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	@DeleteMapping("/componentDetail/{componentDetailId}")
 	public ResponseEntity<String> deleteComponentDetails(@PathVariable long componentDetailId) {
 		log.info(FILENAME + "[deleteComponentDetails for componentId]--->" + componentDetailId);
@@ -76,4 +77,12 @@ public class ComponentsController {
 		return new ResponseEntity<String>(ApplicationConstants.COMPONENT_DETAILS_DELETION_MSG, HttpStatus.ACCEPTED);
 
 	}
+
+	@GetMapping("report/{reportId}")
+	public ResponseEntity<List<ComponentDTO>> fetchComponentsByReportId(@PathVariable("reportId") long reportId) {
+		List<ComponentDTO> componentDTOList = componentService.fetchComponentsByReportId(reportId);
+		return new ResponseEntity<List<ComponentDTO>>(componentDTOList, HttpStatus.ACCEPTED);
+
+	}
+
 }

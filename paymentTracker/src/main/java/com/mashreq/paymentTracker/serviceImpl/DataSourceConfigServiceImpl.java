@@ -20,10 +20,12 @@ import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.DataSourceDTO;
+import com.mashreq.paymentTracker.exception.CryptographyException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.repository.DataSourceRepository;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
+import com.mashreq.paymentTracker.type.EncryptionAlgorithm;
 import com.mashreq.paymentTracker.utility.AesUtil;
 
 @Component
@@ -45,7 +47,14 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		AesUtil aesUtil = new AesUtil();
 		if (null != dataSourceRequest.getPassword()) {
 			String password = dataSourceRequest.getPassword();
-			String encryptedPassword = aesUtil.encrypt(password);
+			String encryptedPassword = null;
+			try {
+				encryptedPassword = AesUtil.encryptBase64(password, "execueDatasourceConnection",
+						EncryptionAlgorithm.TRIPLE_DES);
+			} catch (CryptographyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			dataSourceRequest.setEncryptedPassword("Y");
 			dataSourceRequest.setPassword(encryptedPassword);
 			dataSourceResponse = modelMapper.map(dataSourceRequest, DataSource.class);
@@ -65,10 +74,16 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		} else {
 			DataSource dataSourceConfigResponse = dataSourceConfigurationOptional.get();
 			dataSourceDTOResponse = modelMapper.map(dataSourceConfigResponse, DataSourceDTO.class);
-			AesUtil aesUtil = new AesUtil();
 			if (dataSourceDTOResponse.getEncryptedPassword().equals("Y")) {
-				String decryptPassword = aesUtil.decrypt(dataSourceDTOResponse.getPassword());
-				dataSourceDTOResponse.setPassword(decryptPassword);
+				String decryptedPassword = null;
+				try {
+					decryptedPassword = AesUtil.decryptBase64(dataSourceDTOResponse.getPassword(), "execueDatasourceConnection",
+							EncryptionAlgorithm.TRIPLE_DES);
+				} catch (CryptographyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				dataSourceDTOResponse.setPassword(decryptedPassword);
 			}
 			log.info(FILENAME + "[getDataSourceConfigById] " + dataSourceDTOResponse.toString());
 		}
@@ -106,6 +121,18 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		if (!dataSourceList.isEmpty()) {
 			dataSourceList.stream().forEach(datasource -> {
 				DataSourceDTO dataSourceMapper = modelMapper.map(datasource, DataSourceDTO.class);
+				if(dataSourceMapper.getEncryptedPassword().equals("Y")) {
+					String decryptedPassword;
+					try {
+						decryptedPassword = AesUtil.decryptBase64(dataSourceMapper.getPassword(), "execueDatasourceConnection",
+								EncryptionAlgorithm.TRIPLE_DES);
+						dataSourceMapper.setPassword(decryptedPassword);
+					} catch (CryptographyException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
 				dataSourceDTOList.add(dataSourceMapper);
 			});
 			response.put("dataSource", dataSourceDTOList);
@@ -172,7 +199,14 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 
 		if (null != dataSourceRequest.getPassword()) {
 			String password = dataSourceRequest.getPassword();
-			String encryptedPassword = aesUtil.encrypt(password);
+			String encryptedPassword = null;
+			try {
+				encryptedPassword = AesUtil.decryptBase64(password, "execueDatasourceConnection",
+						EncryptionAlgorithm.TRIPLE_DES);
+			} catch (CryptographyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			dataSourceRequest.setEncryptedPassword("Y");
 			dataSourceRequest.setPassword(encryptedPassword);
 			dataSourceResponse = modelMapper.map(dataSourceRequest, DataSource.class);
