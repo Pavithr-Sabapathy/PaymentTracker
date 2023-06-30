@@ -69,6 +69,9 @@ public class ComponentsServiceImpl implements ComponentsService {
 			throw new ResourceNotFoundException(
 					ApplicationConstants.REPORT_DOES_NOT_EXISTS + componentsRequest.getReportId());
 		} else {
+			if(null != componentsRequest.getComponentId()) {
+				componentsObject.setId(componentsRequest.getComponentId());
+			}
 			componentsObject.setActive(componentsRequest.getActive());
 			componentsObject.setComponentKey(componentsRequest.getComponentKey());
 			componentsObject.setComponentName(componentsRequest.getComponentName());

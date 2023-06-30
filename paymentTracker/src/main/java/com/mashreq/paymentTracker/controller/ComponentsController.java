@@ -36,9 +36,9 @@ public class ComponentsController {
 
 	@PostMapping("/saveComponents")
 	public ResponseEntity<String> saveComponents(@RequestBody ComponentsRequestDTO componentsRequest) {
-		log.info(FILENAME + "[saveMetrics Request]--->" + componentsRequest.toString());
-		componentService.saveComponents(componentsRequest);
-		return new ResponseEntity<String>(ApplicationConstants.COMPONENT_CREATION_MSG, HttpStatus.CREATED);
+			log.info(FILENAME + "[saveMetrics Request]--->" + componentsRequest.toString());
+			componentService.saveComponents(componentsRequest);
+			return new ResponseEntity<String>(ApplicationConstants.COMPONENT_CREATION_MSG, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/{componentId}")
