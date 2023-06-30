@@ -70,7 +70,7 @@ public class ModuleServiceTest {
 		ModuleDTO moduleDTO = new ModuleDTO();
 		moduleDTO.setName("module1");
 		moduleDTO.setDisplayName("sampleModule");
-		moduleDTO.setDescription("ModuleDesc");
+		moduleDTO.setModuleDescription("ModuleDesc");
 		moduleDTO.setActive("Y");
 		moduleDTO.setValid("Y");
 		
