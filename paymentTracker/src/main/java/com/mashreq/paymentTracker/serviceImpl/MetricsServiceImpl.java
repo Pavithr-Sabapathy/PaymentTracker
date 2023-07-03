@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +36,13 @@ public class MetricsServiceImpl implements MetricsService {
 
 	@Autowired
 	ReportConfigurationRepository reportConfigurationRepo;
+	
+	@Autowired
+	ModelMapper modelMapper;
 
 	@Override
-	public void saveMetrics(MetricsRequestDTO metricsRequest) {
-		// code goes here
+	public MetricsResponseDTO saveMetrics(MetricsRequestDTO metricsRequest) {
+		MetricsResponseDTO metricsResponse = new MetricsResponseDTO();
 		Optional<Report> optionalReport = reportConfigurationRepo.findById(metricsRequest.getReportId());
 
 		if (optionalReport.isPresent()) {
@@ -58,8 +62,15 @@ public class MetricsServiceImpl implements MetricsService {
 			metric.setDisplay(metricsRequest.getDisplay());
 			metric.setReport(optionalReport.get());
 			metric.setEntityId(metricsRequest.getEntityId());
-
-			metricsRepository.save(metric);
+			Metrics metrics = metricsRepository.save(metric);
+			if(null != metrics) {
+				metricsResponse.setMetricsId(metrics.getId());
+				metricsResponse.setDisplay(metrics.getDisplay());
+				metricsResponse.setDisplayName(metrics.getDisplayName());
+				metricsResponse.setEntityId(metrics.getEntityId());
+				metricsResponse.setMetricsOrder(metrics.getMetricsOrder());
+				metricsResponse.setReportId(metrics.getReport().getId());
+			}
 
 		} else {
 			log.error(FILENAME + "[saveMetrics]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS
@@ -67,7 +78,7 @@ public class MetricsServiceImpl implements MetricsService {
 			throw new ResourceNotFoundException(
 					ApplicationConstants.REPORT_DOES_NOT_EXISTS + metricsRequest.getReportId());
 		}
-
+		return metricsResponse;
 	}
 
 	@Override
@@ -81,7 +92,8 @@ public class MetricsServiceImpl implements MetricsService {
 	}
 
 	@Override
-	public void updateMetricsById(MetricsRequestDTO metricsDTORequest, long metricsId) {
+	public MetricsResponseDTO updateMetricsById(MetricsRequestDTO metricsDTORequest, long metricsId) {
+		MetricsResponseDTO metricsResponse = new MetricsResponseDTO();
 		Metrics metricsObject = new Metrics();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(metricsDTORequest.getReportId());
 		if (reportOptional.isEmpty()) {
@@ -99,9 +111,21 @@ public class MetricsServiceImpl implements MetricsService {
 			metricsObject.setEntityId(metricsDTORequest.getEntityId());
 			metricsObject.setId(metricsId);
 			metricsObject.setMetricsOrder(metricsDTORequest.getMetricsOrder());
-			metricsObject = metricsRepository.save(metricsObject);
+			Metrics metrics = metricsRepository.save(metricsObject);
+			if(null != metrics) {
+				
+				metricsResponse.setMetricsId(metrics.getId());
+				metricsResponse.setDisplay(metrics.getDisplay());
+				metricsResponse.setDisplayName(metrics.getDisplayName());
+				metricsResponse.setEntityId(metrics.getEntityId());
+				metricsResponse.setMetricsOrder(metrics.getMetricsOrder());
+				metricsResponse.setReportId(metrics.getReport().getId());
+			}
 		}
-		log.info(FILENAME + "[updateMetricsById]" + metricsObject.toString());
+		
+		log.info(FILENAME + "[updateMetricsById]" + metricsResponse.toString());
+		return metricsResponse;
+		
 	}
 
 	@Override

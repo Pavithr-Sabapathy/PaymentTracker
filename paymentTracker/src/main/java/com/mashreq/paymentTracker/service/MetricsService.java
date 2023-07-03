@@ -10,12 +10,12 @@ public interface MetricsService {
 	
 	void deleteMetricsById(long metricsId);
 
-	void updateMetricsById(MetricsRequestDTO metricsDTORequest, long metricsId);
+	MetricsResponseDTO updateMetricsById(MetricsRequestDTO metricsDTORequest, long metricsId);
 
 	List<MetricsResponse> fetchAllMetrics();
 
 	List<MetricsResponseDTO> fetchMetricsByReportId(long reportId);
 
-	void saveMetrics(MetricsRequestDTO metricsRequest);
+	MetricsResponseDTO saveMetrics(MetricsRequestDTO metricsRequest);
 
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,8 @@ public class PromptServiceImpl implements promptService {
 	}
 
 	@Override
-	public void savePrompt(PromptRequestDTO promptRequest) {
+	public PromptDTO savePrompt(PromptRequestDTO promptRequest) {
+		PromptDTO promptDTO = new PromptDTO();
 		Prompts promptsObject = new Prompts();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(promptRequest.getReportId());
 		if (reportOptional.isEmpty()) {
@@ -87,9 +89,18 @@ public class PromptServiceImpl implements promptService {
 			promptsObject.setPromptKey(promptRequest.getPromptKey());
 			promptsObject.setPromptRequired(promptRequest.getPromptRequired());
 			promptsObject.setReport(reportOptional.get());
-			promptsRepository.save(promptsObject);
+			Prompts promptsReponse = promptsRepository.save(promptsObject);
+			if(null != promptsReponse) {
+				promptDTO.setPromptId(promptsReponse.getId());
+				promptDTO.setDisplayName(promptsReponse.getDisplayName());
+				// promptDTO.setEntityId(prompts.getEntityId());
+				promptDTO.setPromptKey(promptsReponse.getPromptKey());
+				promptDTO.setPromptOrder(promptsReponse.getPromptOrder());
+				promptDTO.setPromptRequired(promptsReponse.getPromptRequired());
+				promptDTO.setReportId(promptsReponse.getReport().getId());
+			}
 		}
-
+		return promptDTO;
 	}
 
 	@Override
@@ -102,7 +113,8 @@ public class PromptServiceImpl implements promptService {
 	}
 
 	@Override
-	public void updatePromptById(PromptRequestDTO promptRequest, long promptId) {
+	public PromptDTO updatePromptById(PromptRequestDTO promptRequest, long promptId) {
+		PromptDTO promptDTO = new PromptDTO();
 		Prompts promptsObject = new Prompts();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(promptRequest.getReportId());
 		if (reportOptional.isEmpty()) {
@@ -120,9 +132,18 @@ public class PromptServiceImpl implements promptService {
 			promptsObject.setPromptOrder(promptRequest.getPromptOrder());
 			promptsObject.setPromptRequired(promptRequest.getPromptRequired());
 			promptsObject.setReport(reportOptional.get());
-			promptsRepository.save(promptsObject);
+			Prompts promptsReponse = promptsRepository.save(promptsObject);
+			if(null != promptsReponse) {
+				promptDTO.setPromptId(promptsReponse.getId());
+				promptDTO.setDisplayName(promptsReponse.getDisplayName());
+				// promptDTO.setEntityId(prompts.getEntityId());
+				promptDTO.setPromptKey(promptsReponse.getPromptKey());
+				promptDTO.setPromptOrder(promptsReponse.getPromptOrder());
+				promptDTO.setPromptRequired(promptsReponse.getPromptRequired());
+				promptDTO.setReportId(promptsReponse.getReport().getId());
+			}
 		}
-
+		return promptDTO;
 	}
 
 	@Override

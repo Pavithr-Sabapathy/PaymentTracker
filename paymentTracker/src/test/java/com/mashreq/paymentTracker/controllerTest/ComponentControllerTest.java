@@ -36,7 +36,7 @@ public class ComponentControllerTest {
 
 	@Test
 	public void testSaveComponents() throws Exception {
-		ComponentsRequestDTO componentRequestDTO = new ComponentsRequestDTO("sample_Tracker", "Sample Tracker", "Y", 1,5);
+		ComponentsRequestDTO componentRequestDTO = new ComponentsRequestDTO(0L, "sample_Tracker", "Sample Tracker", "Y", 1,5);
 
 		componentService.saveComponents(componentRequestDTO);
 		// execute

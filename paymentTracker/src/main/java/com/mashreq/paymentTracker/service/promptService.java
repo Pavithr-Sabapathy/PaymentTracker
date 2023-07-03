@@ -10,11 +10,11 @@ public interface promptService {
 
 	List<PromptResponseDTO> fetchAllPrompts();
 
-	void savePrompt(PromptRequestDTO promptRequest);
+	PromptDTO savePrompt(PromptRequestDTO promptRequest);
 
 	void deletePromptById(long promptId);
 
-	void updatePromptById(PromptRequestDTO promptRequest, long promptId);
+	PromptDTO updatePromptById(PromptRequestDTO promptRequest, long promptId);
 
 	List<PromptDTO> fetchPromptsByReportId(long reportId);
 
