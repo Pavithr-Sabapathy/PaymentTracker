@@ -120,7 +120,7 @@ public class MetricsServiceImpl implements MetricsService {
 
 			ReportDTO reportResponseDto = new ReportDTO(report.getId(), report.getReportName(), report.getDisplayName(),
 					report.getReportDescription(), report.getReportCategory(), report.getActive(), report.getValid(),
-					report.getModuleId());
+					report.getModuleId(),report.getConnectorKey());
 			reportResponseDto.setId(report.getId());
 
 			List<MetricsDTO> metric = metrics.stream().map(obj -> new MetricsDTO(obj.getDisplayName(),

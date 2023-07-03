@@ -128,6 +128,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			reportDTO.setActive(report.getActive());
 			reportDTO.setValid(report.getValid());
 			reportDTO.setModuleId(report.getModuleId());
+			reportDTO.setConnectorKey(report.getConnectorKey());
 			reportDTOList.add(reportDTO);
 			/** prompts **/
 			List<Prompts> promptList = report.getPromptList();
@@ -186,6 +187,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			reportDTO.setActive(report.getActive());
 			reportDTO.setValid(report.getValid());
 			reportDTO.setModuleId(report.getModuleId());
+			reportDTO.setConnectorKey(report.getConnectorKey());
 			reportDTOList.add(reportDTO);
 			/** prompts **/
 			List<Prompts> promptList = report.getPromptList();

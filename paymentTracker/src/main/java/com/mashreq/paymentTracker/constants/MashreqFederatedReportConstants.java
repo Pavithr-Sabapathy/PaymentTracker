@@ -21,11 +21,11 @@ public class MashreqFederatedReportConstants {
 
 	}
 
-	/***Report Name**/
-	public static final String FLEX_REPORT_NAME="flexPostingDetails";
-	public static final String SWIFT_REPORT_NAME="swiftDetails";
-	public static final String EDMS_REPORT_NAME="";
-	
+	/*** Report Name **/
+	public static final String FLEX_REPORT_NAME = "flexPostingDetails";
+	public static final String SWIFT_REPORT_NAME = "swiftDetails";
+	public static final String EDMS_REPORT_NAME = "";
+
 	/** Metrics and prompts constant **/
 	public static final String METRIC = "M";
 	public static final String PROMPT = "P";
@@ -156,4 +156,6 @@ public class MashreqFederatedReportConstants {
 	public static final String DS_SWIFT = "SWIFT";
 	public static final String YES = "Y";
 
+	public static final String EDMS_EDD_DETAILED_REP_COMP = "EDMSEDD DR";
+	public static final String BPM_EDD_DETAILED_REP_COMP = "BPMEDD DR";
 }

@@ -10,3 +10,7 @@ create table conf_report(
 CONSTRAINT conf_report_module_id_fkey FOREIGN KEY (module_id)
 REFERENCES conf_module(id),
   CONSTRAINT [pk_report_id] PRIMARY KEY ([id]));
+  
+  
+  Alter table conf_report add  connector_key varchar(500)
+  

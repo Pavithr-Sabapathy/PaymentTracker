@@ -2,7 +2,7 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
-public class ReportDTO implements Serializable{
+public class ReportDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private long id;
 	private String reportName;
@@ -12,15 +12,16 @@ public class ReportDTO implements Serializable{
 	private String active;
 	private String valid;
 	private long moduleId;
-	
-	public  ReportDTO () {
-		
-	}
+	private String connectorKey;
 
+	public ReportDTO() {
+
+	}
+	
 	public ReportDTO(long id, String reportName, String displayName, String reportDescription, String reportCategory,
-			String active, String valid, long moduleId) {
+			String active, String valid, long moduleId, String connectorKey) {
 		super();
-		this.id=id;
+		this.id = id;
 		this.reportName = reportName;
 		this.displayName = displayName;
 		this.reportDescription = reportDescription;
@@ -28,6 +29,7 @@ public class ReportDTO implements Serializable{
 		this.active = active;
 		this.valid = valid;
 		this.moduleId = moduleId;
+		this.connectorKey = connectorKey;
 	}
 
 
@@ -96,14 +98,19 @@ public class ReportDTO implements Serializable{
 		this.moduleId = moduleId;
 	}
 
+	public String getConnectorKey() {
+		return connectorKey;
+	}
+
+	public void setConnectorKey(String connectorKey) {
+		this.connectorKey = connectorKey;
+	}
+
 	@Override
 	public String toString() {
 		return "ReportDTO [id=" + id + ", reportName=" + reportName + ", displayName=" + displayName
 				+ ", reportDescription=" + reportDescription + ", reportCategory=" + reportCategory + ", active="
-				+ active + ", valid=" + valid + ", moduleId=" + moduleId + "]";
+				+ active + ", valid=" + valid + ", moduleId=" + moduleId + ", connectorKey=" + connectorKey + "]";
 	}
 
-	
-	
-	
 }

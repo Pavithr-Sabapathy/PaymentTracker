@@ -2,12 +2,9 @@ package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -34,7 +31,6 @@ import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.repository.DataSourceRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.service.ComponentsService;
-import com.mashreq.paymentTracker.utility.CheckType;
 
 @Component
 public class ComponentsServiceImpl implements ComponentsService {

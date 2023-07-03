@@ -40,6 +40,7 @@ import com.mashreq.paymentTracker.model.Users;
 import com.mashreq.paymentTracker.repository.ReportDataRepository;
 import com.mashreq.paymentTracker.repository.ReportExecutionRepoistory;
 import com.mashreq.paymentTracker.repository.ReportInstanceRepository;
+import com.mashreq.paymentTracker.service.EdmsProcessService;
 import com.mashreq.paymentTracker.service.FlexFederatedReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportHandlerService;
@@ -71,6 +72,9 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 	@Autowired
 	ReportDataRepository reportDataRepo;
 
+	@Autowired
+	EdmsProcessService edmsProcessService;
+
 	@Override
 	public ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest)
 			throws ReportException, JsonProcessingException {
@@ -91,6 +95,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			reportInstanceDTO.setId(reportInstance.getId());
 		}
 		if (null != reportInstanceDTO) {
+			/** populate report context to use **/
 			reportContext = populateReportContext(reportInstanceDTO);
 			if (null != reportExecutionRequest.getLinkReference()) {
 				reportContext.setLinkReference(reportExecutionRequest.getLinkReference());
@@ -110,6 +115,9 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			} else if (reportName.equals(MashreqFederatedReportConstants.SWIFT_REPORT_NAME)) {
 				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportInstanceDTO,
 						reportContext);
+			} else if (reportName.equals("edms")) {
+				reportExecuteResponseData = edmsProcessService.ProcessEdmsCommonReport(reportInstanceDTO,
+						reportContext);
 			}
 		}
 
@@ -120,31 +128,27 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		ReportData reportData = populateReportData(reportDataDTO);
 		reportDataRepo.save(reportData);
 
-		updateExecutionResponse(reportExecuteResponseData, reportContext);
-		
 		Date endTime = new Date();
 		reportExecutionMetaDTO = populateReportExecutionResponseMeta(startTime, endTime, reportName);
 		reportExecuteResponseData.setMeta(reportExecutionMetaDTO);
-		
+		updateReportExecutionTimeByExecutionId(reportExecutionMetaDTO.getExecutionTime(),
+				reportContext.getExecutionId());
 		return reportExecuteResponseData;
 	}
 
-	private void updateExecutionResponse(ReportExecuteResponseData reportExecuteResponseData,
-			ReportContext reportContext) {
-		// TODO Auto-generated method stub
-
+	private void updateReportExecutionTimeByExecutionId(Long executionTime, Long executionId) {
+		reportExecutionRepo.updateExecutionTimeByExecutionId(executionTime, executionId);
 	}
-	
-	private ReportExecuteResponseMetaDTO populateReportExecutionResponseMeta (Date startTime, Date endTime,
-            String reportName) {
-		ReportExecuteResponseMetaDTO meta = new ReportExecuteResponseMetaDTO();
-      meta.setStartTime(DateTimeUtil.getFormattedDate(startTime));
-      meta.setEndTime(DateTimeUtil.getFormattedDate(endTime));
-      meta.setExecutionTime(endTime.getTime() - startTime.getTime());
-      meta.setReportId(reportName);
-      return meta;
-   }
 
+	private ReportExecuteResponseMetaDTO populateReportExecutionResponseMeta(Date startTime, Date endTime,
+			String reportName) {
+		ReportExecuteResponseMetaDTO meta = new ReportExecuteResponseMetaDTO();
+		meta.setStartTime(DateTimeUtil.getFormattedDate(startTime));
+		meta.setEndTime(DateTimeUtil.getFormattedDate(endTime));
+		meta.setExecutionTime(endTime.getTime() - startTime.getTime());
+		meta.setReportId(reportName);
+		return meta;
+	}
 
 	private ReportData populateReportData(ReportDataDTO reportDataDTO) {
 		ReportData reportData = new ReportData();

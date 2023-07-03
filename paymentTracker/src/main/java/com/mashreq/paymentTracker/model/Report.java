@@ -52,6 +52,9 @@ public class Report {
 	@Column(name = "module_id")
 	private long moduleId;
 
+	@Column(name = "connector_key")
+	private String connectorKey;
+	
 	@OneToMany(mappedBy = "report", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	List<Prompts> promptList = new ArrayList<Prompts>();
@@ -81,6 +84,11 @@ public class Report {
 		this.valid = valid;
 		this.promptList = promptList;
 		this.metricsList = metricsList;
+	}
+
+	public Report(@NotNull(message = "Display name should not be empty") String displayName) {
+		super();
+		this.displayName = displayName;
 	}
 
 	public Long getId() {
@@ -161,6 +169,14 @@ public class Report {
 
 	public void setModuleId(long moduleId) {
 		this.moduleId = moduleId;
+	}
+
+	public String getConnectorKey() {
+		return connectorKey;
+	}
+
+	public void setConnectorKey(String connectorKey) {
+		this.connectorKey = connectorKey;
 	}
 
 	@Override
