@@ -110,7 +110,9 @@ public class MetricsServiceImpl implements MetricsService {
 			metricsObject.setDisplayName(metricsDTORequest.getDisplayName());
 			metricsObject.setEntityId(metricsDTORequest.getEntityId());
 			metricsObject.setId(metricsId);
+			metricsObject.setDisplay(metricsDTORequest.getDisplay());
 			metricsObject.setMetricsOrder(metricsDTORequest.getMetricsOrder());
+			metricsObject.setReport(reportOptional.get());
 			Metrics metrics = metricsRepository.save(metricsObject);
 			if(null != metrics) {
 				
