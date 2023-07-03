@@ -69,9 +69,9 @@ public class PromptsController {
 		log.info(FILENAME + "[updatePrompt Request prompt Id]--->" + promptId);
 		log.info(FILENAME + "[updatePrompt RequestBody]--->" + promptRequest.toString());
 		promptService.updatePromptById(promptRequest, promptId);
-		log.info(FILENAME + "[updatePrompt Response]--->" + ApplicationConstants.DATA_SOURCE_UPDATE_MSG + "-->"
+		log.info(FILENAME + "[updatePrompt Response]--->" + ApplicationConstants.PROMPTS_UPDATE_MSG + "-->"
 				+ promptId);
-		return new ResponseEntity<String>(ApplicationConstants.DATA_SOURCE_UPDATE_MSG, HttpStatus.ACCEPTED);
+		return new ResponseEntity<String>(ApplicationConstants.PROMPTS_UPDATE_MSG, HttpStatus.ACCEPTED);
 
 	}
 

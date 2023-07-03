@@ -3,7 +3,7 @@ package com.mashreq.paymentTracker.dto;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-public class MetricsResponseDTO implements Serializable{
+public class MetricsResponseDTO implements Serializable {
 
 	private static final long serialVersionUID = 8270862890305652440L;
 	private long metricsId;
@@ -12,7 +12,7 @@ public class MetricsResponseDTO implements Serializable{
 	private String display;
 	private long reportId;
 	private BigInteger entityId;
-	
+
 	public long getMetricsId() {
 		return metricsId;
 	}
@@ -67,7 +67,6 @@ public class MetricsResponseDTO implements Serializable{
 				+ ", reportId=" + reportId + ", entityId=" + entityId + "]";
 	}
 
-	
 	public MetricsResponseDTO() {
 		super();
 	}
@@ -82,4 +81,4 @@ public class MetricsResponseDTO implements Serializable{
 		this.reportId = reportId;
 		this.entityId = entityId;
 	}
-
+}
