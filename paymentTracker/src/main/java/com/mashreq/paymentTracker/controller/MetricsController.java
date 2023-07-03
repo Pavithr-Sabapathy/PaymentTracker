@@ -53,11 +53,11 @@ public class MetricsController {
 	}
 
 	@PostMapping("/saveMetrics")
-	public ResponseEntity<String> saveMetrics(@Valid @RequestBody MetricsRequestDTO metricsRequest) {
+	public ResponseEntity<MetricsResponseDTO> saveMetrics(@Valid @RequestBody MetricsRequestDTO metricsRequest) {
 		
 			log.info(FILENAME + "[saveMetrics Request]--->" + metricsRequest.toString());
-			metricsService.saveMetrics(metricsRequest);
-			return new ResponseEntity<String>(ApplicationConstants.METRICS_CREATION_MSG, HttpStatus.CREATED);
+			MetricsResponseDTO metricsReponse = metricsService.saveMetrics(metricsRequest);
+			return new ResponseEntity<MetricsResponseDTO>(metricsReponse, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{metricsId}")
@@ -69,11 +69,11 @@ public class MetricsController {
 	}
 
 	@PutMapping("/{metricsId}")
-	public ResponseEntity<String> updateMetrics(@RequestBody MetricsRequestDTO metricsDTORequest,
+	public ResponseEntity<MetricsResponseDTO> updateMetrics(@RequestBody MetricsRequestDTO metricsDTORequest,
 			@PathVariable long metricsId) {
 		log.info(FILENAME + "[updateMetrics Request]--->" + metricsDTORequest.toString());
-		metricsService.updateMetricsById(metricsDTORequest, metricsId);
-		return new ResponseEntity<String>(ApplicationConstants.METRICS_UPDATE_MSG, HttpStatus.ACCEPTED);
+		MetricsResponseDTO metricsReponse = metricsService.updateMetricsById(metricsDTORequest, metricsId);
+		return new ResponseEntity<MetricsResponseDTO>(metricsReponse, HttpStatus.ACCEPTED);
 
 	}
 
