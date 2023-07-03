@@ -25,8 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.dto.MetricsDTO;
-import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
+import com.mashreq.paymentTracker.dto.MetricsRequestDTO;
+import com.mashreq.paymentTracker.dto.MetricsResponse;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
@@ -48,7 +48,7 @@ public class MetricsServiceTest {
 		@Test
 	    public void testSaveMetrics() {
 	        // Create a MetricsDTO instance for the test
-	        MetricsDTO metricsDto = new MetricsDTO();
+	        MetricsRequestDTO metricsDto = new MetricsRequestDTO();
 	        metricsDto.setDisplayName("Test Metrics");
 	        metricsDto.setDisplay("y");
 	        metricsDto.setEntityId(BigInteger.ZERO);
@@ -85,7 +85,7 @@ public class MetricsServiceTest {
 	    public void testSaveMetricsReportNotFound() {
 			
 	        // Create a MetricsDTO instance for the test
-	        MetricsDTO metricsDto = new MetricsDTO();
+	        MetricsRequestDTO metricsDto = new MetricsRequestDTO();
 	        metricsDto.setReportId(1L);
 	        metricsDto.setDisplayName("Test Metrics");
 	        metricsDto.setDisplay("y");
@@ -122,11 +122,11 @@ public class MetricsServiceTest {
 	        Mockito.when(mockMetricsRepository.findMetricsByReportId(reportId)).thenReturn(metricsList);
 
 	        // Execution
-	        List<MetricsDTO> result = metricsService.fetchMetricsByReportId(reportId);
+	        List<MetricsRequestDTO> result = metricsService.fetchMetricsByReportId(reportId);
 
 	        // Verification
 	        assertEquals(1, result.size());
-	        MetricsDTO metricsDto = result.get(0);
+	        MetricsRequestDTO metricsDto = result.get(0);
 	        assertEquals(metric.getDisplayName(), metricsDto.getDisplayName());
 	        assertEquals(metric.getMetricsOrder(), metricsDto.getMetricsOrder());
 	        assertEquals(metric.getDisplay(), metricsDto.getDisplay());
@@ -180,7 +180,7 @@ public class MetricsServiceTest {
 		when(mockMetricsRepository.findAll()).thenReturn(metricsMockList);
 
 		// test
-		List<MetricsResponseDTO> metricsMockResponse = metricsService.fetchAllMetrics();
+		List<MetricsResponse> metricsMockResponse = metricsService.fetchAllMetrics();
 
 		assertEquals(1, metricsMockResponse.size());
 		verify(mockMetricsRepository, times(1)).findAll();
@@ -233,7 +233,7 @@ public class MetricsServiceTest {
 		metricsMockObject.setMetricsOrder(BigInteger.ONE);
 		metricsMockObject.setReport(mockReportsResponse);
 
-		MetricsDTO mockMetricsDTO = new MetricsDTO();
+		MetricsRequestDTO mockMetricsDTO = new MetricsRequestDTO();
 		mockMetricsDTO.setDisplay("y");
 		mockMetricsDTO.setDisplayName("SampleMetrics");
 		mockMetricsDTO.setEntityId(BigInteger.ZERO);
@@ -250,7 +250,7 @@ public class MetricsServiceTest {
 		long metricsId = 1L;
 		Report mockReportsResponse = null;
 
-		MetricsDTO mockMetricsDTO = new MetricsDTO();
+		MetricsRequestDTO mockMetricsDTO = new MetricsRequestDTO();
 		mockMetricsDTO.setDisplay("y");
 		mockMetricsDTO.setDisplayName("SampleMetrics");
 		mockMetricsDTO.setEntityId(BigInteger.ZERO);

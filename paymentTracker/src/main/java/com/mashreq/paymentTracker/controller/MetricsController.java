@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.dto.MetricsDTO;
+import com.mashreq.paymentTracker.dto.MetricsRequestDTO;
+import com.mashreq.paymentTracker.dto.MetricsResponse;
 import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.service.MetricsService;
 
@@ -36,23 +37,23 @@ public class MetricsController {
 	MetricsService metricsService;
 
 	@GetMapping
-	public ResponseEntity<List<MetricsResponseDTO>> fetchAllMetrics() {
+	public ResponseEntity<List<MetricsResponse>> fetchAllMetrics() {
 	
-		List<MetricsResponseDTO> metrics = metricsService.fetchAllMetrics();
+		List<MetricsResponse> metrics = metricsService.fetchAllMetrics();
 		log.info(FILENAME + "[fetchMetrics Reponse]--->" + metrics.toString());
 		return ResponseEntity.ok(metrics);
 		
 	}
 	
 	@GetMapping("/{reportId}")
-	public ResponseEntity<List<MetricsDTO>> fetchMetricsByReportId(long reportId) {
+	public ResponseEntity<List<MetricsResponseDTO>> fetchMetricsByReportId(long reportId) {
 		
-		List<MetricsDTO> metricsRIdResponse = metricsService.fetchMetricsByReportId(reportId);
+		List<MetricsResponseDTO> metricsRIdResponse = metricsService.fetchMetricsByReportId(reportId);
 		return ResponseEntity.ok(metricsRIdResponse);
 	}
 
 	@PostMapping("/saveMetrics")
-	public ResponseEntity<String> saveMetrics(@Valid @RequestBody MetricsDTO metricsRequest) {
+	public ResponseEntity<String> saveMetrics(@Valid @RequestBody MetricsRequestDTO metricsRequest) {
 		
 			log.info(FILENAME + "[saveMetrics Request]--->" + metricsRequest.toString());
 			metricsService.saveMetrics(metricsRequest);
@@ -68,7 +69,7 @@ public class MetricsController {
 	}
 
 	@PutMapping("/{metricsId}")
-	public ResponseEntity<String> updateMetrics(@RequestBody MetricsDTO metricsDTORequest,
+	public ResponseEntity<String> updateMetrics(@RequestBody MetricsRequestDTO metricsDTORequest,
 			@PathVariable long metricsId) {
 		log.info(FILENAME + "[updateMetrics Request]--->" + metricsDTORequest.toString());
 		metricsService.updateMetricsById(metricsDTORequest, metricsId);

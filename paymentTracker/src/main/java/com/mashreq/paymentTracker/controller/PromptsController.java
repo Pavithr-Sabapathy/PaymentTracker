@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.PromptDTO;
+import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.service.promptService;
 
@@ -48,7 +49,7 @@ public class PromptsController {
 	}
 
 	@PostMapping("/savePrompt")
-	public ResponseEntity<String> savePrompt(@Valid @RequestBody PromptDTO promptRequest) {
+	public ResponseEntity<String> savePrompt(@Valid @RequestBody PromptRequestDTO promptRequest) {
 		promptService.savePrompt(promptRequest);
 		return new ResponseEntity<String>(ApplicationConstants.PROMPTS_CREATION_MSG, HttpStatus.CREATED);
 	}
@@ -64,7 +65,7 @@ public class PromptsController {
 	}
 
 	@PutMapping("/{promptId}")
-	public ResponseEntity<String> updatePrompt(@Valid @RequestBody PromptDTO promptRequest, @PathVariable long promptId) {
+	public ResponseEntity<String> updatePrompt(@Valid @RequestBody PromptRequestDTO promptRequest, @PathVariable long promptId) {
 		log.info(FILENAME + "[updatePrompt Request prompt Id]--->" + promptId);
 		log.info(FILENAME + "[updatePrompt RequestBody]--->" + promptRequest.toString());
 		promptService.updatePromptById(promptRequest, promptId);

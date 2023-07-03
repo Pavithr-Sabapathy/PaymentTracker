@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.controller.PromptsController;
-import com.mashreq.paymentTracker.dto.PromptDTO;
+import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.service.promptService;
@@ -67,9 +67,9 @@ public class PromptsControllerTest {
 		ObjectMapper mapper = new ObjectMapper();
 		String responseString = "[{\"promptKey\":\"prkey001\",\"displayName\":\"prdspl001\",\"promptOrder\":1001,\"promptRequired\":\"y\",\"reportId\":1,\"entityId\":1},{\"promptKey\":\"prkey002\",\"displayName\":\"prdspl002\",\"promptOrder\":1002,\"promptRequired\":\"y\",\"reportId\":1,\"entityId\":2}]";
 		
-		PromptDTO[] mockPromptDto = mapper.readValue(responseString, PromptDTO[].class);
+		PromptRequestDTO[] mockPromptDto = mapper.readValue(responseString, PromptRequestDTO[].class);
 		
-		List<PromptDTO> mockPromptDtoList = Arrays.asList(mockPromptDto);
+		List<PromptRequestDTO> mockPromptDtoList = Arrays.asList(mockPromptDto);
 		
 		long reportId = 1L;
 		
@@ -88,7 +88,7 @@ public class PromptsControllerTest {
 		String promptResponseString = "{\"displayName\": \"Advanced Search\",\"entityId\": 0,\"promptKey\": \"1\",\"promptOrder\": 1,\"promptRequired\": \"y\"}";
 		Prompts mockPromptResponse = mapper.readValue(promptResponseString, Prompts.class);
 		
-		promptService.savePrompt(any(PromptDTO.class));
+		promptService.savePrompt(any(PromptRequestDTO.class));
 		// execute
 		MvcResult result = mockMvc
 				.perform(MockMvcRequestBuilders.post("/prompt/savePrompt").contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +99,7 @@ public class PromptsControllerTest {
 		assertEquals(HttpStatus.CREATED.value(), status, "Incorrect Response Status");
 
 		// verify that service method was called once
-		verify(promptService).savePrompt(any(PromptDTO.class));
+		verify(promptService).savePrompt(any(PromptRequestDTO.class));
 		String reportResponse = result.getResponse().getContentAsString();
 		assertNotNull(reportResponse);
 		assertEquals(ApplicationConstants.PROMPTS_CREATION_MSG, reportResponse);
@@ -117,7 +117,7 @@ public class PromptsControllerTest {
 	public void testupdatePrompt() throws Exception {
 		long promptId = 1L;
 		mockMvc.perform(MockMvcRequestBuilders.put("/prompt/{promptId}", promptId)
-				.content(asJsonString(new PromptDTO("Reference_Sample", "Reference Sample", BigInteger.ONE,
+				.content(asJsonString(new PromptRequestDTO("Reference_Sample", "Reference Sample", BigInteger.ONE,
 						"N", 1, BigInteger.ZERO)))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isAccepted());

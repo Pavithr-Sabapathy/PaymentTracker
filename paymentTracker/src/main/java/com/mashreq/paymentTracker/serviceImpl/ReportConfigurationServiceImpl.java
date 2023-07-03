@@ -30,8 +30,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.dto.MetricsDTO;
-import com.mashreq.paymentTracker.dto.PromptDTO;
+import com.mashreq.paymentTracker.dto.MetricsRequestDTO;
+import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -114,8 +114,8 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 		List<Report> reportsList = reportConfigurationRepo.findAll();
 
 		List<ReportDTO> reportDTOList = new ArrayList<ReportDTO>();
-		List<PromptDTO> promptDTOList = new ArrayList<PromptDTO>();
-		List<MetricsDTO> metricDTOList = new ArrayList<MetricsDTO>();
+		List<PromptRequestDTO> promptDTOList = new ArrayList<PromptRequestDTO>();
+		List<MetricsRequestDTO> metricDTOList = new ArrayList<MetricsRequestDTO>();
 
 		for (Report report : reportsList) {
 
@@ -132,12 +132,12 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			reportDTOList.add(reportDTO);
 			/** prompts **/
 			List<Prompts> promptList = report.getPromptList();
-			List<PromptDTO> promptsDTO = promptList.stream().map(Prompt -> modelMapper.map(Prompt, PromptDTO.class))
+			List<PromptRequestDTO> promptsDTO = promptList.stream().map(Prompt -> modelMapper.map(Prompt, PromptRequestDTO.class))
 					.collect(Collectors.toList());
 			promptDTOList.addAll(promptsDTO);
 
 			List<Metrics> metricsList = report.getMetricsList();
-			List<MetricsDTO> metricsDTO = metricsList.stream().map(metric -> modelMapper.map(metric, MetricsDTO.class))
+			List<MetricsRequestDTO> metricsDTO = metricsList.stream().map(metric -> modelMapper.map(metric, MetricsRequestDTO.class))
 					.collect(Collectors.toList());
 			metricDTOList.addAll(metricsDTO);
 		}
@@ -174,8 +174,8 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 		List<Report> reportsList = reportConfigurationRepo.findAll();
 
 		List<ReportDTO> reportDTOList = new ArrayList<ReportDTO>();
-		List<PromptDTO> promptDTOList = new ArrayList<PromptDTO>();
-		List<MetricsDTO> metricDTOList = new ArrayList<MetricsDTO>();
+		List<PromptRequestDTO> promptDTOList = new ArrayList<PromptRequestDTO>();
+		List<MetricsRequestDTO> metricDTOList = new ArrayList<MetricsRequestDTO>();
 		for (Report report : reportsList) {
 
 			ReportDTO reportDTO = new ReportDTO();
@@ -191,12 +191,12 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			reportDTOList.add(reportDTO);
 			/** prompts **/
 			List<Prompts> promptList = report.getPromptList();
-			List<PromptDTO> promptsDTO = promptList.stream().map(Prompt -> modelMapper.map(Prompt, PromptDTO.class))
+			List<PromptRequestDTO> promptsDTO = promptList.stream().map(Prompt -> modelMapper.map(Prompt, PromptRequestDTO.class))
 					.collect(Collectors.toList());
 			promptDTOList.addAll(promptsDTO);
 			/** metrics **/
 			List<Metrics> metricsList = report.getMetricsList();
-			List<MetricsDTO> metricsDTO = metricsList.stream().map(metric -> modelMapper.map(metric, MetricsDTO.class))
+			List<MetricsRequestDTO> metricsDTO = metricsList.stream().map(metric -> modelMapper.map(metric, MetricsRequestDTO.class))
 					.collect(Collectors.toList());
 			metricDTOList.addAll(metricsDTO);
 		}
@@ -249,7 +249,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 						.forEach(headerTitle -> {
 							addTableHeaderCell(promptTable, headerTitle);
 						});
-				for (PromptDTO promptDto : promptDTOList) {
+				for (PromptRequestDTO promptDto : promptDTOList) {
 					addTableDataCell(promptTable, promptDto.getPromptKey());
 					addTableDataCell(promptTable, promptDto.getDisplayName());
 					addTableDataCell(promptTable,
@@ -276,7 +276,7 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 				Stream.of("Display_Name", "Metrics_Order", "Display", "Report_ID", "Entity_ID").forEach(headerTitle -> {
 					addTableHeaderCell(metricsTable, headerTitle);
 				});
-				for (MetricsDTO metricDto : metricDTOList) {
+				for (MetricsRequestDTO metricDto : metricDTOList) {
 					addTableDataCell(metricsTable, metricDto.getDisplayName());
 					// addTableDataCell(metricsTable, String.valueOf(metricDto.getMetricsOrder()));
 					addTableDataCell(metricsTable,

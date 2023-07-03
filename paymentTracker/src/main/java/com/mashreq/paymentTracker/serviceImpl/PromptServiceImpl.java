@@ -15,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.PromptDTO;
+import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Prompts;
@@ -69,7 +70,7 @@ public class PromptServiceImpl implements promptService {
 	}
 
 	@Override
-	public void savePrompt(PromptDTO promptRequest) {
+	public void savePrompt(PromptRequestDTO promptRequest) {
 		Prompts promptsObject = new Prompts();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(promptRequest.getReportId());
 		if (reportOptional.isEmpty()) {
@@ -101,7 +102,7 @@ public class PromptServiceImpl implements promptService {
 	}
 
 	@Override
-	public void updatePromptById(PromptDTO promptRequest, long promptId) {
+	public void updatePromptById(PromptRequestDTO promptRequest, long promptId) {
 		Prompts promptsObject = new Prompts();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(promptRequest.getReportId());
 		if (reportOptional.isEmpty()) {
@@ -129,8 +130,9 @@ public class PromptServiceImpl implements promptService {
 		List<PromptDTO> promptDTOList = new ArrayList<PromptDTO>();
 		List<Prompts> promptsListResponse = promptsRepository.findPromptByReportId(reportId);
 		if (!CollectionUtils.isEmpty(promptsListResponse)) {
-			PromptDTO promptDTO = new PromptDTO();
 			promptsListResponse.stream().forEach(promptsResponse -> {
+				PromptDTO promptDTO = new PromptDTO();
+				promptDTO.setPromptId(promptsResponse.getId());
 				promptDTO.setDisplayName(promptsResponse.getDisplayName());
 				// promptDTO.setEntityId(promptsResponse.getEntityId());
 				promptDTO.setPromptKey(promptsResponse.getPromptKey());

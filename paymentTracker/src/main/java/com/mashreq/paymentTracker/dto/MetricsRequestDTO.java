@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public class MetricsDTO implements Serializable {
+public class MetricsRequestDTO implements Serializable {
 	private static final long serialVersionUID = -2260273551352016731L;
 
 	@NotNull(message = "Display name should not be empty")
@@ -64,12 +64,12 @@ public class MetricsDTO implements Serializable {
 				+ ", reportId=" + reportId + ", entityId=" + entityId + "]";
 	}
 
-	public MetricsDTO() {
+	public MetricsRequestDTO() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public MetricsDTO(@NotEmpty String displayName, BigInteger metricsOrder, @NotEmpty String display,
+	public MetricsRequestDTO(@NotEmpty String displayName, BigInteger metricsOrder, @NotEmpty String display,
 			@NotEmpty long reportId, BigInteger entityId) {
 		super();
 		this.displayName = displayName;

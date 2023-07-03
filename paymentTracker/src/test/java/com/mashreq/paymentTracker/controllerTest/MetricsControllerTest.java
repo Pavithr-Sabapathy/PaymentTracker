@@ -31,8 +31,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.controller.MetricsController;
-import com.mashreq.paymentTracker.dto.MetricsDTO;
-import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
+import com.mashreq.paymentTracker.dto.MetricsRequestDTO;
+import com.mashreq.paymentTracker.dto.MetricsResponse;
 import com.mashreq.paymentTracker.service.MetricsService;
 
 @ExtendWith(SpringExtension.class)
@@ -48,7 +48,7 @@ public class MetricsControllerTest {
 	@Test
 	public void testSaveMetrics() throws Exception {
 		
-		 MetricsDTO metricsRequest = new MetricsDTO();
+		 MetricsRequestDTO metricsRequest = new MetricsRequestDTO();
 	        metricsRequest.setReportId(1L);
 	        metricsRequest.setDisplayName("Test Metrics");
 	        metricsRequest.setDisplay("y");
@@ -70,10 +70,10 @@ public class MetricsControllerTest {
 	public void testfetchMatrics() throws Exception {
 		String metricsStringresponse = "[{\"reports\": {\"id\": 3,\"reportName\": \"AdvanceSearch\",\"displayName\": \"Advance Search\",\"reportDescription\": \"Advance Search Information\",\"reportCategory\": \"Search\",\"active\": \"y\",\"valid\": \"y\"},\"metricsList\": [{\"display\": \"metrics sample\",\"displayName\": \"metrics\",\"entityId\": 0,\"metricsOrder\": 1,\"reportId\": 1}]}]";
 		ObjectMapper mapper = new ObjectMapper();
-		MetricsResponseDTO[] mockMetricsResponseDTO = mapper.readValue(metricsStringresponse,
-				MetricsResponseDTO[].class);
+		MetricsResponse[] mockMetricsResponseDTO = mapper.readValue(metricsStringresponse,
+				MetricsResponse[].class);
 
-		List<MetricsResponseDTO> mockMetricsResponseDTOList = Arrays.asList(mockMetricsResponseDTO);
+		List<MetricsResponse> mockMetricsResponseDTOList = Arrays.asList(mockMetricsResponseDTO);
 		Mockito.when(metricsService.fetchAllMetrics()).thenReturn(mockMetricsResponseDTOList);
 
 		mockMvc.perform(get("/metrics")).andExpect(status().isOk()).andExpect(jsonPath("$", Matchers.hasSize(1)))
@@ -93,7 +93,7 @@ public class MetricsControllerTest {
 	public void testupdateMetrics() throws Exception {
 		long metricsId = 1L;
 		mockMvc.perform(MockMvcRequestBuilders.put("/metrics/{metricsId}", metricsId)
-				.content(asJsonString(new MetricsDTO("Metrics_Sample", BigInteger.ONE, "y",1, BigInteger.ZERO)))
+				.content(asJsonString(new MetricsRequestDTO("Metrics_Sample", BigInteger.ONE, "y",1, BigInteger.ZERO)))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isAccepted());
 	}
@@ -102,17 +102,17 @@ public class MetricsControllerTest {
 		
 		long reportId = 1L;
 
-        MetricsDTO metrics1 = new MetricsDTO();
+        MetricsRequestDTO metrics1 = new MetricsRequestDTO();
         metrics1.setReportId(reportId);
         metrics1.setDisplayName("Metrics 1");
         metrics1.setEntityId(BigInteger.ZERO);
 
-       MetricsDTO metrics2 = new MetricsDTO();
+       MetricsRequestDTO metrics2 = new MetricsRequestDTO();
         metrics1.setReportId(reportId);
         metrics2.setDisplayName("Metrics 2");
        metrics2.setEntityId(BigInteger.ZERO);
 
-        List<MetricsDTO> metricsList = new ArrayList<MetricsDTO>();
+        List<MetricsRequestDTO> metricsList = new ArrayList<MetricsRequestDTO>();
         metricsList.add(metrics1);
         metricsList.add(metrics2);
 

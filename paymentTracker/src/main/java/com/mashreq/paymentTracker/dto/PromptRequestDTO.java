@@ -3,24 +3,21 @@ package com.mashreq.paymentTracker.dto;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-public class PromptDTO implements Serializable {
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
+public class PromptRequestDTO implements Serializable {
 	private static final long serialVersionUID = 6394517087984821262L;
-	private long promptId;
+	@NotNull(message = "Prompt Key should not be empty")
 	private String promptKey;
+	@NotNull(message = "Display name should not be empty")
 	private String displayName;
 	private BigInteger promptOrder;
+	@NotNull(message = "Prompt required should not be empty")
 	private String promptRequired;
+	@NotNull(message = "Report Id should not be empty")
 	private long reportId;
 	private BigInteger entityId;
-
-	public long getPromptId() {
-		return promptId;
-	}
-
-	public void setPromptId(long promptId) {
-		this.promptId = promptId;
-	}
 
 	public String getPromptKey() {
 		return promptKey;
@@ -72,9 +69,24 @@ public class PromptDTO implements Serializable {
 
 	@Override
 	public String toString() {
-		return "PromptDTO [promptId=" + promptId + ", promptKey=" + promptKey + ", displayName=" + displayName
-				+ ", promptOrder=" + promptOrder + ", promptRequired=" + promptRequired + ", reportId=" + reportId
-				+ ", entityId=" + entityId + "]";
+		return "PromptDTO [promptKey=" + promptKey + ", displayName=" + displayName + ", promptOrder=" + promptOrder
+				+ ", promptRequired=" + promptRequired + ", reportId=" + reportId + ", entityId=" + entityId + "]";
+	}
+
+	public PromptRequestDTO(@NotEmpty String promptKey, @NotEmpty String displayName, BigInteger promptOrder,
+			@NotEmpty String promptRequired, @NotEmpty long reportId, BigInteger entityId) {
+		super();
+		this.promptKey = promptKey;
+		this.displayName = displayName;
+		this.promptOrder = promptOrder;
+		this.promptRequired = promptRequired;
+		this.reportId = reportId;
+		this.entityId = entityId;
+	}
+
+	public PromptRequestDTO() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
 }

@@ -1,7 +1,9 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -11,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.controller.ReportsController;
-import com.mashreq.paymentTracker.dto.MetricsDTO;
+import com.mashreq.paymentTracker.dto.MetricsRequestDTO;
+import com.mashreq.paymentTracker.dto.MetricsResponse;
 import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -35,7 +37,7 @@ public class MetricsServiceImpl implements MetricsService {
 	ReportConfigurationRepository reportConfigurationRepo;
 
 	@Override
-	public void saveMetrics(MetricsDTO metricsRequest) {
+	public void saveMetrics(MetricsRequestDTO metricsRequest) {
 		// code goes here
 		Optional<Report> optionalReport = reportConfigurationRepo.findById(metricsRequest.getReportId());
 
@@ -79,7 +81,7 @@ public class MetricsServiceImpl implements MetricsService {
 	}
 
 	@Override
-	public void updateMetricsById(MetricsDTO metricsDTORequest, long metricsId) {
+	public void updateMetricsById(MetricsRequestDTO metricsDTORequest, long metricsId) {
 		Metrics metricsObject = new Metrics();
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(metricsDTORequest.getReportId());
 		if (reportOptional.isEmpty()) {
@@ -103,8 +105,8 @@ public class MetricsServiceImpl implements MetricsService {
 	}
 
 	@Override
-	public List<MetricsResponseDTO> fetchAllMetrics() {
-		List<MetricsResponseDTO> metricsResponseDtoList = new ArrayList<MetricsResponseDTO>();
+	public List<MetricsResponse> fetchAllMetrics() {
+		List<MetricsResponse> metricsResponseDtoList = new ArrayList<MetricsResponse>();
 
 		List<Metrics> mertricsList = metricsRepository.findAll();
 
@@ -116,15 +118,16 @@ public class MetricsServiceImpl implements MetricsService {
 				.collect(Collectors.groupingBy(Metrics::getReport));
 
 		metricsReportMap.forEach((report, metrics) -> {
-			MetricsResponseDTO metricsResponseDto = new MetricsResponseDTO();
+			MetricsResponse metricsResponseDto = new MetricsResponse();
 
 			ReportDTO reportResponseDto = new ReportDTO(report.getId(), report.getReportName(), report.getDisplayName(),
 					report.getReportDescription(), report.getReportCategory(), report.getActive(), report.getValid(),
-					report.getModuleId(),report.getConnectorKey());
+					report.getModuleId(), report.getConnectorKey());
 			reportResponseDto.setId(report.getId());
 
-			List<MetricsDTO> metric = metrics.stream().map(obj -> new MetricsDTO(obj.getDisplayName(),
-					obj.getMetricsOrder(), obj.getDisplay(), obj.getReport().getId(), obj.getEntityId()))
+			List<MetricsResponseDTO> metric = metrics
+					.stream().map(obj -> new MetricsResponseDTO(obj.getId(), obj.getDisplayName(),
+							obj.getMetricsOrder(), obj.getDisplay(), obj.getReport().getId(), obj.getEntityId()))
 					.collect(Collectors.toList());
 			metricsResponseDto.setReports(reportResponseDto);
 			metricsResponseDto.setMetricsList(metric);
@@ -135,17 +138,17 @@ public class MetricsServiceImpl implements MetricsService {
 
 	}
 
-	@Override
-	public List<MetricsDTO> fetchMetricsByReportId(long reportId) {
+	public List<MetricsResponseDTO> fetchMetricsByReportId(long reportId) {
 		// code goes here
 		Optional<Report> reportOptional = reportConfigurationRepo.findById(reportId);
 		if (reportOptional.isPresent()) {
-			List<MetricsDTO> metricsDtoList = new ArrayList<MetricsDTO>();
+			List<MetricsResponseDTO> metricsDtoList = new ArrayList<MetricsResponseDTO>();
 
 			List<Metrics> metricsByReportId = metricsRepository.findMetricsByReportId(reportId);
 			if (!metricsByReportId.isEmpty()) {
 				metricsByReportId.forEach(metric -> {
-					MetricsDTO metricsDto = new MetricsDTO();
+					MetricsResponseDTO metricsDto = new MetricsResponseDTO();
+					metricsDto.setMetricsId(metric.getId());
 					metricsDto.setDisplayName(metric.getDisplayName());
 					metricsDto.setMetricsOrder(metric.getMetricsOrder());
 					metricsDto.setDisplay(metric.getDisplay());

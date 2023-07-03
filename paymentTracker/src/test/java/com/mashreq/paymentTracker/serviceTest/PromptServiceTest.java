@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashreq.paymentTracker.dto.PromptDTO;
+import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Prompts;
@@ -60,7 +60,7 @@ public class PromptServiceTest {
 		report.setValid("y");
 		
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
-		PromptDTO mockPromptDto = new PromptDTO("promptKey", "displaynm", BigInteger.ONE, "y", reportId, BigInteger.ONE);
+		PromptRequestDTO mockPromptDto = new PromptRequestDTO("promptKey", "displaynm", BigInteger.ONE, "y", reportId, BigInteger.ONE);
 		when(mockpromptsRepository.findPromptOrderByReportId(reportId)).thenReturn(null);
 //		Prompts mockPrompt = new Prompts(2, "promptKey", "displaynm", "y", BigInteger.ONE, BigInteger.TWO, report);
 //		doNothing().when(mockpromptsRepository.save(mockPrompt));
@@ -124,7 +124,7 @@ public class PromptServiceTest {
 	public void testupdatePromptById() throws JsonMappingException, JsonProcessingException {
 		long promptId = 1L;
 		ObjectMapper mapper = new ObjectMapper();
-		PromptDTO mockPromptDTO = new PromptDTO("Reference_Sample", "Reference Sample", BigInteger.ONE, "N", 1,
+		PromptRequestDTO mockPromptDTO = new PromptRequestDTO("Reference_Sample", "Reference Sample", BigInteger.ONE, "N", 1,
 				BigInteger.ZERO);
 		Report mockReportsResponse = new Report();
 		mockReportsResponse.setActive("y");
@@ -148,7 +148,7 @@ public class PromptServiceTest {
 	public void testupdateReportByIdNotExists() throws ResourceNotFoundException {
 		long reportId = 1L;
 		Report mockReportsResponse = null;
-		PromptDTO mockPromptDTO = new PromptDTO("Reference_Sample", "Reference Sample", BigInteger.ONE, "N", 1,
+		PromptRequestDTO mockPromptDTO = new PromptRequestDTO("Reference_Sample", "Reference Sample", BigInteger.ONE, "N", 1,
 				BigInteger.ZERO);
 		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.ofNullable(mockReportsResponse));
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
@@ -187,7 +187,7 @@ public class PromptServiceTest {
 		
 		when(mockpromptsRepository.findPromptByReportId(reportId)).thenReturn(mockPromptList);
 		
-		List<PromptDTO> result = promptService.fetchPromptsByReportId(reportId);
+		List<PromptRequestDTO> result = promptService.fetchPromptsByReportId(reportId);
 		assertEquals(2,result.size());
 		assertEquals(result.get(0).getDisplayName(),"display-1");
 		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
@@ -209,7 +209,7 @@ public class PromptServiceTest {
 	@Test
 	public void testSavePromptIfReportNotExist() {
 		
-		PromptDTO mockPromptDto = new PromptDTO("promptKey", "displaynm", BigInteger.ONE, "y", 1L, BigInteger.ONE);
+		PromptRequestDTO mockPromptDto = new PromptRequestDTO("promptKey", "displaynm", BigInteger.ONE, "y", 1L, BigInteger.ONE);
 		when(mockreportConfigurationRepo.findById(1L)).thenReturn(Optional.empty());
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 						()-> promptService.savePrompt(mockPromptDto),
