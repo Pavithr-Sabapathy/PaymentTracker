@@ -42,7 +42,7 @@ public class PromptsController {
 	}
 
 	@GetMapping("/{reportId}")
-	public ResponseEntity<List<PromptDTO>> fetchPromptsByReportId(long reportId) {
+	public ResponseEntity<List<PromptDTO>> fetchPromptsByReportId(@PathVariable("reportId") long reportId) {
 		List<PromptDTO> reportListResponse = promptService.fetchPromptsByReportId(reportId);
 		return ResponseEntity.ok(reportListResponse);
 	}
