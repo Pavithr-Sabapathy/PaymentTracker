@@ -46,7 +46,7 @@ public class MetricsController {
 	}
 	
 	@GetMapping("/{reportId}")
-	public ResponseEntity<List<MetricsResponseDTO>> fetchMetricsByReportId(long reportId) {
+	public ResponseEntity<List<MetricsResponseDTO>> fetchMetricsByReportId(@PathVariable("reportId") long reportId) {
 		
 		List<MetricsResponseDTO> metricsRIdResponse = metricsService.fetchMetricsByReportId(reportId);
 		return ResponseEntity.ok(metricsRIdResponse);

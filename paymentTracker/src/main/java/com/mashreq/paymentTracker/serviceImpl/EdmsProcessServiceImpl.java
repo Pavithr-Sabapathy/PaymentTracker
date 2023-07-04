@@ -217,16 +217,29 @@ public class EdmsProcessServiceImpl implements EdmsProcessService {
 						List<ReportPromptsInstanceDTO> instancePromptList = reportInstanceDTO.getPromptsList();
 						federatedReportDefaultInput.setInstancePrompts(instancePromptList);
 						try {
-							flexReportExecuteResponse = processReport(federatedReportDefaultInput, reportContext);
+							List<FederatedReportOutput> output = processReport(federatedReportDefaultInput,
+									reportContext);
 							if (!flexReportExecuteResponse.isEmpty()) {
+								// Logic to execute EDMS/BPM EDD Detail Reports
+								// If data available in BPM systems no need to check in EDMS
+								// If data available in both EDMS and BPM systems in this case BPM data should
+								// be consider
+								// If data not available in BPM systems then need to check in EDMS data
 								if (isEDDDetailReport(component)) {
 									dataFoundFromBPM = MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
 											.equalsIgnoreCase(component.getComponentName()) ? true : false;
-								//TODO -/***Check with Deena - not understand**/
+									if (flexReportExecuteResponse.isEmpty()) {
+										flexReportExecuteResponse.addAll(output);
+									} else {
+										if (MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
+												.equalsIgnoreCase(component.getComponentName())) {
+											flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
+											flexReportExecuteResponse.addAll(output);
+										}
+									}
+								} else {
+									flexReportExecuteResponse.addAll(output);
 								}
-							} else {
-								// Logic for Common Report execution
-								//populateReportOutput(flexReportExecuteResponse);
 							}
 						} catch (Exception exception) {
 

@@ -22,6 +22,7 @@ public class ReportDTORequest implements Serializable {
 	private String valid;
 	@NotNull(message = "Module Id should not be empty")
 	private Long moduleId;
+	private String connectorKey;
 
 	public String getReportName() {
 		return reportName;
@@ -84,11 +85,19 @@ public class ReportDTORequest implements Serializable {
 		// TODO Auto-generated constructor stub
 	}
 
+	public String getConnectorKey() {
+		return connectorKey;
+	}
+
+	public void setConnectorKey(String connectorKey) {
+		this.connectorKey = connectorKey;
+	}
+
 	@Override
 	public String toString() {
 		return "ReportDTORequest [reportName=" + reportName + ", displayName=" + displayName + ", reportDescription="
 				+ reportDescription + ", reportCategory=" + reportCategory + ", active=" + active + ", valid=" + valid
-				+ ", moduleId=" + moduleId + "]";
+				+ ", moduleId=" + moduleId + ", connectorKey=" + connectorKey + "]";
 	}
 
 
