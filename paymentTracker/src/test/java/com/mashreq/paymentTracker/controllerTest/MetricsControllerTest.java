@@ -33,6 +33,7 @@ import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.controller.MetricsController;
 import com.mashreq.paymentTracker.dto.MetricsRequestDTO;
 import com.mashreq.paymentTracker.dto.MetricsResponse;
+import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.service.MetricsService;
 
 @ExtendWith(SpringExtension.class)
@@ -102,17 +103,17 @@ public class MetricsControllerTest {
 		
 		long reportId = 1L;
 
-        MetricsRequestDTO metrics1 = new MetricsRequestDTO();
+		MetricsResponseDTO metrics1 = new MetricsResponseDTO();
         metrics1.setReportId(reportId);
         metrics1.setDisplayName("Metrics 1");
         metrics1.setEntityId(BigInteger.ZERO);
 
-       MetricsRequestDTO metrics2 = new MetricsRequestDTO();
+        MetricsResponseDTO metrics2 = new MetricsResponseDTO();
         metrics1.setReportId(reportId);
         metrics2.setDisplayName("Metrics 2");
        metrics2.setEntityId(BigInteger.ZERO);
 
-        List<MetricsRequestDTO> metricsList = new ArrayList<MetricsRequestDTO>();
+        List<MetricsResponseDTO> metricsList = new ArrayList<MetricsResponseDTO>();
         metricsList.add(metrics1);
         metricsList.add(metrics2);
 

@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.MetricsRequestDTO;
 import com.mashreq.paymentTracker.dto.MetricsResponse;
+import com.mashreq.paymentTracker.dto.MetricsResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
@@ -122,11 +123,11 @@ public class MetricsServiceTest {
 	        Mockito.when(mockMetricsRepository.findMetricsByReportId(reportId)).thenReturn(metricsList);
 
 	        // Execution
-	        List<MetricsRequestDTO> result = metricsService.fetchMetricsByReportId(reportId);
+	         List<MetricsResponseDTO> result = metricsService.fetchMetricsByReportId(reportId);
 
 	        // Verification
 	        assertEquals(1, result.size());
-	        MetricsRequestDTO metricsDto = result.get(0);
+	        MetricsResponseDTO metricsDto = result.get(0);
 	        assertEquals(metric.getDisplayName(), metricsDto.getDisplayName());
 	        assertEquals(metric.getMetricsOrder(), metricsDto.getMetricsOrder());
 	        assertEquals(metric.getDisplay(), metricsDto.getDisplay());

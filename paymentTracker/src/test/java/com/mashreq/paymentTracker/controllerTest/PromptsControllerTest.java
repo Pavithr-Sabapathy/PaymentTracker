@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.controller.PromptsController;
+import com.mashreq.paymentTracker.dto.PromptDTO;
 import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.model.Prompts;
@@ -67,9 +68,9 @@ public class PromptsControllerTest {
 		ObjectMapper mapper = new ObjectMapper();
 		String responseString = "[{\"promptKey\":\"prkey001\",\"displayName\":\"prdspl001\",\"promptOrder\":1001,\"promptRequired\":\"y\",\"reportId\":1,\"entityId\":1},{\"promptKey\":\"prkey002\",\"displayName\":\"prdspl002\",\"promptOrder\":1002,\"promptRequired\":\"y\",\"reportId\":1,\"entityId\":2}]";
 		
-		PromptRequestDTO[] mockPromptDto = mapper.readValue(responseString, PromptRequestDTO[].class);
+		PromptDTO[] mockPromptDto = mapper.readValue(responseString, PromptDTO[].class);
 		
-		List<PromptRequestDTO> mockPromptDtoList = Arrays.asList(mockPromptDto);
+		List<PromptDTO> mockPromptDtoList = Arrays.asList(mockPromptDto);
 		
 		long reportId = 1L;
 		
