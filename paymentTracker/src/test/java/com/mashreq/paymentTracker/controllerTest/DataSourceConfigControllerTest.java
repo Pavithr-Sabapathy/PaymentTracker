@@ -33,7 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.controller.DataSourceController;
-import com.mashreq.paymentTracker.dto.DataSourceDTO;
+import com.mashreq.paymentTracker.dto.DataSourceRequestDTO;
+import com.mashreq.paymentTracker.dto.DataSourceResponseDTO;
 import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
@@ -49,11 +50,11 @@ public class DataSourceConfigControllerTest {
 
 	@Test
 	public void testSaveDataSourceConfig() throws Exception {
-		DataSourceDTO mockDataSourceDTO = new DataSourceDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
+		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
 				"@!@#234", 1L, "123.13.34.56", "PT", "y");
 
-		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
-				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
+		DataSourceResponseDTO mockdataSourceConfigValue = new DataSourceResponseDTO(1L, "sample", "oracle", 1L, "Oracle",
+				"ReadOnly", "12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
 
 		when(dataSourceConfigService.saveDataSourceConfiguration(mockDataSourceDTO))
 				.thenReturn(mockdataSourceConfigValue);
@@ -79,7 +80,7 @@ public class DataSourceConfigControllerTest {
 
 		DataSource dataSourceConfigValue = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle", "ReadOnly",
 				"12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
-		DataSourceDTO mockDataSourceDTO = new DataSourceDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
+		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
 				"@!@#234", 1L, "123.13.34.56", "PT", "y");
 
 		List<DataSource> mockDatasourceConfigList = Arrays.asList(dataSourceConfigValue);
@@ -94,10 +95,10 @@ public class DataSourceConfigControllerTest {
 	@Test
 	public void testGetDataSourceConfig() throws Exception {
 		long dataSourceId = 1L;
-		DataSourceDTO mockDataSourceConfigValue = new DataSourceDTO("sample", "sample", 1L, "sample", "sample",
-				"sample", "sample", 1L, "sample", "sample", "Y");
+		DataSourceResponseDTO mockdataSourceConfigValue = new DataSourceResponseDTO(1L, "sample", "oracle", 1L, "Oracle",
+				"ReadOnly", "12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
 		Mockito.when(dataSourceConfigService.getDataSourceConfigById(dataSourceId))
-				.thenReturn(mockDataSourceConfigValue);
+				.thenReturn(mockdataSourceConfigValue);
 
 		mockMvc.perform(get("/dataSource/1")).andExpect(status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.dataSourceName").value("sample"))

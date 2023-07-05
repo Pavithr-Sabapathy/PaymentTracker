@@ -12,7 +12,7 @@ public class FederatedReportComponentDetailContext implements Serializable {
 	private Long queryId;
 	private String queryKey;
 	private Long executionId;
-	private DataSourceDTO dataSource;
+	private DataSourceRequestDTO dataSource;
 	private String queryString;
 	private CountryType country = CountryType.UAE;
 	private List<FederatedReportPromptDTO> prompts;
@@ -42,11 +42,11 @@ public class FederatedReportComponentDetailContext implements Serializable {
 		this.executionId = executionId;
 	}
 
-	public DataSourceDTO getDataSource() {
+	public DataSourceRequestDTO getDataSource() {
 		return dataSource;
 	}
 
-	public void setDataSource(DataSourceDTO dataSource) {
+	public void setDataSource(DataSourceRequestDTO dataSource) {
 		this.dataSource = dataSource;
 	}
 

@@ -3,16 +3,17 @@ package com.mashreq.paymentTracker.service;
 import java.util.List;
 import java.util.Map;
 
-import com.mashreq.paymentTracker.dto.DataSourceDTO;
+import com.mashreq.paymentTracker.dto.DataSourceRequestDTO;
+import com.mashreq.paymentTracker.dto.DataSourceResponseDTO;
 import com.mashreq.paymentTracker.model.DataSource;
 
 import jakarta.validation.Valid;
 
 public interface DataSourceConfigService {
 
-	DataSource saveDataSourceConfiguration(DataSourceDTO dataSourceConfigurationRequest);
+	DataSourceResponseDTO saveDataSourceConfiguration(DataSourceRequestDTO dataSourceConfigurationRequest);
 
-	DataSourceDTO getDataSourceConfigById(long dataSourceId);
+	DataSourceResponseDTO getDataSourceConfigById(long dataSourceId);
 
 	void deleteDataSourceById(long dataSourceId);
 
@@ -20,5 +21,5 @@ public interface DataSourceConfigService {
 
 	Map<String, Object> allActiveDataSource(int page, int size, List<String> sort);
 
-	DataSource updateDataSourceById(@Valid DataSourceDTO dataSourceRequest, Long datasourceId);
+	DataSourceResponseDTO updateDataSourceById(@Valid DataSourceRequestDTO dataSourceRequest, Long datasourceId);
 }

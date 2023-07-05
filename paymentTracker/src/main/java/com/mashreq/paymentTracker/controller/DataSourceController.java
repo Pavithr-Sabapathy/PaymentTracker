@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.dto.DataSourceDTO;
+import com.mashreq.paymentTracker.dto.DataSourceRequestDTO;
+import com.mashreq.paymentTracker.dto.DataSourceResponseDTO;
 import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
@@ -37,16 +38,17 @@ public class DataSourceController {
 	private DataSourceConfigService dataSourceConfigService;
 
 	@PostMapping("/save")
-	public ResponseEntity<DataSource> saveDataSource(@Valid @RequestBody DataSourceDTO dataSourceRequest) {
+	public ResponseEntity<DataSourceResponseDTO> saveDataSource(
+			@Valid @RequestBody DataSourceRequestDTO dataSourceRequest) {
 		log.info(FILENAME + "[saveDataSourceConfig Request]--->" + dataSourceRequest.toString());
-		DataSource dataSourceReponse = dataSourceConfigService.saveDataSourceConfiguration(dataSourceRequest);
-		return new ResponseEntity<DataSource>(dataSourceReponse, HttpStatus.CREATED);
+		DataSourceResponseDTO dataSourceReponse = dataSourceConfigService
+				.saveDataSourceConfiguration(dataSourceRequest);
+		return new ResponseEntity<DataSourceResponseDTO>(dataSourceReponse, HttpStatus.CREATED);
 	}
 
 	@GetMapping("id/{dataSourceId}")
-	public ResponseEntity<DataSourceDTO> getDataSourceById(@PathVariable("dataSourceId") Long dataSourceId) {
-		DataSourceDTO dataSourceConfigResponse = new DataSourceDTO();
-		dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
+	public ResponseEntity<DataSourceResponseDTO> getDataSourceById(@PathVariable("dataSourceId") Long dataSourceId) {
+		DataSourceResponseDTO dataSourceConfigResponse = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
 		return ResponseEntity.ok(dataSourceConfigResponse);
 	}
 
@@ -71,12 +73,14 @@ public class DataSourceController {
 	}
 
 	@PutMapping("/{dataSourceId}")
-	public ResponseEntity<DataSource> updateDataSourceById(@Valid @RequestBody DataSourceDTO dataSourceRequest,
+	public ResponseEntity<DataSourceResponseDTO> updateDataSourceById(
+			@Valid @RequestBody DataSourceRequestDTO dataSourceRequest,
 			@PathVariable("dataSourceId") Long dataSourceId) {
 		log.info(FILENAME + "[updateDataSourceConfig] Request from UI-->" + dataSourceRequest.toString());
-		DataSource dataSourceReponse = dataSourceConfigService.updateDataSourceById(dataSourceRequest, dataSourceId);
+		DataSourceResponseDTO dataSourceReponse = dataSourceConfigService.updateDataSourceById(dataSourceRequest,
+				dataSourceId);
 		log.info(FILENAME + "[updateDataSourceConfig] Response-->" + ApplicationConstants.DATA_SOURCE_UPDATE_MSG);
-		return new ResponseEntity<DataSource>(dataSourceReponse, HttpStatus.ACCEPTED);
+		return new ResponseEntity<DataSourceResponseDTO>(dataSourceReponse, HttpStatus.ACCEPTED);
 
 	}
 

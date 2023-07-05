@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import jakarta.validation.constraints.NotNull;
 
-public class DataSourceDTO implements Serializable {
+public class DataSourceRequestDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@NotNull(message = "Datasource name should not be empty")
@@ -29,10 +29,10 @@ public class DataSourceDTO implements Serializable {
 	@NotNull(message = "Active should not be empty")
 	private String active;
 
-	public DataSourceDTO() {
+	public DataSourceRequestDTO() {
 	}
 
-	public DataSourceDTO(String name, String description, Long provider, String userName, String password,
+	public DataSourceRequestDTO(String name, String description, Long provider, String userName, String password,
 			String encryptedPassword, String serverIP, Long port, String schemaName, String owner, String active) {
 		super();
 		this.name = name;

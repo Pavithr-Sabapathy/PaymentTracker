@@ -19,7 +19,8 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.dto.DataSourceDTO;
+import com.mashreq.paymentTracker.dto.DataSourceRequestDTO;
+import com.mashreq.paymentTracker.dto.DataSourceResponseDTO;
 import com.mashreq.paymentTracker.exception.CryptographyException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.DataSource;
@@ -41,10 +42,10 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	private DataSourceRepository dataSourceConfigRepository;
 
 	@Override
-	public DataSource saveDataSourceConfiguration(DataSourceDTO dataSourceRequest) {
-		DataSource dataSourceResponse = new DataSource();
+	public DataSourceResponseDTO saveDataSourceConfiguration(DataSourceRequestDTO dataSourceRequest) {
+		DataSource dataSource = new DataSource();
+		DataSourceResponseDTO dataSourceResponse = new DataSourceResponseDTO();
 		/** Encrypt the password and save into Database **/
-		AesUtil aesUtil = new AesUtil();
 		if (null != dataSourceRequest.getPassword()) {
 			String password = dataSourceRequest.getPassword();
 			String encryptedPassword = null;
@@ -52,20 +53,20 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 				encryptedPassword = AesUtil.encryptBase64(password, "execueDatasourceConnection",
 						EncryptionAlgorithm.TRIPLE_DES);
 			} catch (CryptographyException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			dataSourceRequest.setEncryptedPassword("Y");
 			dataSourceRequest.setPassword(encryptedPassword);
-			dataSourceResponse = modelMapper.map(dataSourceRequest, DataSource.class);
+			dataSource = modelMapper.map(dataSourceRequest, DataSource.class);
 		}
-		dataSourceResponse = dataSourceConfigRepository.save(dataSourceResponse);
+		dataSource = dataSourceConfigRepository.save(dataSource);
+		dataSourceResponse = modelMapper.map(dataSource, DataSourceResponseDTO.class);
 		return dataSourceResponse;
 	}
 
 	@Override
-	public DataSourceDTO getDataSourceConfigById(long dataSourceId) {
-		DataSourceDTO dataSourceDTOResponse = new DataSourceDTO();
+	public DataSourceResponseDTO getDataSourceConfigById(long dataSourceId) {
+		DataSourceResponseDTO dataSourceDTOResponse = new DataSourceResponseDTO();
 		Optional<DataSource> dataSourceConfigurationOptional = dataSourceConfigRepository.findById(dataSourceId);
 		if (dataSourceConfigurationOptional.isEmpty()) {
 			log.error(FILENAME + "[getDataSourceConfigById] " + ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS
@@ -73,14 +74,13 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 			throw new ResourceNotFoundException(ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceId);
 		} else {
 			DataSource dataSourceConfigResponse = dataSourceConfigurationOptional.get();
-			dataSourceDTOResponse = modelMapper.map(dataSourceConfigResponse, DataSourceDTO.class);
+			dataSourceDTOResponse = modelMapper.map(dataSourceConfigResponse, DataSourceResponseDTO.class);
 			if (dataSourceDTOResponse.getEncryptedPassword().equals("Y")) {
 				String decryptedPassword = null;
 				try {
-					decryptedPassword = AesUtil.decryptBase64(dataSourceDTOResponse.getPassword(), "execueDatasourceConnection",
-							EncryptionAlgorithm.TRIPLE_DES);
+					decryptedPassword = AesUtil.decryptBase64(dataSourceDTOResponse.getPassword(),
+							"execueDatasourceConnection", EncryptionAlgorithm.TRIPLE_DES);
 				} catch (CryptographyException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				dataSourceDTOResponse.setPassword(decryptedPassword);
@@ -104,7 +104,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 
 	@Override
 	public Map<String, Object> allDataSourceConfig(int page, int size, List<String> sort) {
-		List<DataSourceDTO> dataSourceDTOList = new ArrayList<DataSourceDTO>();
+		List<DataSourceResponseDTO> dataSourceDTOList = new ArrayList<DataSourceResponseDTO>();
 		List<Order> orders = new ArrayList<Order>();
 		Map<String, Object> response = new HashMap<>();
 		if (sort.get(0).contains(",")) {
@@ -120,18 +120,18 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		Page<DataSource> dataSourceList = dataSourceConfigRepository.findAll(pagingSort);
 		if (!dataSourceList.isEmpty()) {
 			dataSourceList.stream().forEach(datasource -> {
-				DataSourceDTO dataSourceMapper = modelMapper.map(datasource, DataSourceDTO.class);
-				if(dataSourceMapper.getEncryptedPassword().equals("Y")) {
+				DataSourceResponseDTO dataSourceMapper = modelMapper.map(datasource, DataSourceResponseDTO.class);
+				if (dataSourceMapper.getEncryptedPassword().equals("Y")) {
 					String decryptedPassword;
 					try {
-						decryptedPassword = AesUtil.decryptBase64(dataSourceMapper.getPassword(), "execueDatasourceConnection",
-								EncryptionAlgorithm.TRIPLE_DES);
+						decryptedPassword = AesUtil.decryptBase64(dataSourceMapper.getPassword(),
+								"execueDatasourceConnection", EncryptionAlgorithm.TRIPLE_DES);
 						dataSourceMapper.setPassword(decryptedPassword);
 					} catch (CryptographyException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
+
 				}
 				dataSourceDTOList.add(dataSourceMapper);
 			});
@@ -147,7 +147,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	@Override
 	public Map<String, Object> allActiveDataSource(int page, int size, List<String> sort) {
 		Map<String, Object> response = new HashMap<>();
-		List<DataSourceDTO> dataSourceDTOList = new ArrayList<DataSourceDTO>();
+		List<DataSourceResponseDTO> dataSourceDTOList = new ArrayList<DataSourceResponseDTO>();
 		String activeStatus = "Y";
 		List<Order> orders = new ArrayList<Order>();
 
@@ -168,7 +168,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		if (!dataSourceList.isEmpty()) {
 
 			dataSourceList.stream().forEach(datasource -> {
-				DataSourceDTO dataSourceMapper = modelMapper.map(datasource, DataSourceDTO.class);
+				DataSourceResponseDTO dataSourceMapper = modelMapper.map(datasource, DataSourceResponseDTO.class);
 				dataSourceDTOList.add(dataSourceMapper);
 			});
 			response.put("dataSource", dataSourceDTOList);
@@ -186,9 +186,9 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	}
 
 	@Override
-	public DataSource updateDataSourceById(DataSourceDTO dataSourceRequest, Long datasourceId) {
-		AesUtil aesUtil = new AesUtil();
+	public DataSourceResponseDTO updateDataSourceById(DataSourceRequestDTO dataSourceRequest, Long datasourceId) {
 		DataSource dataSourceResponse = new DataSource();
+		DataSourceResponseDTO dataSourceResponseDTO = new DataSourceResponseDTO();
 		Optional<DataSource> dataSourceOptional = dataSourceConfigRepository.findById(datasourceId);
 		if (dataSourceOptional.isEmpty()) {
 			log.error(FILENAME + "[updateDataSourceConfigById] "
@@ -212,7 +212,8 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 			dataSourceResponse = modelMapper.map(dataSourceRequest, DataSource.class);
 		}
 		dataSourceResponse = dataSourceConfigRepository.save(dataSourceResponse);
-		return dataSourceResponse;
+		dataSourceResponseDTO = modelMapper.map(dataSourceRequest, DataSourceResponseDTO.class);
+		return dataSourceResponseDTO;
 	}
 
 }
