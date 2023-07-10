@@ -128,7 +128,7 @@ class FlexFederatedReportServiceTest {
 
         ArrayList<LinkedReportResponseDTO> linkedReportResponseDTOList = new ArrayList<>();
         linkedReportResponseDTOList.add(new LinkedReportResponseDTO(1L, "Link Name", "Link Description", "Report Name",
-                "Linked Report Name", "Source Metric Name", "Active"));
+                0, 0, "Linked Report Name", "Source Metric Name", 0, "Active", null, null));
        
         
         when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(new Report());

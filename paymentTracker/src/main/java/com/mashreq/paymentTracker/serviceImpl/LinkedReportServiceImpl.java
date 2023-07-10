@@ -59,6 +59,9 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	public LinkedReportResponseDTO saveOrUpdateLinkedReport(LinkedReportRequestDTO linkedReportRequestDTO) {
 		LinkedReportResponseDTO linkedReportResponseDTO = new LinkedReportResponseDTO();
 		LinkedReportInfo linkedReportModel = new LinkedReportInfo();
+		if(linkedReportRequestDTO.getId() != 0L) {
+			linkedReportModel.setId(linkedReportRequestDTO.getId());
+		}
 		/** Whether to save or update based on linked report id ***/
 		Optional<ApplicationModule> moduleOptional = moduleRepository.findById(linkedReportRequestDTO.getModuleId());
 		if (moduleOptional.isPresent()) {
@@ -164,7 +167,7 @@ public class LinkedReportServiceImpl implements LinkReportService {
 		LinkedReportResponseDTO linkedReportResponseDTO = new LinkedReportResponseDTO();
 		linkedReportResponseDTO.setId(linkReportResponse.getId());
 		linkedReportResponseDTO.setActive(linkReportResponse.getActive());
-		linkReportResponse.setLinkName(linkReportResponse.getLinkName());
+		linkedReportResponseDTO.setLinkName(linkReportResponse.getLinkName());
 		linkedReportResponseDTO.setComponent(linkReportResponse.getComponentId().getComponentName());
 		linkedReportResponseDTO.setComponentDetail(linkReportResponse.getComponentDetailId().getQueryKey());
 		linkedReportResponseDTO.setLinkDescription(linkReportResponse.getLinkDescription());

@@ -87,8 +87,9 @@ public class LinkedReportServiceTest {
 		linkedReportInfo.setId(1L);
 		linkedReportInfo.setLinkName("SampleReference");
 		linkedReportInfo.setLinkDescription("Referene Detail Report");
-		linkedReportInfo.setReportId(1L);
-		linkedReportInfo.setLinkedReportId(1L);
+		/*
+		 * linkedReportInfo.setReport(1L); linkedReportInfo.setLinkedReportId(1L);
+		 */
 		linkedReportInfo.setActive("y");
 		
 		Mockito.when(mockLinkedReportRepo.findById(linkedReportId)).thenReturn(Optional.of(linkedReportInfo));

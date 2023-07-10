@@ -47,6 +47,7 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 		LinkedReportDetails linkReportDetails = modelMapper.map(linkedReportMappingRequestDTO,
 				LinkedReportDetails.class);
 		if (linkedReportId.isPresent()) {
+			linkReportDetails.setId(linkedReportMappingRequestDTO.getId());
 			log.info(FILENAME + "[Updating Link Mapping Request]--->" + linkedReportMappingRequestDTO.toString());
 		} else {
 			log.info(FILENAME + "[save Link Mapping Request]--->" + linkedReportMappingRequestDTO.toString());
@@ -62,6 +63,7 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 		LinkMappingResponseDTO linkMappingResponseDTO = new LinkMappingResponseDTO();
 		linkMappingResponseDTO.setMappingType(linkMappingDetailResponse.getMappingType());
 		linkMappingResponseDTO.setId(linkMappingDetailResponse.getId());
+		linkMappingResponseDTO.setLinkReportPromptId(linkMappingDetailResponse.getLinkReportPromptId());
 		/**
 		 * Get the metrics entity from metrics table based on mapped id from link report
 		 * detail table. If Mapping type is 'M' then get from Metric table else if
@@ -78,8 +80,10 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 				linkMappingResponseDTO.setMappedEnitytId(metricResponse.getId());
 				linkMappingResponseDTO.setMappedEntity(metricResponse.getDisplayName());
 			}
-		} else if (MashreqFederatedReportConstants.PROMPT.equalsIgnoreCase(linkMappingDetailResponse.getMappingType())) {
-			Optional<Prompts> promptResponseOptional = promptsRepository.findById(linkMappingDetailResponse.getMappedId());
+		} else if (MashreqFederatedReportConstants.PROMPT
+				.equalsIgnoreCase(linkMappingDetailResponse.getMappingType())) {
+			Optional<Prompts> promptResponseOptional = promptsRepository
+					.findById(linkMappingDetailResponse.getMappedId());
 			if (promptResponseOptional.isEmpty()) {
 				throw new ResourceNotFoundException(
 						ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingDetailResponse.getMappedId());
@@ -88,17 +92,6 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 				linkMappingResponseDTO.setMappedEnitytId(promptsResponse.getId());
 				linkMappingResponseDTO.setMappedEntity(promptsResponse.getDisplayName());
 			}
-		}
-		/** Get the linked report prompt display name and id from the prompt table **/
-		Optional<Prompts> linkRepoprtPromptOptional = promptsRepository
-				.findById(linkMappingDetailResponse.getLinkReportPromptId());
-		if (linkRepoprtPromptOptional.isEmpty()) {
-			throw new ResourceNotFoundException(
-					ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingDetailResponse.getLinkReportPromptId());
-		} else {
-			Prompts linkPromptResponse = linkRepoprtPromptOptional.get();
-			linkMappingResponseDTO.setLinkReportPromptId(linkMappingDetailResponse.getLinkReportPromptId());
-			linkMappingResponseDTO.setLinkReportPrompts(linkPromptResponse.getDisplayName());
 		}
 		return linkMappingResponseDTO;
 	}

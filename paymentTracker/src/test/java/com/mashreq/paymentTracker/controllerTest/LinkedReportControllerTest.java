@@ -69,7 +69,7 @@ public class LinkedReportControllerTest {
 	@Test
 	public void testfetchLinkedReport() throws Exception {
 		LinkedReportResponseDTO linkReportResponseDTO = new LinkedReportResponseDTO(1, "sample Link",
-				"Sample Link Description", "sample Report", "Sample linked Repot", "metrics deatils", "y");
+				"Sample Link Description", "sample Report", 1L, 1L, "Sample linked Repot", "metrics deatils", 0, "y", "sample", "sample");
 
 		long linkedReportId = 1L;
 		Mockito.when(linkReportService.fetchLinkedReportById(linkedReportId)).thenReturn(linkReportResponseDTO);

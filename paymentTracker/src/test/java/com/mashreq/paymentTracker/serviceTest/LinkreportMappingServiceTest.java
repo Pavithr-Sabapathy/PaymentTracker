@@ -74,17 +74,16 @@ public class LinkreportMappingServiceTest {
 		metricsMockObject.setMetricsOrder(BigInteger.ONE);
 		LinkedReportDetails linkedReportDetailsMock = new LinkedReportDetails(1, 2, 5, 4, "M");
 
-		linkMappingdeatilsListMock.add(linkedReportDetailsMock);
-		Mockito.when(mocklinkMappingRepo.findByLinkReportId(linkedReportId)).thenReturn(linkMappingdeatilsListMock);
+		Mockito.when(mocklinkMappingRepo.findByLinkReportPromptId(linkedReportId)).thenReturn(linkedReportDetailsMock);
 		Mockito.when(mockMetricsRepository.findById(linkedReportDetailsMock.getMappedId()))
 				.thenReturn(Optional.of(metricsMockObject));
 		when(mockpromptsRepository.findById(linkedReportDetailsMock.getLinkReportPromptId()))
 				.thenReturn(Optional.of(mockPromptResponse));
 
-		List<LinkMappingResponseDTO> linkMappingResponseDTOList = linkMappingServiceImpl
+		LinkMappingResponseDTO linkMappingResponseDTOList = linkMappingServiceImpl
 				.fetchLinkMappingById(linkedReportId);
-		assertEquals(linkMappingResponseDTOList.size(), 1);
-		verify(mocklinkMappingRepo, times(1)).findByLinkReportId(linkedReportId);
+		//assertEquals(linkMappingResponseDTOList.size(), 1);
+		verify(mocklinkMappingRepo, times(1)).findByLinkReportPromptId(linkedReportId);
 		verify(mockMetricsRepository, times(1)).findById(linkedReportDetailsMock.getMappedId());
 		verify(mockpromptsRepository, times(1)).findById(linkedReportDetailsMock.getLinkReportPromptId());
 	}
@@ -108,17 +107,16 @@ public class LinkreportMappingServiceTest {
 
 		LinkedReportDetails linkedReportDetailsMock = new LinkedReportDetails(1, 2, 5, 4, "P");
 
-		linkMappingdeatilsListMock.add(linkedReportDetailsMock);
-		Mockito.when(mocklinkMappingRepo.findByLinkReportId(linkedReportId)).thenReturn(linkMappingdeatilsListMock);
+		Mockito.when(mocklinkMappingRepo.findByLinkReportPromptId(linkedReportId)).thenReturn(linkedReportDetailsMock);
 		when(mockpromptsRepository.findById(linkedReportDetailsMock.getMappedId()))
 				.thenReturn(Optional.of(mockPromptResponse));
 		when(mockpromptsRepository.findById(linkedReportDetailsMock.getLinkReportPromptId()))
 				.thenReturn(Optional.of(mockPromptResponse));
 
-		List<LinkMappingResponseDTO> linkMappingResponseDTOList = linkMappingServiceImpl
+		 LinkMappingResponseDTO linkMappingResponseDTOList = linkMappingServiceImpl
 				.fetchLinkMappingById(linkedReportId);
-		assertEquals(linkMappingResponseDTOList.size(), 1);
-		verify(mocklinkMappingRepo, times(1)).findByLinkReportId(linkedReportId);
+		//assertEquals(linkMappingResponseDTOList.size(), 1);
+		verify(mocklinkMappingRepo, times(1)).findByLinkReportPromptId(linkedReportId);
 		verify(mockpromptsRepository, times(1)).findById(linkedReportDetailsMock.getLinkReportPromptId());
 	}
 	

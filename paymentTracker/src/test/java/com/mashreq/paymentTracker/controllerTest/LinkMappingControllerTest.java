@@ -64,12 +64,10 @@ public class LinkMappingControllerTest {
 
 	@Test
 	public void testfetchLinkMapping() throws Exception {
-		List<LinkMappingResponseDTO> listMappingResponseDTOList = new ArrayList<LinkMappingResponseDTO>();
-		LinkMappingResponseDTO linkReportResponseDTO = new LinkMappingResponseDTO(1, "M", 1, "Metrics", 1,
-				"SampleReference");
-		listMappingResponseDTOList.add(linkReportResponseDTO);
+		LinkMappingResponseDTO listMappingResponseDTO = new LinkMappingResponseDTO();
+		LinkMappingResponseDTO linkReportResponseDTO = new LinkMappingResponseDTO(1, "M", 1, "Metrics", 1);
 		long linkedReportId = 1L;
-		Mockito.when(linkMappingService.fetchLinkMappingById(linkedReportId)).thenReturn(listMappingResponseDTOList);
+		Mockito.when(linkMappingService.fetchLinkMappingById(linkedReportId)).thenReturn(listMappingResponseDTO);
 		mockMvc.perform(get("/linkMapping/{linkReportId}", linkedReportId)).andExpect(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(1)))
 				.andExpect(jsonPath("$[0].mappingType", Matchers.is("M")));
