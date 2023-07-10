@@ -1,7 +1,5 @@
 package com.mashreq.paymentTracker.controller;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +37,9 @@ public class LinkMappingController {
 		return new ResponseEntity<LinkedReportDetails>(linkMappingResponse, HttpStatus.CREATED);
 	}
 
-	@GetMapping("/{linkReportId}")
-	public ResponseEntity<List<LinkMappingResponseDTO>> fetchLinkMapping(@PathVariable long linkReportId) {
-		List<LinkMappingResponseDTO> linkedReportResponse = linkMappingService.fetchLinkMappingById(linkReportId);
+	@GetMapping("/{promptId}")
+	public ResponseEntity<LinkMappingResponseDTO> fetchLinkMapping(@PathVariable long promptId) {
+		LinkMappingResponseDTO linkedReportResponse = linkMappingService.fetchLinkMappingById(promptId);
 		log.info(FILENAME + "[fetchLinkedReport Response]--->" + linkedReportResponse.toString());
 		return ResponseEntity.ok(linkedReportResponse);
 	}

@@ -1,7 +1,5 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -58,56 +56,51 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 	}
 
 	@Override
-	public List<LinkMappingResponseDTO> fetchLinkMappingById(long linkReportId) {
-		List<LinkMappingResponseDTO> linkMappingResponseDTOList = new ArrayList<LinkMappingResponseDTO>();
+	public LinkMappingResponseDTO fetchLinkMappingById(long linkPromptId) {
 
-		List<LinkedReportDetails> linkMappingdeatilsList = linkMappingRepo.findByLinkReportId(linkReportId);
-		linkMappingdeatilsList.forEach(linkMappingdeatils -> {
-
-			LinkMappingResponseDTO linkMappingResponseDTO = new LinkMappingResponseDTO();
-			linkMappingResponseDTO.setMappingType(linkMappingdeatils.getMappingType());
-			linkMappingResponseDTO.setId(linkMappingdeatils.getId());
-			/**
-			 * Get the metrics entity from metrics table based on mapped id from link report
-			 * detail table. If Mapping type is 'M' then get from Metric table else if
-			 * Mapping type is 'P' then get from Prompts table
-			 **/
-			if (MashreqFederatedReportConstants.METRIC.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
-				Optional<Metrics> metricsResponseOptional = metricsRepository
-						.findById(linkMappingdeatils.getMappedId());
-				if (metricsResponseOptional.isEmpty()) {
-					throw new ResourceNotFoundException(
-							ApplicationConstants.METRICS_DOES_NOT_EXISTS + linkMappingdeatils.getMappedId());
-				} else {
-					Metrics metricResponse = metricsResponseOptional.get();
-					linkMappingResponseDTO.setMappedEnitytId(metricResponse.getId());
-					linkMappingResponseDTO.setMappedEntity(metricResponse.getDisplayName());
-				}
-			} else if (MashreqFederatedReportConstants.PROMPT.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
-				Optional<Prompts> promptResponseOptional = promptsRepository.findById(linkMappingdeatils.getMappedId());
-				if (promptResponseOptional.isEmpty()) {
-					throw new ResourceNotFoundException(
-							ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingdeatils.getMappedId());
-				} else {
-					Prompts promptsResponse = promptResponseOptional.get();
-					linkMappingResponseDTO.setMappedEnitytId(promptsResponse.getId());
-					linkMappingResponseDTO.setMappedEntity(promptsResponse.getDisplayName());
-				}
-			}
-			/** Get the linked report prompt display name and id from the prompt table **/
-			Optional<Prompts> linkRepoprtPromptOptional = promptsRepository
-					.findById(linkMappingdeatils.getLinkReportPromptId());
-			if (linkRepoprtPromptOptional.isEmpty()) {
+		LinkedReportDetails linkMappingDetailResponse = linkMappingRepo.findByLinkReportPromptId(linkPromptId);
+		LinkMappingResponseDTO linkMappingResponseDTO = new LinkMappingResponseDTO();
+		linkMappingResponseDTO.setMappingType(linkMappingDetailResponse.getMappingType());
+		linkMappingResponseDTO.setId(linkMappingDetailResponse.getId());
+		/**
+		 * Get the metrics entity from metrics table based on mapped id from link report
+		 * detail table. If Mapping type is 'M' then get from Metric table else if
+		 * Mapping type is 'P' then get from Prompts table
+		 **/
+		if (MashreqFederatedReportConstants.METRIC.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
+			Optional<Metrics> metricsResponseOptional = metricsRepository
+					.findById(linkMappingDetailResponse.getMappedId());
+			if (metricsResponseOptional.isEmpty()) {
 				throw new ResourceNotFoundException(
-						ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingdeatils.getLinkReportPromptId());
+						ApplicationConstants.METRICS_DOES_NOT_EXISTS + linkMappingDetailResponse.getMappedId());
 			} else {
-				Prompts linkPromptResponse = linkRepoprtPromptOptional.get();
-				linkMappingResponseDTO.setLinkReportPromptId(linkMappingdeatils.getLinkReportPromptId());
-				linkMappingResponseDTO.setLinkReportPrompts(linkPromptResponse.getDisplayName());
-				linkMappingResponseDTOList.add(linkMappingResponseDTO);
+				Metrics metricResponse = metricsResponseOptional.get();
+				linkMappingResponseDTO.setMappedEnitytId(metricResponse.getId());
+				linkMappingResponseDTO.setMappedEntity(metricResponse.getDisplayName());
 			}
-		});
-		return linkMappingResponseDTOList;
+		} else if (MashreqFederatedReportConstants.PROMPT.equalsIgnoreCase(linkMappingDetailResponse.getMappingType())) {
+			Optional<Prompts> promptResponseOptional = promptsRepository.findById(linkMappingDetailResponse.getMappedId());
+			if (promptResponseOptional.isEmpty()) {
+				throw new ResourceNotFoundException(
+						ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingDetailResponse.getMappedId());
+			} else {
+				Prompts promptsResponse = promptResponseOptional.get();
+				linkMappingResponseDTO.setMappedEnitytId(promptsResponse.getId());
+				linkMappingResponseDTO.setMappedEntity(promptsResponse.getDisplayName());
+			}
+		}
+		/** Get the linked report prompt display name and id from the prompt table **/
+		Optional<Prompts> linkRepoprtPromptOptional = promptsRepository
+				.findById(linkMappingDetailResponse.getLinkReportPromptId());
+		if (linkRepoprtPromptOptional.isEmpty()) {
+			throw new ResourceNotFoundException(
+					ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingDetailResponse.getLinkReportPromptId());
+		} else {
+			Prompts linkPromptResponse = linkRepoprtPromptOptional.get();
+			linkMappingResponseDTO.setLinkReportPromptId(linkMappingDetailResponse.getLinkReportPromptId());
+			linkMappingResponseDTO.setLinkReportPrompts(linkPromptResponse.getDisplayName());
+		}
+		return linkMappingResponseDTO;
 	}
 
 }
