@@ -1,11 +1,13 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +17,17 @@ import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
+import com.mashreq.paymentTracker.model.ApplicationModule;
+import com.mashreq.paymentTracker.model.ComponentDetails;
+import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.LinkedReportInfo;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
+import com.mashreq.paymentTracker.repository.ComponentsDetailsRepository;
+import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.repository.LinkedReportRepository;
 import com.mashreq.paymentTracker.repository.MetricsRepository;
+import com.mashreq.paymentTracker.repository.ModuleRepository;
 import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.service.LinkReportService;
 
@@ -30,9 +38,6 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	private static final String FILENAME = "LinkedReportServiceImpl";
 
 	@Autowired
-	private ModelMapper modelMapper;
-
-	@Autowired
 	LinkedReportRepository linkedReportRepo;
 
 	@Autowired
@@ -41,22 +46,71 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	@Autowired
 	ReportConfigurationRepository reportConfigurationRepo;
 
+	@Autowired
+	ModuleRepository moduleRepository;
+
+	@Autowired
+	private ComponentsRepository componentRepository;
+
+	@Autowired
+	private ComponentsDetailsRepository componentsDetailsRepository;
+
 	@Override
-	public void saveOrUpdateLinkedReport(LinkedReportRequestDTO linkedReportRequestDTO) {
+	public LinkedReportResponseDTO saveOrUpdateLinkedReport(LinkedReportRequestDTO linkedReportRequestDTO) {
+		LinkedReportResponseDTO linkedReportResponseDTO = new LinkedReportResponseDTO();
+		LinkedReportInfo linkedReportModel = new LinkedReportInfo();
 		/** Whether to save or update based on linked report id ***/
+		Optional<ApplicationModule> moduleOptional = moduleRepository.findById(linkedReportRequestDTO.getModuleId());
+		if (moduleOptional.isPresent()) {
+			ApplicationModule moduleObj = moduleOptional.get();
+			linkedReportModel.setModule(moduleObj);
+		}
+		Optional<Components> componentOptional = componentRepository.findById(linkedReportRequestDTO.getComponentId());
+		if (componentOptional.isPresent()) {
+			Components componentObj = componentOptional.get();
+			linkedReportModel.setComponentId(componentObj);
+		}
+		Optional<ComponentDetails> componentDetailOptional = componentsDetailsRepository
+				.findById(linkedReportRequestDTO.getComponentDetailId());
+		if (componentDetailOptional.isPresent()) {
+			ComponentDetails componentDetailsObj = componentDetailOptional.get();
+			linkedReportModel.setComponentDetailId(componentDetailsObj);
+		}
+		Optional<Report> reportOptional = reportConfigurationRepo.findById(linkedReportRequestDTO.getReportId());
+		if (reportOptional.isPresent()) {
+			Report reportObj = reportOptional.get();
+			linkedReportModel.setReport(reportObj);
+		}
+		Optional<Report> linkedReportOptioanl = reportConfigurationRepo
+				.findById(linkedReportRequestDTO.getLinkedReportId());
+		if (linkedReportOptioanl.isPresent()) {
+			Report linkedReportObj = linkedReportOptioanl.get();
+			linkedReportModel.setLinkedReport(linkedReportObj);
+		}
+		Optional<Metrics> metricsResponseOptional = metricsRepository
+				.findById(linkedReportRequestDTO.getSourceMetricId());
+		if (metricsResponseOptional.isPresent()) {
+			linkedReportModel.setSourceMetrics(metricsResponseOptional.get());
+		}
 		OptionalLong linkedReportId = OptionalLong.of(linkedReportRequestDTO.getId());
-		LinkedReportInfo linkedReportModel = modelMapper.map(linkedReportRequestDTO, LinkedReportInfo.class);
+		linkedReportModel.setActive(linkedReportRequestDTO.getActive());
+		linkedReportModel.setLinkDescription(linkedReportRequestDTO.getLinkDescription());
+		linkedReportModel.setLinkName(linkedReportRequestDTO.getLinkName());
+
 		if (linkedReportId.isPresent()) {
 			log.info(FILENAME + "[Updating Report Request]--->" + linkedReportRequestDTO.toString());
 		} else {
 			log.info(FILENAME + "[save Report Request]--->" + linkedReportRequestDTO.toString());
 		}
-		linkedReportRepo.save(linkedReportModel);
-
+		LinkedReportInfo linkReportResponse = linkedReportRepo.save(linkedReportModel);
+		if (null != linkReportResponse) {
+			linkedReportResponseDTO = populateLinkReport(linkReportResponse);
+		}
+		return linkedReportResponseDTO;
 	}
 
 	@Override
-	public List<LinkedReportResponseDTO>  fetchLinkedReportByReportId(long reportId) {
+	public List<LinkedReportResponseDTO> fetchLinkedReportByReportId(long reportId) {
 		List<LinkedReportResponseDTO> linkedReportDTOresponseList = new ArrayList<LinkedReportResponseDTO>();
 		Optional<List<LinkedReportInfo>> linkedReportOptionalResponseList = linkedReportRepo
 				.findAllByReportId(reportId);
@@ -68,16 +122,10 @@ public class LinkedReportServiceImpl implements LinkReportService {
 			List<LinkedReportInfo> linkedReportResponseList = linkedReportOptionalResponseList.get();
 			linkedReportResponseList.forEach(linkedReportResponse -> {
 				LinkedReportResponseDTO linkedReportDTOresponse = new LinkedReportResponseDTO();
-				linkedReportDTOresponse.setId(linkedReportResponse.getId());
-				linkedReportDTOresponse.setLinkedReportID(linkedReportResponse.getLinkedReportId());
-				linkedReportDTOresponse.setReportId(linkedReportResponse.getReportId());
-				linkedReportDTOresponse.setSourceMetrics(linkedReportResponse.getSourceMetrics());
-				linkedReportDTOresponse.setActive(linkedReportResponse.getActive());
-				linkedReportDTOresponse.setLinkDescription(linkedReportResponse.getLinkDescription());
-				linkedReportDTOresponse.setLinkName(linkedReportResponse.getLinkName());
+				linkedReportDTOresponse = populateLinkReport(linkedReportResponse);
 				linkedReportDTOresponseList.add(linkedReportDTOresponse);
 			});
-			
+
 		}
 		return linkedReportDTOresponseList;
 	}
@@ -85,45 +133,50 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	@Override
 	public LinkedReportResponseDTO fetchLinkedReportById(long linkedReportId) {
 		LinkedReportResponseDTO linkedReportDTOresponse = new LinkedReportResponseDTO();
-		Optional<LinkedReportInfo> linkedReportOptionalResponse = linkedReportRepo.findById(linkedReportId);
-		if (linkedReportOptionalResponse.isEmpty()) {
+		Optional<LinkedReportInfo> LinkedReportResponseDTO = linkedReportRepo.findById(linkedReportId);
+		if (LinkedReportResponseDTO.isEmpty()) {
 			log.error(FILENAME + "[fetchLinkedReportById] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS
 					+ linkedReportId);
 			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + linkedReportId);
 		} else {
-			LinkedReportInfo linkedReportResponse = linkedReportOptionalResponse.get();
-			linkedReportDTOresponse.setId(linkedReportResponse.getId());
-			linkedReportDTOresponse.setLinkName(linkedReportResponse.getLinkName());
-			linkedReportDTOresponse.setLinkDescription(linkedReportResponse.getLinkDescription());
-			linkedReportDTOresponse.setActive(linkedReportResponse.getActive());
-			/**
-			 * Map the metrics and source report name from metrics table based on mapping
-			 **/
-			long sourceMetricId = linkedReportResponse.getSourceMetrics().getId();
-			Optional<Metrics> metricsOptional = metricsRepository.findById(sourceMetricId);
-			if (linkedReportOptionalResponse.isEmpty()) {
-				log.error(FILENAME + "[fetchLinkedReportById] " + ApplicationConstants.METRICS_DOES_NOT_EXISTS
-						+ sourceMetricId);
-				throw new ResourceNotFoundException(ApplicationConstants.METRICS_DOES_NOT_EXISTS + sourceMetricId);
-			} else {
-				Metrics metricsDeatils = metricsOptional.get();
-				linkedReportDTOresponse.setSourceMetricName(metricsDeatils.getDisplayName());
-				linkedReportDTOresponse.setReportName(metricsDeatils.getReport().getReportName());
-			}
-			/**
-			 * Map the linked report name from the report table based on linked report id
-			 **/
-			Optional<Report> reportReponseOptional = reportConfigurationRepo
-					.findById(linkedReportResponse.getLinkedReportId());
-			if (reportReponseOptional.isEmpty()) {
-				throw new ResourceNotFoundException(
-						ApplicationConstants.REPORT_DOES_NOT_EXISTS + linkedReportResponse.getLinkedReportId());
-			} else {
-				Report reportRepsonse = reportReponseOptional.get();
-				linkedReportDTOresponse.setLinkedReportName(reportRepsonse.getReportName());
-			}
-
+			LinkedReportInfo linkedReportResponse = LinkedReportResponseDTO.get();
+			linkedReportDTOresponse = populateLinkReport(linkedReportResponse);
 		}
 		return linkedReportDTOresponse;
+	}
+
+	@Override
+	public Map<Long, String> fetchLinkedReportByModuleId(long moduleId) {
+		Map<Long, String> linkedReportMapping = new HashMap<Long, String>();
+		Optional<List<LinkedReportInfo>> LinkedReportResponseDTO = linkedReportRepo.findByAllModuleId(moduleId);
+		if (LinkedReportResponseDTO.isPresent()) {
+			List<LinkedReportInfo> linkReportResponseList = LinkedReportResponseDTO.get();
+			linkedReportMapping = linkReportResponseList.stream()
+					.collect(Collectors.toMap(LinkedReportInfo::getId, LinkedReportInfo::getLinkName));
+		} else {
+			log.error(FILENAME + "[fetchLinkedReportByModuleId] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS);
+			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS);
+		}
+		return linkedReportMapping;
+	}
+
+	private LinkedReportResponseDTO populateLinkReport(LinkedReportInfo linkReportResponse) {
+		LinkedReportResponseDTO linkedReportResponseDTO = new LinkedReportResponseDTO();
+		linkedReportResponseDTO.setId(linkReportResponse.getId());
+		linkedReportResponseDTO.setActive(linkReportResponse.getActive());
+		linkReportResponse.setLinkName(linkReportResponse.getLinkName());
+		linkedReportResponseDTO.setComponent(linkReportResponse.getComponentId().getComponentName());
+		linkedReportResponseDTO.setComponentDetail(linkReportResponse.getComponentDetailId().getQueryKey());
+		linkedReportResponseDTO.setLinkDescription(linkReportResponse.getLinkDescription());
+		linkedReportResponseDTO.setLinkedReportName(linkReportResponse.getLinkedReport().getReportName());
+		linkedReportResponseDTO.setLinkedReportID(linkReportResponse.getLinkedReport().getId());
+		linkedReportResponseDTO.setReportName(linkReportResponse.getReport().getReportName());
+		linkedReportResponseDTO.setReportId(linkReportResponse.getReport().getId());
+		linkedReportResponseDTO.setSourceMetricName(linkReportResponse.getSourceMetrics().getDisplayName());
+		linkedReportResponseDTO.setSourceMetricId(linkReportResponse.getSourceMetrics().getId());
+		linkedReportResponseDTO.setModuleId(linkReportResponse.getModule().getId());
+		linkedReportResponseDTO.setModuleName(linkReportResponse.getModule().getModuleName());
+		return linkedReportResponseDTO;
+
 	}
 }

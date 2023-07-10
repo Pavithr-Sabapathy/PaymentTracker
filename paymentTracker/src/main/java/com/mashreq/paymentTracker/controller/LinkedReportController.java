@@ -1,5 +1,7 @@
 package com.mashreq.paymentTracker.controller;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.service.LinkReportService;
@@ -30,19 +31,22 @@ public class LinkedReportController {
 	LinkReportService linkReportService;
 
 	@PostMapping
-	public ResponseEntity<String> saveOrUpdateLinkedReport(@RequestBody LinkedReportRequestDTO linkedReportRequestDTO) {
-		try {
-			linkReportService.saveOrUpdateLinkedReport(linkedReportRequestDTO);
-			return new ResponseEntity<String>(ApplicationConstants.LINK_REPORT_CREATION_MSG, HttpStatus.CREATED);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<LinkedReportResponseDTO> saveOrUpdateLinkedReport(
+			@RequestBody LinkedReportRequestDTO linkedReportRequestDTO) {
+		LinkedReportResponseDTO linkReportResponse = linkReportService.saveOrUpdateLinkedReport(linkedReportRequestDTO);
+		return new ResponseEntity<LinkedReportResponseDTO>(linkReportResponse, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/{linkedReportId}")
 	public ResponseEntity<LinkedReportResponseDTO> fetchLinkedReport(@PathVariable long linkedReportId) {
 		LinkedReportResponseDTO linkedReportResponse = linkReportService.fetchLinkedReportById(linkedReportId);
+		log.info(FILENAME + "[fetchLinkedReport Response]--->" + linkedReportResponse.toString());
+		return ResponseEntity.ok(linkedReportResponse);
+	}
+
+	@GetMapping("module/{moduleId}")
+	public ResponseEntity<Map<Long, String>> fetchLinkedReportByModuleId(@PathVariable long moduleId) {
+		Map<Long, String> linkedReportResponse = linkReportService.fetchLinkedReportByModuleId(moduleId);
 		log.info(FILENAME + "[fetchLinkedReport Response]--->" + linkedReportResponse.toString());
 		return ResponseEntity.ok(linkedReportResponse);
 	}

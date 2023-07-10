@@ -2,8 +2,6 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
-import com.mashreq.paymentTracker.model.Metrics;
-
 import jakarta.validation.constraints.NotEmpty;
 
 public class LinkedReportRequestDTO implements Serializable {
@@ -30,11 +28,18 @@ public class LinkedReportRequestDTO implements Serializable {
 
 	@NotEmpty
 	private long sourceMetricId;
-	
-	private Metrics sourceMetrics;
 
 	@NotEmpty
 	private String active;
+
+	@NotEmpty
+	private long componentId;
+
+	@NotEmpty
+	private long componentDetailId;
+
+	@NotEmpty
+	private long moduleId;
 
 	public long getId() {
 		return id;
@@ -92,39 +97,54 @@ public class LinkedReportRequestDTO implements Serializable {
 		this.active = active;
 	}
 
-	public Metrics getSourceMetrics() {
-		return sourceMetrics;
+	public long getComponentId() {
+		return componentId;
 	}
 
-	public void setSourceMetrics(Metrics sourceMetrics) {
-		this.sourceMetrics = sourceMetrics;
+	public void setComponentId(long componentId) {
+		this.componentId = componentId;
 	}
-	
+
+	public long getComponentDetailId() {
+		return componentDetailId;
+	}
+
+	public void setComponentDetailId(long componentDetailId) {
+		this.componentDetailId = componentDetailId;
+	}
+
+	public long getModuleId() {
+		return moduleId;
+	}
+
+	public void setModuleId(long moduleId) {
+		this.moduleId = moduleId;
+	}
+
 	public LinkedReportRequestDTO() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public LinkedReportRequestDTO(@NotEmpty long id, @NotEmpty String linkName, @NotEmpty String linkDescription,
-			@NotEmpty long reportId, @NotEmpty long linkedReportId, @NotEmpty long sourceMetricId,
-			Metrics sourceMetrics, @NotEmpty String active) {
+	public LinkedReportRequestDTO(@NotEmpty String linkName, @NotEmpty String linkDescription, @NotEmpty long reportId,
+			@NotEmpty long linkedReportId, @NotEmpty long sourceMetricId, @NotEmpty String active,
+			@NotEmpty long componentId, @NotEmpty long componentDetailId) {
 		super();
-		this.id = id;
 		this.linkName = linkName;
 		this.linkDescription = linkDescription;
 		this.reportId = reportId;
 		this.linkedReportId = linkedReportId;
 		this.sourceMetricId = sourceMetricId;
-		this.sourceMetrics = sourceMetrics;
 		this.active = active;
+		this.componentId = componentId;
+		this.componentDetailId = componentDetailId;
 	}
-
 
 	@Override
 	public String toString() {
-		return "LinkedReportRequestDTO [id=" + id + ", linkName=" + linkName + ", linkDescription=" + linkDescription
-				+ ", reportId=" + reportId + ", linkedReportId=" + linkedReportId + ", sourceMetricId=" + sourceMetricId
-				+ ", active=" + active + "]";
+		return "LinkedReportRequestDTO [linkName=" + linkName + ", linkDescription=" + linkDescription + ", reportId="
+				+ reportId + ", linkedReportId=" + linkedReportId + ", sourceMetricId=" + sourceMetricId + ", active="
+				+ active + ", componentId=" + componentId + ", componentDetailId=" + componentDetailId + "]";
 	}
 
 }

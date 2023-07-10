@@ -15,7 +15,6 @@ import com.mashreq.paymentTracker.dto.ModuleDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ApplicationModule;
-import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.repository.ModuleRepository;
 import com.mashreq.paymentTracker.service.ModuleService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;

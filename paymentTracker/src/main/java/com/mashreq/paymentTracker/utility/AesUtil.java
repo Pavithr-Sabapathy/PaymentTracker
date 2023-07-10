@@ -81,8 +81,8 @@ public class AesUtil {
 			if (StringUtils.isEmpty(unencryptedString)) {
 				return unencryptedString;
 			}
-			Cipher encryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-		//	Cipher encryptCipher = Cipher.getInstance(encryptionAlgorithm.getValue());
+		//	Cipher encryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			Cipher encryptCipher = Cipher.getInstance(encryptionAlgorithm.getValue());
 			encryptCipher.init(Cipher.ENCRYPT_MODE, TripleDESKeyGenerationService.generateSecretKey(decryptionKey));
 			// Encode the string into bytes using utf-8
 			byte[] unencryptedByteArray = unencryptedString.getBytes("UTF8");

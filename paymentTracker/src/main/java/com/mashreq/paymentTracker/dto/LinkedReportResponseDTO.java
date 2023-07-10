@@ -1,8 +1,10 @@
 package com.mashreq.paymentTracker.dto;
 
-import com.mashreq.paymentTracker.model.Metrics;
+import java.io.Serializable;
 
-public class LinkedReportResponseDTO {
+public class LinkedReportResponseDTO implements Serializable {
+
+	private static final long serialVersionUID = 2999855065270443273L;
 	private long id;
 	private String linkName;
 	private String linkDescription;
@@ -11,8 +13,34 @@ public class LinkedReportResponseDTO {
 	private long reportId;
 	private String linkedReportName;
 	private String sourceMetricName;
-	private Metrics sourceMetrics;
+	private long sourceMetricId;
 	private String active;
+	private String component;
+	private String componentDetail;
+	private String moduleName;
+	private long moduleId;
+
+	public LinkedReportResponseDTO() {
+		super();
+	}
+
+	public LinkedReportResponseDTO(long id, String linkName, String linkDescription, String reportName,
+			long linkedReportID, long reportId, String linkedReportName, String sourceMetricName, long sourceMetricId,
+			String active, String component, String componentDetail) {
+		super();
+		this.id = id;
+		this.linkName = linkName;
+		this.linkDescription = linkDescription;
+		this.reportName = reportName;
+		this.linkedReportID = linkedReportID;
+		this.reportId = reportId;
+		this.linkedReportName = linkedReportName;
+		this.sourceMetricName = sourceMetricName;
+		this.sourceMetricId = sourceMetricId;
+		this.active = active;
+		this.component = component;
+		this.componentDetail = componentDetail;
+	}
 
 	public long getId() {
 		return id;
@@ -46,6 +74,22 @@ public class LinkedReportResponseDTO {
 		this.reportName = reportName;
 	}
 
+	public long getLinkedReportID() {
+		return linkedReportID;
+	}
+
+	public void setLinkedReportID(long linkedReportID) {
+		this.linkedReportID = linkedReportID;
+	}
+
+	public long getReportId() {
+		return reportId;
+	}
+
+	public void setReportId(long reportId) {
+		this.reportId = reportId;
+	}
+
 	public String getLinkedReportName() {
 		return linkedReportName;
 	}
@@ -62,6 +106,14 @@ public class LinkedReportResponseDTO {
 		this.sourceMetricName = sourceMetricName;
 	}
 
+	public long getSourceMetricId() {
+		return sourceMetricId;
+	}
+
+	public void setSourceMetricId(long sourceMetricId) {
+		this.sourceMetricId = sourceMetricId;
+	}
+
 	public String getActive() {
 		return active;
 	}
@@ -70,52 +122,41 @@ public class LinkedReportResponseDTO {
 		this.active = active;
 	}
 
-	public long getLinkedReportID() {
-		return linkedReportID;
+	public String getComponent() {
+		return component;
 	}
 
-	public void setLinkedReportID(long linkedReportID) {
-		this.linkedReportID = linkedReportID;
+	public void setComponent(String component) {
+		this.component = component;
 	}
 
-	public Metrics getSourceMetrics() {
-		return sourceMetrics;
+	public String getComponentDetail() {
+		return componentDetail;
 	}
 
-	public void setSourceMetrics(Metrics sourceMetrics) {
-		this.sourceMetrics = sourceMetrics;
+	public void setComponentDetail(String componentDetail) {
+		this.componentDetail = componentDetail;
 	}
 
-	public long getReportId() {
-		return reportId;
+	public String getModuleName() {
+		return moduleName;
 	}
 
-	public void setReportId(long reportId) {
-		this.reportId = reportId;
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
 	}
 
-	@Override
-	public String toString() {
-		return "LinkedReportResponseDTO [id=" + id + ", linkName=" + linkName + ", linkDescription=" + linkDescription
-				+ ", reportName=" + reportName + ", linkedReportName=" + linkedReportName + ", sourceMetricName="
-				+ sourceMetricName + ", active=" + active + "]";
-	}
-
-	public LinkedReportResponseDTO() {
+	public LinkedReportResponseDTO(String moduleName) {
 		super();
-		// TODO Auto-generated constructor stub
+		this.moduleName = moduleName;
 	}
 
-	public LinkedReportResponseDTO(long id, String linkName, String linkDescription, String reportName,
-			String linkedReportName, String sourceMetricName, String active) {
-		super();
-		this.id = id;
-		this.linkName = linkName;
-		this.linkDescription = linkDescription;
-		this.reportName = reportName;
-		this.linkedReportName = linkedReportName;
-		this.sourceMetricName = sourceMetricName;
-		this.active = active;
+	public long getModuleId() {
+		return moduleId;
+	}
+
+	public void setModuleId(long moduleId) {
+		this.moduleId = moduleId;
 	}
 
 }

@@ -159,7 +159,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		List<LinkedReportResponseDTO> linkedreportResponseDTOList = linkReportService
 				.fetchLinkedReportByReportId(reportObject.getId());
 		linkedreportResponseDTOList.stream().forEach(linkedreportResponseDTO -> {
-			metricsWithLinks.add(linkedreportResponseDTO.getSourceMetrics().getDisplayName());
+			metricsWithLinks.add(linkedreportResponseDTO.getSourceMetricName());
 		});
 		return metricsWithLinks;
 	}

@@ -4,10 +4,11 @@ import java.util.List;
 
 import com.mashreq.paymentTracker.dto.LinkMappingResponseDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportMappingRequestDTO;
+import com.mashreq.paymentTracker.model.LinkedReportDetails;
 
 public interface LinkMappingService {
 
-	void saveOrUpdateLinkMapping(LinkedReportMappingRequestDTO linkedReportMappingRequestDTO);
+	LinkedReportDetails saveOrUpdateLinkMapping(LinkedReportMappingRequestDTO linkedReportMappingRequestDTO);
 
 	List<LinkMappingResponseDTO> fetchLinkMappingById(long id);
 

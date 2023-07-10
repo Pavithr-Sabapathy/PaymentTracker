@@ -43,7 +43,7 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 	PromptsRepository promptsRepository;
 
 	@Override
-	public void saveOrUpdateLinkMapping(LinkedReportMappingRequestDTO linkedReportMappingRequestDTO) {
+	public LinkedReportDetails saveOrUpdateLinkMapping(LinkedReportMappingRequestDTO linkedReportMappingRequestDTO) {
 		/** Whether to save or update based on link Mapping id ***/
 		OptionalLong linkedReportId = OptionalLong.of(linkedReportMappingRequestDTO.getId());
 		LinkedReportDetails linkReportDetails = modelMapper.map(linkedReportMappingRequestDTO,
@@ -53,8 +53,8 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 		} else {
 			log.info(FILENAME + "[save Link Mapping Request]--->" + linkedReportMappingRequestDTO.toString());
 		}
-		linkMappingRepo.save(linkReportDetails);
-
+		LinkedReportDetails linkMappingResponse = linkMappingRepo.save(linkReportDetails);
+		return linkMappingResponse;
 	}
 
 	@Override
