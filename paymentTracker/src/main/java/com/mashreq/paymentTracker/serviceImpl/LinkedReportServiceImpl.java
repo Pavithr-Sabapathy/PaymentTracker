@@ -1,12 +1,9 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,18 +146,20 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	}
 
 	@Override
-	public Map<Long, String> fetchLinkedReportByModuleId(long moduleId) {
-		Map<Long, String> linkedReportMapping = new HashMap<Long, String>();
+	public List<LinkedReportResponseDTO> fetchLinkedReportByModuleId(long moduleId) {
+		List<LinkedReportResponseDTO> linkedReportResponseList = new ArrayList<LinkedReportResponseDTO>();
 		Optional<List<LinkedReportInfo>> LinkedReportResponseDTO = linkedReportRepo.findByAllModuleId(moduleId);
 		if (LinkedReportResponseDTO.isPresent()) {
 			List<LinkedReportInfo> linkReportResponseList = LinkedReportResponseDTO.get();
-			linkedReportMapping = linkReportResponseList.stream()
-					.collect(Collectors.toMap(LinkedReportInfo::getId, LinkedReportInfo::getLinkName));
+			linkReportResponseList.stream().forEach(linkReportResponse -> {
+				LinkedReportResponseDTO linkedReportResponse = populateLinkReport(linkReportResponse);
+				linkedReportResponseList.add(linkedReportResponse);
+			});
 		} else {
 			log.error(FILENAME + "[fetchLinkedReportByModuleId] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS);
 			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS);
 		}
-		return linkedReportMapping;
+		return linkedReportResponseList;
 	}
 
 	private LinkedReportResponseDTO populateLinkReport(LinkedReportInfo linkReportResponse) {

@@ -1,6 +1,6 @@
 package com.mashreq.paymentTracker.controller;
 
-import java.util.Map;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +45,11 @@ public class LinkedReportController {
 	}
 
 	@GetMapping("module/{moduleId}")
-	public ResponseEntity<Map<Long, String>> fetchLinkedReportByModuleId(@PathVariable long moduleId) {
-		Map<Long, String> linkedReportResponse = linkReportService.fetchLinkedReportByModuleId(moduleId);
-		log.info(FILENAME + "[fetchLinkedReport Response]--->" + linkedReportResponse.toString());
-		return ResponseEntity.ok(linkedReportResponse);
+	public ResponseEntity<List<LinkedReportResponseDTO>> fetchLinkedReportByModuleId(@PathVariable long moduleId) {
+		List<LinkedReportResponseDTO> linkedReportResponseList = linkReportService
+				.fetchLinkedReportByModuleId(moduleId);
+		log.info(FILENAME + "[fetchLinkedReport Response]--->" + linkedReportResponseList.toString());
+		return ResponseEntity.ok(linkedReportResponseList);
 	}
 
 }
