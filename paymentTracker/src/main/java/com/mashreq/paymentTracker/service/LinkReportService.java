@@ -13,6 +13,8 @@ public interface LinkReportService {
 
 	List<LinkedReportResponseDTO> fetchLinkedReportByReportId(long reportId);
 
-	List<LinkedReportResponseDTO> fetchLinkedReportByModuleId(long moduleId);	
+	List<LinkedReportResponseDTO> fetchLinkedReportByModuleId(long moduleId);
+
+	void deletelinkedReportById(long linkedReportId);	
 	
 }

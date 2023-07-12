@@ -181,4 +181,18 @@ public class LinkedReportServiceImpl implements LinkReportService {
 		return linkedReportResponseDTO;
 
 	}
+
+	@Override
+	public void deletelinkedReportById(long linkedReportId) {
+		if (linkedReportRepo.existsById(linkedReportId)) {
+			linkedReportRepo.deleteById(linkedReportId);
+		} else {
+			log.error(
+					FILENAME + "[deletelinkedReportById] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + linkedReportId);
+
+			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + linkedReportId);
+		}
+		log.info(FILENAME + "[deletelinkedReportById]--->" + ApplicationConstants.LINK_REPORT_DELETION_MSG);
+	}
+
 }

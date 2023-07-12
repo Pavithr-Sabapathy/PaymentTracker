@@ -77,5 +77,12 @@ public class LinkedReportControllerTest {
 		mockMvc.perform(get("/linkReport/{linkedReportId}", linkedReportId)).andExpect(status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.linkDescription").value("Sample Link Description"));
 	}
+	@Test
+	public void testdeleteLinkedReport() throws Exception {
+		long componentId = 1L;
+		mockMvc.perform(MockMvcRequestBuilders.delete("/linkedReport/{linkedReportId}", componentId))
+				.andExpect(status().isAccepted());
+	}
+
 
 }

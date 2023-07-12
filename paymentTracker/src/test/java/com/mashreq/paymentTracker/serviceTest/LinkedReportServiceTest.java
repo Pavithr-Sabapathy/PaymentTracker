@@ -1,6 +1,7 @@
 package com.mashreq.paymentTracker.serviceTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,6 +100,18 @@ public class LinkedReportServiceTest {
 		LinkedReportResponseDTO linkedReportResponseDTO = linkedReportServiceImpl.fetchLinkedReportById(linkedReportId);
 		assertEquals(linkedReportResponseDTO.getLinkDescription(), "Referene Detail Report");
 		verify(mockLinkedReportRepo, times(1)).findById(linkedReportId);
+	}
+	@Test
+	public void testdeletelinkedReportById() {
+		long linkedReportId = 1L;
+
+		when(mockLinkedReportRepo.existsById(linkedReportId)).thenReturn(true);
+		doNothing().when(mockLinkedReportRepo).deleteById(linkedReportId);
+
+		linkedReportServiceImpl.deletelinkedReportById(linkedReportId);
+
+		verify(mockLinkedReportRepo).existsById(1L);
+		verify(mockLinkedReportRepo).deleteById(1L);
 	}
 
 }
