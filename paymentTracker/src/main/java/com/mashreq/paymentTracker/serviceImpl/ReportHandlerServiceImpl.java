@@ -45,6 +45,7 @@ import com.mashreq.paymentTracker.service.FlexFederatedReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportHandlerService;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
+import com.mashreq.paymentTracker.service.UAEFTSReportService;
 import com.mashreq.paymentTracker.type.EntityType;
 import com.mashreq.paymentTracker.type.ExecutionStatusType;
 import com.mashreq.paymentTracker.utility.DateTimeUtil;
@@ -75,6 +76,9 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 	@Autowired
 	EdmsProcessService edmsProcessService;
 
+	@Autowired
+	UAEFTSReportService UAEFTSReportService;
+	
 	@Override
 	public ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest)
 			throws ReportException, JsonProcessingException {
@@ -115,10 +119,13 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			} else if (reportName.equals(MashreqFederatedReportConstants.SWIFT_REPORT_NAME)) {
 				reportExecuteResponseData = swiftDetailedReportService.processSwiftDetailReport(reportInstanceDTO,
 						reportContext);
-			} else if (reportName.equals("edms")) {
+			} else if (reportName.equals(MashreqFederatedReportConstants.EDMS_REPORT_NAME)) {
 				reportExecuteResponseData = edmsProcessService.ProcessEdmsCommonReport(reportInstanceDTO,
 						reportContext);
+			} else if(reportName.equals(MashreqFederatedReportConstants.UAEFTS_REPORT_NAME)) {
+				reportExecuteResponseData = UAEFTSReportService.processUAEFTSReport(reportInstanceDTO, reportContext);
 			}
+				
 		}
 
 		ObjectMapper mapper = new ObjectMapper();
