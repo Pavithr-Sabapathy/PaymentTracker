@@ -127,7 +127,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         ReportExecuteResponseData actualProcessSwiftDetailReportResult = swiftDetailedReportServiceImpl
-                .processSwiftDetailReport(reportInstanceDTO, reportContext);
+                .processReport(reportInstanceDTO, reportContext);
         assertNull(actualProcessSwiftDetailReportResult.getColumnDefs());
         assertNull(actualProcessSwiftDetailReportResult.getData());
         verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
@@ -200,7 +200,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         assertThrows(ResourceNotFoundException.class,
-                () -> swiftDetailedReportServiceImpl.processSwiftDetailReport(reportInstanceDTO, reportContext));
+                () -> swiftDetailedReportServiceImpl.processReport(reportInstanceDTO, reportContext));
         verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
     }
  @Test
@@ -271,7 +271,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         ReportExecuteResponseData actualProcessSwiftDetailReportResult = swiftDetailedReportServiceImpl
-                .processSwiftDetailReport(reportInstanceDTO, reportContext);
+                .processReport(reportInstanceDTO, reportContext);
         assertNull(actualProcessSwiftDetailReportResult.getColumnDefs());
         assertNull(actualProcessSwiftDetailReportResult.getData());
         verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
@@ -344,7 +344,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         assertThrows(ResourceNotFoundException.class,
-                () -> swiftDetailedReportServiceImpl.processSwiftDetailReport(reportInstanceDTO, reportContext));
+                () -> swiftDetailedReportServiceImpl.processReport(reportInstanceDTO, reportContext));
         verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
         verify(componentsRepository).findAllByreportId(anyLong());
         verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());

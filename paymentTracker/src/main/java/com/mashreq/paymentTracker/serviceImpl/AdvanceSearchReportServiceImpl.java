@@ -315,7 +315,7 @@ public class AdvanceSearchReportServiceImpl implements AdvanceSearchReportServic
 					advanceSearchReportInput
 							.setFlexMatrixBasedUaeftsTransactions(flexMatrixBasedUaeftsTransactionsList);
 					List<AdvanceSearchReportOutput> advanceSearchUAEFTSReportOutList = UAEFTSReportService
-							.processUAEFTSReport(advanceSearchReportInput, componentList, reportContext);
+							.processAdvanceSearchReport(advanceSearchReportInput, componentList, reportContext);
 					advanceSearchReportFinalOutputList.addAll(advanceSearchUAEFTSReportOutList);
 				}
 			}

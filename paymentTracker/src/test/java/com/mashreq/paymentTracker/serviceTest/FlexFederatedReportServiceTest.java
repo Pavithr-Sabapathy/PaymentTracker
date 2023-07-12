@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -30,7 +29,6 @@ import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
@@ -137,7 +135,7 @@ class FlexFederatedReportServiceTest {
 
      
         ReportExecuteResponseData actualProcessFlexReportResult = flexFederatedReportServiceImpl
-                .processFlexReport(reportInstanceDTO, reportContext);
+                .processReport(reportInstanceDTO, reportContext);
         
         assertNotNull(actualProcessFlexReportResult);
 
@@ -160,7 +158,7 @@ class FlexFederatedReportServiceTest {
 		ArrayList<Components> componentList = new ArrayList<>();
 		componentList.add(components);
 		assertThrows(ResourceNotFoundException.class, () -> flexFederatedReportServiceImpl
-				.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
+				.processAdvanceSearchReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
 		verify(components).getActive();
 		verify(components).getComponentKey();
 	}
@@ -181,7 +179,7 @@ class FlexFederatedReportServiceTest {
 				new ArrayList<>()));
 		componentList.add(components);
 		assertThrows(ResourceNotFoundException.class, () -> flexFederatedReportServiceImpl
-				.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
+				.processAdvanceSearchReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
 		verify(components).getActive();
 		verify(components).getComponentKey();
 	}

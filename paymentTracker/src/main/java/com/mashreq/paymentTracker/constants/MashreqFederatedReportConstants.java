@@ -24,15 +24,16 @@ public class MashreqFederatedReportConstants {
 	/*** Report Name **/
 	public static final String FLEX_REPORT_NAME = "flexPostingDetails";
 	public static final String SWIFT_REPORT_NAME = "swiftDetails";
-	public static final String EDMS_REPORT_NAME = "";
-
+	public static final String EDMS_REPORT_NAME = "edms";
+	public static final String UAEFTS_REPORT_NAME = "UAEFTSDetails";
+	public static final String ADVANCE_SEARCH_REPORT_NAME = "advanceSearch";
 	/** Metrics and prompts constant **/
 	public static final String METRIC = "M";
 	public static final String PROMPT = "P";
 	public static final String ACCOUNTINGSOURCEPROMPTS = "AccountingSource";
 	public static final String REFERENCENUMPROMPTS = "ReferenceNum";
 	public static final String RELATEDACCOUNTPROMPTS = "RelatedAccount";
-
+	public static final String MESSAGETYPEPROMPTS = "mesgType";
 	/** Prepared Statement Constants **/
 	public static final String DRIVER_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 	public static final String DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=PaymentTracker;encrypt=true;trustServerCertificate=true";
@@ -158,4 +159,6 @@ public class MashreqFederatedReportConstants {
 
 	public static final String EDMS_EDD_DETAILED_REP_COMP = "EDMSEDD DR";
 	public static final String BPM_EDD_DETAILED_REP_COMP = "BPMEDD DR";
+	
+	public static final String NO_REPORTS = "No Report Found";
 }
