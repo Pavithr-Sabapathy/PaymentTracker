@@ -1,9 +1,7 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,7 +11,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
@@ -21,29 +18,26 @@ import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.FlexAccountingDetailedFederatedReportInput;
-import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
+import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
-import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.FlexFederatedReportService;
-import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
+import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
@@ -57,24 +51,21 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 	private ComponentsRepository componentRepository;
 
 	@Autowired
-	LinkReportService linkReportService;
-
-	@Autowired
-	ComponentsCountryRepository componentsCountryRepository;
-
-	@Autowired
 	QueryExecutorService queryExecutorService;
 
 	@Autowired
 	CannedReportService cannedReportService;
+	
+	@Autowired
+	ReportOutputExecutor reportOutputExecutor;
 
 	private static final Logger log = LoggerFactory.getLogger(FlexFederatedReportServiceImpl.class);
 	private static final String FILENAME = "FlexFederatedReportServiceImpl";
-
+	
 	public ReportExecuteResponseData processFlexReport(ReportInstanceDTO reportInstanceDTO,
 			ReportContext reportContext) {
 		ReportExecuteResponseData flexReportExecuteResponseData = new ReportExecuteResponseData();
-		List<FederatedReportOutput> flexReportExecuteResponseList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> flexReportExecuteResponseList = new ArrayList<ReportOutput>();
 		Report report = new Report();
 		if (null != reportInstanceDTO) {
 			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
@@ -92,45 +83,24 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 						flexAccountingDetailedFederatedReportInput.setComponent(reportComponent);
 						flexAccountingDetailedFederatedReportInput = populateBaseInputContext(
 								reportInstanceDTO.getPromptsList());
-						List<FederatedReportOutput> flexReportExecuteResponse = executeReport(
+						List<ReportOutput> flexReportExecuteResponse = executeReport(
 								flexAccountingDetailedFederatedReportInput, reportComponent, reportContext);
 						if (!flexReportExecuteResponse.isEmpty()) {
 							flexReportExecuteResponseList.addAll(flexReportExecuteResponse);
 						}
 					}
 				}
-				List<Map<String, Object>> rowDataMapList = populateRowData(flexReportExecuteResponseList, report);
-				List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = populateColumnDef(report);
+				List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(flexReportExecuteResponseList, report);
+				List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = reportOutputExecutor.populateColumnDef(report);
 				flexReportExecuteResponseData.setColumnDefs(reportExecuteResponseCloumnDefList);
 				flexReportExecuteResponseData.setData(rowDataMapList);
 			}
 		}
-
+		log.info(FILENAME+"processFlexReport [Response] -->" + flexReportExecuteResponseData.toString());
 		return flexReportExecuteResponseData;
 	}
 
-	private List<Map<String, Object>> populateRowData(List<FederatedReportOutput> flexReportExecuteResponseList,
-			Report report) {
-		List<Map<String, Object>> rowDataList = new ArrayList<Map<String, Object>>();
-		List<Metrics> reportMetricsList = report.getMetricsList();
-		List<String> metricsDisplayNameList = reportMetricsList.stream().map(Metrics::getDisplayName)
-				.collect(Collectors.toList());
-		Map<String, Object> rowMap = new HashMap<String, Object>();
-		flexReportExecuteResponseList.stream().forEach(flexReport -> {
-			List<Object> dataList = flexReport.getRowData();
-
-			Iterator<Object> ik = dataList.iterator();
-			Iterator<String> iv = metricsDisplayNameList.iterator();
-
-			while (ik.hasNext() && iv.hasNext()) {
-				rowMap.put(iv.next(), ik.next());
-			}
-
-			rowDataList.add(rowMap);
-
-		});
-		return rowDataList;
-	}
+	
 
 	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> reportPromptsList,
 			String promptKey) {
@@ -177,45 +147,12 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 		return flexAccountingDetailedFederatedReportInput;
 	}
 
-	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(Report reportObject) {
-		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
-		try {
-			List<Metrics> metricsList = reportObject.getMetricsList();
-			metricsList.stream().forEach(metrics -> {
-				ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
-				reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
-				reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
-			});
-			List<String> metricsWithLinkList = prepareLinkReportInfo(reportObject);
-			reportExecuteResponseCloumnDefList.stream().forEach(colummnDef -> {
-				if (metricsWithLinkList.contains(colummnDef.getField())) {
-					colummnDef.setLinkExists(Boolean.TRUE);
-				}
-			});
 
-		} catch (JpaSystemException exception) {
-			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
-		} catch (ResourceNotFoundException exception) {
-			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
-		}
-		return reportExecuteResponseCloumnDefList;
-	}
-
-	private List<String> prepareLinkReportInfo(Report reportObject) {
-		List<String> metricsWithLinks = new ArrayList<String>();
-		List<LinkedReportResponseDTO> linkedreportResponseDTOList = linkReportService
-				.fetchLinkedReportByReportId(reportObject.getId());
-		linkedreportResponseDTOList.stream().forEach(linkedreportResponseDTO -> {
-			metricsWithLinks.add(linkedreportResponseDTO.getSourceMetricName());
-		});
-		return metricsWithLinks;
-	}
-
-	private List<FederatedReportOutput> executeReport(
+	private List<ReportOutput> executeReport(
 			FlexAccountingDetailedFederatedReportInput flexAccountingDetailedFederatedReportInput,
 			ReportComponentDTO component, ReportContext reportContext) {
 		ReportComponentDetailDTO matchedComponentDetail = new ReportComponentDetailDTO();
-		List<FederatedReportOutput> flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
 		if (null != component) {
 			Set<ReportComponentDetailDTO> componentDetailsSet = component.getReportComponentDetails();
 			for (ReportComponentDetailDTO componentDetail : componentDetailsSet) {
@@ -271,7 +208,7 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 	@Override
 	public List<AdvanceSearchReportOutput> processFlexDetailReport(AdvanceSearchReportInput advanceSearchReportInput,
 			List<Components> componentList, ReportContext reportContext) {
-		List<FederatedReportOutput> flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		Components component = getMatchedInstanceComponent(componentList, MashreqFederatedReportConstants.ADVANCE_SEARCH_FLEX_COMPONENT_KEY);
 		if (null != component) {
@@ -304,10 +241,10 @@ public class FlexFederatedReportServiceImpl implements FlexFederatedReportServic
 	}
 
 	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(
-			List<FederatedReportOutput> flexReportExecuteResponse, AdvanceSearchReportInput advanceSearchReportInput) {
+			List<ReportOutput> flexReportExecuteResponse, AdvanceSearchReportInput advanceSearchReportInput) {
 		List<AdvanceSearchReportOutput> reportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		if (!flexReportExecuteResponse.isEmpty()) {
-			for (FederatedReportOutput federatedReportOutput : flexReportExecuteResponse) {
+			for (ReportOutput federatedReportOutput : flexReportExecuteResponse) {
 				AdvanceSearchReportOutput advanceSearchReportOutput = new AdvanceSearchReportOutput();
 				List<Object> rowData = federatedReportOutput.getRowData();
 				advanceSearchReportOutput.setTransactionReference(UtilityClass.getStringRepresentation(rowData.get(0)));

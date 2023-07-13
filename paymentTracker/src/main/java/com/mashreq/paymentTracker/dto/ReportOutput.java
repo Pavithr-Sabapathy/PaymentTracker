@@ -3,7 +3,7 @@ package com.mashreq.paymentTracker.dto;
 import java.io.Serializable;
 import java.util.List;
 
-public class FederatedReportOutput implements Serializable {
+public class ReportOutput implements Serializable {
 
 	/**
 	 * 

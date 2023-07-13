@@ -78,7 +78,6 @@ public class ReportConfigurationServiceImpl implements ReportConfigurationServic
 			log.error(FILENAME + "[fetchReportByName]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportName);
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + reportName);
 		}
-		log.info(FILENAME + "[fetchReportByName]" + reportName + "-->" + report.toString());
 		return report;
 
 	}

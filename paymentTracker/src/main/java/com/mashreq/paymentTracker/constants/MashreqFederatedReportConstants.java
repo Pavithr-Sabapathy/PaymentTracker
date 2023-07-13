@@ -27,6 +27,7 @@ public class MashreqFederatedReportConstants {
 	public static final String EDMS_REPORT_NAME = "edms";
 	public static final String UAEFTS_REPORT_NAME = "UAEFTSDetails";
 	public static final String ADVANCE_SEARCH_REPORT_NAME = "advanceSearch";
+	public static final String SNAPP_DETAILS = "SnappDetails";
 	/** Metrics and prompts constant **/
 	public static final String METRIC = "M";
 	public static final String PROMPT = "P";
@@ -85,6 +86,8 @@ public class MashreqFederatedReportConstants {
 	public static final String ADVANCE_SEARCH_UAEFTS_COMPONENT_KEY = "uaefts";
 	public static final String ADVANCE_SEARCH_UAEFTS_CCN_KEY = "uaefts-ccn";
 
+	public static final String SNAPP_MWLOG_DETAIL_KEY = "mwlog-detail";
+	public static final String SNAPP_MWLOG = "mwlog";
 	public static final String GPI_ENABLED_IPALA_CODE = "IPLAGPIA";
 
 	public static final String COMPLETED_ACTIVITY_STATUS = "Completed";
@@ -159,6 +162,13 @@ public class MashreqFederatedReportConstants {
 
 	public static final String EDMS_EDD_DETAILED_REP_COMP = "EDMSEDD DR";
 	public static final String BPM_EDD_DETAILED_REP_COMP = "BPMEDD DR";
-	
+
 	public static final String NO_REPORTS = "No Report Found";
+	public static final String PENDING_ACTIVITY_STATUS = "Pending";
+
+	public static final String SOURCE_SYSTEM_SNAPP = "SNAPP";
+	public static final String DATE_FORMATS_KEY = "federated-reports.static-values.mashreq.date-formats.format";
+	public static final String VALUE_DATE_FORMAT_KEY = "dd-MMM-yyyy";
+	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "federated-reports.static-values.mashreq.retrieve-till-prompt-default-value";
+
 }

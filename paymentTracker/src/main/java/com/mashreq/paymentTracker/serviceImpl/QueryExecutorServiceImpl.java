@@ -28,7 +28,7 @@ import com.mashreq.paymentTracker.configuration.TrackerConfiguration;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
+import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportQueryInfoDTO;
@@ -61,9 +61,9 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
  
  	
 	@Override
-	public List<FederatedReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
+	public List<ReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
 			FederatedReportComponentDetailContext context) {
-		List<FederatedReportOutput> outputList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> outputList = new ArrayList<ReportOutput>();
 		Long queryExecutionTime = 0L;
 		ReportQueryInfoDTO reportQueryInfo = null;
 		Date startTime = null;
@@ -79,8 +79,8 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 		// Long dataSourceId = componentDetail.getReportComponent().getDataSourceId();
 		String queryString = replacePrompts(context.getQueryString(), context);
 		try {
-			ComponentsCountry componentsCountry = processComponentCountry(componentDetail.getReportComponentId()); 
-			DataSource dataSource = componentsCountry.getDataSourceConfig();
+		//	ComponentsCountry componentsCountry = processComponentCountry(componentDetail.getReportComponentId()); 
+			//DataSource dataSource = componentsCountry.getDataSourceConfig();
 			startTime = new Date();
 			reportQueryInfo = new ReportQueryInfoDTO();
 			reportQueryInfo.setExecutionId(context.getExecutionId());
@@ -106,7 +106,7 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 				ResultSetMetaData metaData = rs.getMetaData();
 				int columnCount = metaData.getColumnCount();
 				while (rs.next()) {
-					FederatedReportOutput componentData = new FederatedReportOutput();
+					ReportOutput componentData = new ReportOutput();
 					List<Object> rowData = new ArrayList<Object>();
 					for (int index = 1; index <= columnCount; index++) {
 						Object colValue = rs.getObject(index);

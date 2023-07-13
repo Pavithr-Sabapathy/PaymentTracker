@@ -12,16 +12,13 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
-import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.dto.MessageField;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
@@ -30,6 +27,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
+import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.dto.SWIFTDetailedFederatedReportDTO;
 import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsFederatedReportOutput;
@@ -38,14 +36,12 @@ import com.mashreq.paymentTracker.dto.SwiftDetailsReportObjectDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
-import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.CannedReportService;
-import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
+import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
@@ -60,16 +56,13 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	private ComponentsRepository componentRepository;
 
 	@Autowired
-	LinkReportService linkReportService;
-
-	@Autowired
-	ComponentsCountryRepository componentsCountryRepository;
-
-	@Autowired
 	QueryExecutorService queryExecutorService;
 
 	@Autowired
 	CannedReportService cannedReportService;
+
+	@Autowired
+	ReportOutputExecutor reportOutputExecutor;
 
 	private static final Logger log = LoggerFactory.getLogger(SwiftDetailedReportServiceImpl.class);
 	private static final String FILENAME = "SwiftDetailedReportServiceImpl";
@@ -97,12 +90,13 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 						List<SWIFTMessageDetailsFederatedReportOutput> messageDetails = processSwiftDetailedReport(
 								swiftDetailedReportDTO, reportComponent, reportContext);
 						swiftData = populateSwiftDetailedReportData(messageDetails);
-						reportExecuteResponseCloumnDefList = populateColumnDef(report);
+						reportExecuteResponseCloumnDefList = reportOutputExecutor.populateColumnDef(report);
 					}
 				}
 			}
 			responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
 			responseData.setData(swiftData);
+			log.info(FILENAME + "[processSwiftDetailReport Response]-->" + responseData.toString());
 		}
 		return responseData;
 	}
@@ -128,40 +122,6 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			componentDetailDTO.add(reportComponentDetailDTO);
 		});
 		return componentDetailDTO;
-	}
-
-	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(Report reportObject) {
-		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
-		try {
-			List<Metrics> metricsList = reportObject.getMetricsList();
-			metricsList.stream().forEach(metrics -> {
-				ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
-				reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
-				reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
-			});
-			List<String> metricsWithLinkList = prepareLinkReportInfo(reportObject);
-			reportExecuteResponseCloumnDefList.stream().forEach(colummnDef -> {
-				if (metricsWithLinkList.contains(colummnDef.getField())) {
-					colummnDef.setLinkExists(Boolean.TRUE);
-				}
-			});
-
-		} catch (JpaSystemException exception) {
-			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
-		} catch (ResourceNotFoundException exception) {
-			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
-		}
-		return reportExecuteResponseCloumnDefList;
-	}
-
-	private List<String> prepareLinkReportInfo(Report reportObject) {
-		List<String> metricsWithLinks = new ArrayList<String>();
-		List<LinkedReportResponseDTO> linkedreportResponseDTOList = linkReportService
-				.fetchLinkedReportByReportId(reportObject.getId());
-		linkedreportResponseDTOList.stream().forEach(linkedreportResponseDTO -> {
-			metricsWithLinks.add(linkedreportResponseDTO.getSourceMetricName());
-		});
-		return metricsWithLinks;
 	}
 
 	private List<Map<String, Object>> populateSwiftDetailedReportData(
@@ -298,21 +258,18 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 		if (!componentDetailsList.isEmpty()) {
 			ReportComponentDetailDTO componentDetails = getMatchedComponentDetails(componentDetailsList, componentKey);
-			if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RMESG
-					.equalsIgnoreCase(componentKey)) {
+			if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RMESG.equalsIgnoreCase(componentKey)) {
 
 				processMessageDetailsRMesgQuery(componentDetails, messagingDetailsInput, componentKey,
 						swiftDetailsReportObjectDTO, reportContext);
-			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RINTV
-					.equalsIgnoreCase(componentKey)) {
+			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RINTV.equalsIgnoreCase(componentKey)) {
 				processMessageDetailsRIntvQuery(componentDetails, messagingDetailsInput, componentKey,
 						swiftDetailsReportObjectDTO, reportContext);
 			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD
 					.equalsIgnoreCase(componentKey)) {
 				processMessageDetailsRTextFieldQuery(componentDetails, messagingDetailsInput, componentKey,
 						swiftDetailsReportObjectDTO, reportContext);
-			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RCORR
-					.equalsIgnoreCase(componentKey)) {
+			} else if (MashreqFederatedReportConstants.MESSAGE_DETAILS_SWIFT_MSG_RCORR.equalsIgnoreCase(componentKey)) {
 				boolean sender = false;
 				if (null != swiftDetailsReportObjectDTO.getReceiver()) {
 					processMessageDetailsRCorrQuery(componentDetails, messagingDetailsInput, componentKey,
@@ -343,7 +300,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO, ReportContext reportContext) {
 		FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> federatedReportOutputList = new ArrayList<ReportOutput>();
 		FederatedReportPromptDTO messageCodesPrompt = new FederatedReportPromptDTO();
 
 		promptsList.add(messagingDetailsInput.getMessageTypePrompt());
@@ -360,12 +317,12 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 	}
 
-	private void processMessageDetailsStxFieldEntryViewData(List<FederatedReportOutput> federatedReportOutputList,
+	private void processMessageDetailsStxFieldEntryViewData(List<ReportOutput> federatedReportOutputList,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 
 		if (!federatedReportOutputList.isEmpty()) {
 			Map<String, StxEntryFieldViewInfo> fieldInfoMap = new HashMap<String, StxEntryFieldViewInfo>();
-			for (FederatedReportOutput federatedReportDefaultOutput : federatedReportOutputList) {
+			for (ReportOutput federatedReportDefaultOutput : federatedReportOutputList) {
 				List<Object> rowData = federatedReportDefaultOutput.getRowData();
 				String code = UtilityClass.getStringRepresentation(rowData.get(0));
 				String option = UtilityClass.getStringRepresentation(rowData.get(1));
@@ -455,7 +412,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO, ReportContext reportContext) {
 		FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> federatedReportOutputList = new ArrayList<ReportOutput>();
 		promptsList.add(messagingDetailsInput.getMessageTypePrompt());
 		context.setQueryId(componentDetails.getId());
 		context.setQueryKey(componentDetails.getQueryKey());
@@ -466,10 +423,10 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		processMessageDetailsStxMessageData(federatedReportOutputList, swiftDetailsReportObjectDTO);
 	}
 
-	private void processMessageDetailsStxMessageData(List<FederatedReportOutput> federatedReportOutputList,
+	private void processMessageDetailsStxMessageData(List<ReportOutput> federatedReportOutputList,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		if (null != federatedReportOutputList) {
-			FederatedReportOutput federatedReportDefaultOutput = federatedReportOutputList.get(0);
+			ReportOutput federatedReportDefaultOutput = federatedReportOutputList.get(0);
 			List<Object> rowData = federatedReportDefaultOutput.getRowData();
 			String swiftInput = UtilityClass.getStringRepresentation(rowData.get(1));
 			swiftDetailsReportObjectDTO.setSwiftInput(swiftInput);
@@ -482,7 +439,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 		FederatedReportPromptDTO corrBankPrompt = new FederatedReportPromptDTO();
-		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> federatedReportOutputList = new ArrayList<ReportOutput>();
 
 		corrBankPrompt.setPromptKey(MashreqFederatedReportConstants.MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY);
 		if (sender) {
@@ -501,10 +458,10 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		processMessageDetailsRCorrData(federatedReportOutputList, swiftDetailsReportObjectDTO, sender);
 	}
 
-	private void processMessageDetailsRCorrData(List<FederatedReportOutput> federatedReportOutputList,
+	private void processMessageDetailsRCorrData(List<ReportOutput> federatedReportOutputList,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO, boolean sender) {
 		if (!federatedReportOutputList.isEmpty()) {
-			FederatedReportOutput federatedReportDefaultOutput = federatedReportOutputList.get(0);
+			ReportOutput federatedReportDefaultOutput = federatedReportOutputList.get(0);
 			List<Object> rowData = federatedReportDefaultOutput.getRowData();
 			String institutionName = UtilityClass.getStringRepresentation(rowData.get(1));
 			String cityName = UtilityClass.getStringRepresentation(rowData.get(2));
@@ -524,7 +481,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO, ReportContext reportContext) {
 		FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> federatedReportOutputList = new ArrayList<ReportOutput>();
 		updateMessageDetailsInternalPrompts(messagingDetailsInput, promptsList, swiftDetailsReportObjectDTO);
 
 		context.setQueryId(componentDetails.getId());
@@ -537,12 +494,12 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 	}
 
-	private void processMessageDetailsRTextFieldData(List<FederatedReportOutput> federatedReportOutputList,
+	private void processMessageDetailsRTextFieldData(List<ReportOutput> federatedReportOutputList,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 
 		if (!federatedReportOutputList.isEmpty()) {
 			List<MessageField> messageFields = new ArrayList<MessageField>();
-			for (FederatedReportOutput federatedReportDefaultOutput : federatedReportOutputList) {
+			for (ReportOutput federatedReportDefaultOutput : federatedReportOutputList) {
 				List<Object> rowData = federatedReportDefaultOutput.getRowData();
 				String fieldCode = UtilityClass.getStringRepresentation(rowData.get(0));
 				String fieldOption = UtilityClass.getStringRepresentation(rowData.get(1));
@@ -608,7 +565,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 		String activityStatus = MashreqFederatedReportConstants.COMPLETED_ACTIVITY_STATUS;
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-		List<FederatedReportOutput> federatedReportOutputList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> federatedReportOutputList = new ArrayList<ReportOutput>();
 		FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
 
 		if (UtilityClass.isOutgoingPaymentMessage(messagingDetailsInput.getMessageSubFormatPrompt().getPromptValue(),
@@ -632,12 +589,12 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		swiftDetailsReportObjectDTO.setDeliveryStatus(activityStatus);
 	}
 
-	private String processMessageDetailsRIntvData(List<FederatedReportOutput> federatedReportOutputList,
+	private String processMessageDetailsRIntvData(List<ReportOutput> federatedReportOutputList,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 
 		String activityStatus = MashreqFederatedReportConstants.RINTV_MESG_LIVE;
 		if (!federatedReportOutputList.isEmpty()) {
-			for (FederatedReportOutput federatedReportOutput : federatedReportOutputList) {
+			for (ReportOutput federatedReportOutput : federatedReportOutputList) {
 
 				List<Object> rowDataObjectList = federatedReportOutput.getRowData();
 				String intvName = UtilityClass.getStringRepresentation(rowDataObjectList.get(0));
@@ -684,7 +641,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 		FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
 		List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-		List<FederatedReportOutput> flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
 		context.setQueryId(componentDetails.getId());
 		context.setQueryKey(componentDetails.getQueryKey());
 		context.setQueryString(componentDetails.getQuery());
@@ -697,12 +654,12 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 
 	}
 
-	private void processMessageDetailsRMesgData(List<FederatedReportOutput> flexReportExecuteResponse,
+	private void processMessageDetailsRMesgData(List<ReportOutput> flexReportExecuteResponse,
 			SwiftDetailsReportObjectDTO swiftDetailsReportObjectDTO) {
 		Boolean messageFound = Boolean.FALSE;
 		if (!flexReportExecuteResponse.isEmpty()) {
 			messageFound = Boolean.TRUE;
-			FederatedReportOutput federatedReportDefaultOutput = flexReportExecuteResponse.get(0);
+			ReportOutput federatedReportDefaultOutput = flexReportExecuteResponse.get(0);
 			List<Object> rowData = federatedReportDefaultOutput.getRowData();
 			swiftDetailsReportObjectDTO.setAid(UtilityClass.getStringRepresentation(rowData.get(0)));
 			swiftDetailsReportObjectDTO.setSumidh(UtilityClass.getStringRepresentation(rowData.get(1)));
@@ -774,7 +731,9 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
 				promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
 			}
-			if(null!=reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty());{
+			if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty())
+				;
+			{
 				promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
 			}
 			String promptValue = promptsList.stream().collect(Collectors.joining(","));

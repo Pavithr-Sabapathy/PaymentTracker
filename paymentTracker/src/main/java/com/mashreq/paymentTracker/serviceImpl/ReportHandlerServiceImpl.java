@@ -44,6 +44,7 @@ import com.mashreq.paymentTracker.service.EdmsProcessService;
 import com.mashreq.paymentTracker.service.FlexFederatedReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportHandlerService;
+import com.mashreq.paymentTracker.service.SnappReportService;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.service.UAEFTSReportService;
 import com.mashreq.paymentTracker.type.EntityType;
@@ -78,6 +79,9 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 
 	@Autowired
 	UAEFTSReportService UAEFTSReportService;
+	
+	@Autowired
+	SnappReportService snappReportService;
 	
 	@Override
 	public ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest)
@@ -124,6 +128,9 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 						reportContext);
 			} else if(reportName.equals(MashreqFederatedReportConstants.UAEFTS_REPORT_NAME)) {
 				reportExecuteResponseData = UAEFTSReportService.processUAEFTSReport(reportInstanceDTO, reportContext);
+			}///TODO - YEt to validate snapp details then process the response 
+			else if (reportName.equals(MashreqFederatedReportConstants.SNAPP_DETAILS)) {
+				snappReportService.processSnappDetailedReport(reportInstanceDTO, reportContext);
 			}
 				
 		}

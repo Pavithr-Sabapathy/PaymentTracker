@@ -13,7 +13,7 @@ import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
+import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
@@ -38,7 +38,7 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 	@Override
 	public List<AdvanceSearchReportOutput> processMatrixPaymentReport(AdvanceSearchReportInput advanceSearchReportInput,
 			List<Components> componentList, ReportContext reportContext) {
-		List<FederatedReportOutput> flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		Components component = getMatchedInstanceComponent(componentList,
 				MashreqFederatedReportConstants.ADVANCE_SEARCH_FLEX_COMPONENT_KEY);
@@ -72,13 +72,13 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 	}
 
 	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(
-			List<FederatedReportOutput> federatedReportOutputList, AdvanceSearchReportInput advanceSearchReportInput) {
+			List<ReportOutput> federatedReportOutputList, AdvanceSearchReportInput advanceSearchReportInput) {
 
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 
 		if (!federatedReportOutputList.isEmpty()) {
 
-			for (FederatedReportOutput federatedReportOutput : federatedReportOutputList) {
+			for (ReportOutput federatedReportOutput : federatedReportOutputList) {
 
 				AdvanceSearchReportOutput output = new AdvanceSearchReportOutput();
 				List<Object> rowData = federatedReportOutput.getRowData();

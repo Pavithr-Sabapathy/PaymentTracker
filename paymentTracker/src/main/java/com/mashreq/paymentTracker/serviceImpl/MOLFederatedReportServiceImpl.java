@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.MOLDetailedFederatedReportInput;
@@ -29,6 +28,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
+import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
@@ -70,7 +70,7 @@ public class MOLFederatedReportServiceImpl implements MOLFederatedReportService 
 	public ReportExecuteResponseData processMOLReport(ReportInstanceDTO reportInstanceDTO,
 			ReportContext reportContext) {
 		ReportExecuteResponseData molReportExecuteResponseData = new ReportExecuteResponseData();
-		List<FederatedReportOutput> molReportExecuteResponseList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> molReportExecuteResponseList = new ArrayList<ReportOutput>();
 		Report report = new Report();
 		if (null != reportInstanceDTO) {
 			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
@@ -88,7 +88,7 @@ public class MOLFederatedReportServiceImpl implements MOLFederatedReportService 
 						MOLDetailedFederatedReportInput molDetailedFederatedReportInput = new MOLDetailedFederatedReportInput();
 						molDetailedFederatedReportInput.setComponent(reportComponent);
 						molDetailedFederatedReportInput = populateBaseInputContext(reportInstanceDTO.getPromptsList());
-						List<FederatedReportOutput> molReportExecuteResponse = executeReport(
+						List<ReportOutput> molReportExecuteResponse = executeReport(
 								molDetailedFederatedReportInput, reportComponent, reportContext);
 						if (!molReportExecuteResponse.isEmpty()) {
 							molReportExecuteResponseList.addAll(molReportExecuteResponse);
@@ -163,7 +163,7 @@ public class MOLFederatedReportServiceImpl implements MOLFederatedReportService 
 		return federatedReportPromptDTO;
 	}
 
-	private List<Map<String, Object>> populateRowData(List<FederatedReportOutput> molReportExecuteResponse,
+	private List<Map<String, Object>> populateRowData(List<ReportOutput> molReportExecuteResponse,
 			Report report) {
 		List<Map<String, Object>> rowDataList = new ArrayList<Map<String, Object>>();
 		List<Metrics> reportMetricsList = report.getMetricsList();
@@ -186,10 +186,10 @@ public class MOLFederatedReportServiceImpl implements MOLFederatedReportService 
 		return rowDataList;
 	}
 
-	private List<FederatedReportOutput> executeReport(MOLDetailedFederatedReportInput molDetailedFederatedReportInput,
+	private List<ReportOutput> executeReport(MOLDetailedFederatedReportInput molDetailedFederatedReportInput,
 			ReportComponentDTO component, ReportContext reportContext) {
 		ReportComponentDetailDTO matchedComponentDetail = new ReportComponentDetailDTO();
-		List<FederatedReportOutput> flexReportExecuteResponse = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
 		if (null != component) {
 			Set<ReportComponentDetailDTO> componentDetailsSet = component.getReportComponentDetails();
 			for (ReportComponentDetailDTO componentDetail : componentDetailsSet) {
