@@ -56,7 +56,7 @@ public class LinkedReportServiceImpl implements LinkReportService {
 	public LinkedReportResponseDTO saveOrUpdateLinkedReport(LinkedReportRequestDTO linkedReportRequestDTO) {
 		LinkedReportResponseDTO linkedReportResponseDTO = new LinkedReportResponseDTO();
 		LinkedReportInfo linkedReportModel = new LinkedReportInfo();
-		if(linkedReportRequestDTO.getId() != 0L) {
+		if (linkedReportRequestDTO.getId() != 0L) {
 			linkedReportModel.setId(linkedReportRequestDTO.getId());
 		}
 		/** Whether to save or update based on linked report id ***/
@@ -168,10 +168,12 @@ public class LinkedReportServiceImpl implements LinkReportService {
 		linkedReportResponseDTO.setActive(linkReportResponse.getActive());
 		linkedReportResponseDTO.setLinkName(linkReportResponse.getLinkName());
 		linkedReportResponseDTO.setComponent(linkReportResponse.getComponentId().getComponentName());
+		linkedReportResponseDTO.setComponentId(linkReportResponse.getComponentId().getId());
 		linkedReportResponseDTO.setComponentDetail(linkReportResponse.getComponentDetailId().getQueryKey());
+		linkedReportResponseDTO.setComponentDetailId(linkReportResponse.getComponentDetailId().getId());
 		linkedReportResponseDTO.setLinkDescription(linkReportResponse.getLinkDescription());
 		linkedReportResponseDTO.setLinkedReportName(linkReportResponse.getLinkedReport().getReportName());
-		linkedReportResponseDTO.setLinkedReportID(linkReportResponse.getLinkedReport().getId());
+		linkedReportResponseDTO.setLinkedReportId(linkReportResponse.getLinkedReport().getId());
 		linkedReportResponseDTO.setReportName(linkReportResponse.getReport().getReportName());
 		linkedReportResponseDTO.setReportId(linkReportResponse.getReport().getId());
 		linkedReportResponseDTO.setSourceMetricName(linkReportResponse.getSourceMetrics().getDisplayName());
@@ -187,8 +189,8 @@ public class LinkedReportServiceImpl implements LinkReportService {
 		if (linkedReportRepo.existsById(linkedReportId)) {
 			linkedReportRepo.deleteById(linkedReportId);
 		} else {
-			log.error(
-					FILENAME + "[deletelinkedReportById] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + linkedReportId);
+			log.error(FILENAME + "[deletelinkedReportById] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS
+					+ linkedReportId);
 
 			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + linkedReportId);
 		}

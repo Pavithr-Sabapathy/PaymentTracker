@@ -9,7 +9,7 @@ public class LinkedReportResponseDTO implements Serializable {
 	private String linkName;
 	private String linkDescription;
 	private String reportName;
-	private long linkedReportID;
+	private long linkedReportId;
 	private long reportId;
 	private String linkedReportName;
 	private String sourceMetricName;
@@ -17,6 +17,8 @@ public class LinkedReportResponseDTO implements Serializable {
 	private String active;
 	private String component;
 	private String componentDetail;
+	private long componentId;
+	private long componentDetailId;
 	private String moduleName;
 	private long moduleId;
 
@@ -25,14 +27,15 @@ public class LinkedReportResponseDTO implements Serializable {
 	}
 
 	public LinkedReportResponseDTO(long id, String linkName, String linkDescription, String reportName,
-			long linkedReportID, long reportId, String linkedReportName, String sourceMetricName, long sourceMetricId,
-			String active, String component, String componentDetail) {
+			long linkedReportId, long reportId, String linkedReportName, String sourceMetricName, long sourceMetricId,
+			String active, String component, String componentDetail, long componentId, long componentDetailId,
+			String moduleName, long moduleId) {
 		super();
 		this.id = id;
 		this.linkName = linkName;
 		this.linkDescription = linkDescription;
 		this.reportName = reportName;
-		this.linkedReportID = linkedReportID;
+		this.linkedReportId = linkedReportId;
 		this.reportId = reportId;
 		this.linkedReportName = linkedReportName;
 		this.sourceMetricName = sourceMetricName;
@@ -40,7 +43,13 @@ public class LinkedReportResponseDTO implements Serializable {
 		this.active = active;
 		this.component = component;
 		this.componentDetail = componentDetail;
+		this.componentId = componentId;
+		this.componentDetailId = componentDetailId;
+		this.moduleName = moduleName;
+		this.moduleId = moduleId;
 	}
+
+
 
 	public long getId() {
 		return id;
@@ -74,12 +83,12 @@ public class LinkedReportResponseDTO implements Serializable {
 		this.reportName = reportName;
 	}
 
-	public long getLinkedReportID() {
-		return linkedReportID;
+	public long getLinkedReportId() {
+		return linkedReportId;
 	}
 
-	public void setLinkedReportID(long linkedReportID) {
-		this.linkedReportID = linkedReportID;
+	public void setLinkedReportId(long linkedReportId) {
+		this.linkedReportId = linkedReportId;
 	}
 
 	public long getReportId() {
@@ -157,6 +166,22 @@ public class LinkedReportResponseDTO implements Serializable {
 
 	public void setModuleId(long moduleId) {
 		this.moduleId = moduleId;
+	}
+
+	public long getComponentId() {
+		return componentId;
+	}
+
+	public void setComponentId(long componentId) {
+		this.componentId = componentId;
+	}
+
+	public long getComponentDetailId() {
+		return componentDetailId;
+	}
+
+	public void setComponentDetailId(long componentDetailId) {
+		this.componentDetailId = componentDetailId;
 	}
 
 }
