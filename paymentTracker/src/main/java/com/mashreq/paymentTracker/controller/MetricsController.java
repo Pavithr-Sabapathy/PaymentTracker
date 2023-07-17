@@ -45,7 +45,7 @@ public class MetricsController {
 		
 	}
 	
-	@GetMapping("/{reportId}")
+	@GetMapping("report/{reportId}")
 	public ResponseEntity<List<MetricsResponseDTO>> fetchMetricsByReportId(@PathVariable("reportId") long reportId) {
 		
 		List<MetricsResponseDTO> metricsRIdResponse = metricsService.fetchMetricsByReportId(reportId);
@@ -68,7 +68,7 @@ public class MetricsController {
 
 	}
 
-	@PutMapping("/{metricsId}")
+	@PutMapping("metric/{metricsId}")
 	public ResponseEntity<MetricsResponseDTO> updateMetrics(@RequestBody MetricsRequestDTO metricsDTORequest,
 			@PathVariable long metricsId) {
 		log.info(FILENAME + "[updateMetrics Request]--->" + metricsDTORequest.toString());
