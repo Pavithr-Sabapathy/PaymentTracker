@@ -68,7 +68,7 @@ public class MetricsController {
 
 	}
 
-	@PutMapping("metric/{metricsId}")
+	@PutMapping("update/{metricsId}")
 	public ResponseEntity<MetricsResponseDTO> updateMetrics(@RequestBody MetricsRequestDTO metricsDTORequest,
 			@PathVariable long metricsId) {
 		log.info(FILENAME + "[updateMetrics Request]--->" + metricsDTORequest.toString());

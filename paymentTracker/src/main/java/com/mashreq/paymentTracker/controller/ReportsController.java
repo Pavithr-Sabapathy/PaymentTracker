@@ -31,21 +31,21 @@ public class ReportsController {
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
 
-	@GetMapping("id/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<ReportDTO> fetchReportById(@PathVariable("id") Long id) {
 		ReportDTO reportResponse = reportConfigurationService.fetchReportById(id);
 		return new ResponseEntity<ReportDTO>(reportResponse, HttpStatus.OK);
 	}
 
-	@GetMapping("/fetchByModuleId")
-	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleId(Long moduleId) {
+	@GetMapping("moduleId/{moduleId}")
+	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleId(@PathVariable("moduleId") Long moduleId) {
 		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModuleId(moduleId);
 		return new ResponseEntity<List<ReportDTO>>(reportListResponse, HttpStatus.OK);
 	}
 
-	@GetMapping("/fetchByModuleName")
-	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleName(String ModuleName) {
-		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModule(ModuleName);
+	@GetMapping("moduleName/{moduleName}")
+	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleName(@PathVariable("moduleName") String moduleName) {
+		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModule(moduleName);
 		return new ResponseEntity<List<ReportDTO>>(reportListResponse, HttpStatus.OK);
 	}
 
@@ -69,7 +69,7 @@ public class ReportsController {
 		return new ResponseEntity<ReportDTO>(reportDTO, HttpStatus.ACCEPTED);
 	}
 
-	@DeleteMapping("/{reportId}")
+	@DeleteMapping("id/{reportId}")
 	public ResponseEntity<String> deleteReport(@PathVariable long reportId) {
 		reportConfigurationService.deleteReportById(reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);

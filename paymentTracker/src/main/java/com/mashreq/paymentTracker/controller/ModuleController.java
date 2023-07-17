@@ -43,7 +43,7 @@ public class ModuleController {
 		return new ResponseEntity<ApplicationModule>(moduleDTOResponse, HttpStatus.OK);
 	}
 
-	@PutMapping("id/{moduleId}")
+	@PutMapping("/{moduleId}")
 	public ResponseEntity<ApplicationModule> updateReport(@Valid @RequestBody ModuleDTO moduleRequest,
 			@PathVariable Long moduleId) {
 		ApplicationModule moduleDTOResponse = moduleService.updateModule(moduleRequest, moduleId);
@@ -56,7 +56,7 @@ public class ModuleController {
 		return ResponseEntity.ok(ApplicationConstants.MODULE_DELETION_MSG);
 	}
 
-	@GetMapping("{moduleName}")
+	@GetMapping("/{moduleName}")
 	public ResponseEntity<ApplicationModule> fetchModuleByName(@PathVariable("moduleName") String moduleName) {
 		ApplicationModule module = moduleService.fetchModuleByName(moduleName);
 		return ResponseEntity.ok(module);
