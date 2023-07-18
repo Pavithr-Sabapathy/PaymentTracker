@@ -46,6 +46,14 @@ public class LinkedReportController {
 		return ResponseEntity.ok(linkedReportResponse);
 	}
 
+	@GetMapping("report/{reportId}")
+	public ResponseEntity<List<LinkedReportResponseDTO>> fetchLinkedReportByReportId(@PathVariable long reportId) {
+		List<LinkedReportResponseDTO> linkedReportResponseList = linkReportService
+				.fetchLinkedReportByReportId(reportId);
+		log.info(FILENAME + "[fetchLinkedReport Response]--->" + linkedReportResponseList.toString());
+		return ResponseEntity.ok(linkedReportResponseList);
+	}
+
 	@GetMapping("module/{moduleId}")
 	public ResponseEntity<List<LinkedReportResponseDTO>> fetchLinkedReportByModuleId(@PathVariable long moduleId) {
 		List<LinkedReportResponseDTO> linkedReportResponseList = linkReportService
@@ -53,6 +61,7 @@ public class LinkedReportController {
 		log.info(FILENAME + "[fetchLinkedReport Response]--->" + linkedReportResponseList.toString());
 		return ResponseEntity.ok(linkedReportResponseList);
 	}
+
 	@DeleteMapping("/{linkedReportId}")
 	public ResponseEntity<String> deletelinkedReport(@PathVariable long linkedReportId) {
 		log.info(FILENAME + "[deleteLinkedReports for linkedReportId]--->" + linkedReportId);
@@ -60,4 +69,4 @@ public class LinkedReportController {
 		log.info(FILENAME + "[deleteLinkedReports deleted for this ID]--->" + linkedReportId);
 		return new ResponseEntity<String>(ApplicationConstants.LINK_REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
 	}
-	}
+}

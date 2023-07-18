@@ -115,9 +115,9 @@ public class LinkedReportServiceImpl implements LinkReportService {
 		Optional<List<LinkedReportInfo>> linkedReportOptionalResponseList = linkedReportRepo
 				.findAllByReportId(reportId);
 		if (linkedReportOptionalResponseList.isEmpty()) {
-			log.error(FILENAME + "[fetchLinkedReportByReportId] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS
+			log.error(FILENAME + "[fetchLinkedReportByReportId] " + ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS_REPORT_ID
 					+ reportId);
-			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS + reportId);
+			throw new ResourceNotFoundException(ApplicationConstants.LINK_REPORT_DOES_NOT_EXISTS_REPORT_ID + reportId);
 		} else {
 			List<LinkedReportInfo> linkedReportResponseList = linkedReportOptionalResponseList.get();
 			linkedReportResponseList.forEach(linkedReportResponse -> {
