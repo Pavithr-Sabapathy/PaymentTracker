@@ -77,7 +77,7 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 						ApplicationConstants.METRICS_DOES_NOT_EXISTS + linkMappingDetailResponse.getMappedId());
 			} else {
 				Metrics metricResponse = metricsResponseOptional.get();
-				linkMappingResponseDTO.setMappedEnitytId(metricResponse.getId());
+				linkMappingResponseDTO.setMappedEntityId(metricResponse.getId());
 				linkMappingResponseDTO.setMappedEntity(metricResponse.getDisplayName());
 			}
 		} else if (MashreqFederatedReportConstants.PROMPT
@@ -89,7 +89,7 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 						ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingDetailResponse.getMappedId());
 			} else {
 				Prompts promptsResponse = promptResponseOptional.get();
-				linkMappingResponseDTO.setMappedEnitytId(promptsResponse.getId());
+				linkMappingResponseDTO.setMappedEntityId(promptsResponse.getId());
 				linkMappingResponseDTO.setMappedEntity(promptsResponse.getDisplayName());
 			}
 		}
