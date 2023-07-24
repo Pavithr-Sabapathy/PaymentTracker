@@ -71,7 +71,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 
 	@Autowired
 	ReportDataRepository reportDataRepo;
-	
+
 	@Override
 	public ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest) {
 
@@ -122,7 +122,7 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			if (null != future)
 				future.cancel(true);
 			log.error("Report executing thread interrupted : ", e);
-			//TODO - Handle Exception throw new Exception("Report Execution Failed");
+			// TODO - Handle Exception throw new Exception("Report Execution Failed");
 		} catch (TimeoutException e) {
 			if (null != future)
 				future.cancel(true);
@@ -307,31 +307,34 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 		if (promptsList != null && promptsList.size() > 0)
 			promptsList.forEach(prompt -> {
 				PromptsProcessingRequest uiPrompt = uiPromptsList.stream()
-						.filter(uiPrompts -> uiPrompts.getKey().equalsIgnoreCase(prompt.getPromptKey())).findAny().orElse(null);
+						.filter(uiPrompts -> uiPrompts.getKey().equalsIgnoreCase(prompt.getPromptKey())).findAny()
+						.orElse(null);
 				PromptInstance PromptInstanceObject = new PromptInstance();
-				if (null != prompt.getId())
-					PromptInstanceObject.setId(prompt.getId());
-				if (null != prompt.getEntity() && null != prompt.getEntity().getId())
-					PromptInstanceObject.setEntityId(prompt.getEntity().getId());
-				if (null != prompt.getReport() && null != prompt.getReport().getId())
-					PromptInstanceObject.setReportId(prompt.getReport().getId());
-				if (null != prompt.getDisplayName())
-					PromptInstanceObject.setName(prompt.getDisplayName());
-				if (null != prompt.getPromptKey())
-					PromptInstanceObject.setKey(prompt.getPromptKey());
-				if (null != prompt.getPromptOrder())
-					PromptInstanceObject.setOrder(prompt.getPromptOrder().toString());
-				if (null != prompt.getPromptRequired())
-					PromptInstanceObject.setRequired(
-							(prompt.getPromptRequired().equalsIgnoreCase("y") ? Boolean.TRUE : Boolean.FALSE));
-				if (null != prompt.getEntity()) {
-					EntityDTO entityDTO = populateEntityDTOFromDataEntity(prompt.getEntity());
-					PromptInstanceObject.setEntity(entityDTO);
-					log.info("prompts values" + PromptInstanceObject.toString());
+				if (null != uiPrompt) {
+					if (null != prompt.getId())
+						PromptInstanceObject.setId(prompt.getId());
+					if (null != prompt.getEntity() && null != prompt.getEntity().getId())
+						PromptInstanceObject.setEntityId(prompt.getEntity().getId());
+					if (null != prompt.getReport() && null != prompt.getReport().getId())
+						PromptInstanceObject.setReportId(prompt.getReport().getId());
+					if (null != prompt.getDisplayName())
+						PromptInstanceObject.setName(prompt.getDisplayName());
+					if (null != prompt.getPromptKey())
+						PromptInstanceObject.setKey(prompt.getPromptKey());
+					if (null != prompt.getPromptOrder())
+						PromptInstanceObject.setOrder(prompt.getPromptOrder().toString());
+					if (null != prompt.getPromptRequired())
+						PromptInstanceObject.setRequired(
+								(prompt.getPromptRequired().equalsIgnoreCase("y") ? Boolean.TRUE : Boolean.FALSE));
+					if (null != prompt.getEntity()) {
+						EntityDTO entityDTO = populateEntityDTOFromDataEntity(prompt.getEntity());
+						PromptInstanceObject.setEntity(entityDTO);
+						log.info("prompts values" + PromptInstanceObject.toString());
+					}
+					PromptInstanceObject.setPromptValue(uiPrompt.getPromptValue());
+					PromptInstanceObject.setValue(uiPrompt.getValue());
+					PromptInstanceList.add(PromptInstanceObject);
 				}
-				PromptInstanceObject.setPromptValue(uiPrompt.getPromptValue());
-				PromptInstanceObject.setValue(uiPrompt.getValue());
-				PromptInstanceList.add(PromptInstanceObject);
 			});
 		return PromptInstanceList;
 

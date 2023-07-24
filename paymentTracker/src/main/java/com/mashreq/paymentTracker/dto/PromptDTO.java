@@ -6,19 +6,19 @@ import java.math.BigInteger;
 public class PromptDTO implements Serializable {
 
 	private static final long serialVersionUID = 6394517087984821262L;
-	private long promptId;
+	private Long promptId;
 	private String promptKey;
 	private String displayName;
 	private BigInteger promptOrder;
 	private String promptRequired;
-	private long reportId;
+	private Long reportId;
 	private BigInteger entityId;
 
-	public long getPromptId() {
+	public Long getPromptId() {
 		return promptId;
 	}
 
-	public void setPromptId(long promptId) {
+	public void setPromptId(Long promptId) {
 		this.promptId = promptId;
 	}
 
@@ -54,11 +54,11 @@ public class PromptDTO implements Serializable {
 		this.promptRequired = promptRequired;
 	}
 
-	public long getReportId() {
+	public Long getReportId() {
 		return reportId;
 	}
 
-	public void setReportId(long reportId) {
+	public void setReportId(Long reportId) {
 		this.reportId = reportId;
 	}
 
