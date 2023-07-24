@@ -42,4 +42,10 @@ public class ReportPromptsInstanceDTO implements Serializable {
 		this.prompt = prompt;
 	}
 
+	@Override
+	public String toString() {
+		return "ReportPromptsInstanceDTO [id=" + id + ", reportId=" + reportId + ", reportInstanceId="
+				+ reportInstanceId + ", prompt=" + prompt + "]";
+	}
+
 }

@@ -63,14 +63,14 @@ public class MashreqFederatedReportConstants {
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RCORR = "msg-rcorr";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW = "msg-stx-entry-field-view";
 
-	public static final String ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY = "~FromDate~";
-	public static final String ADVANCE_SEARCH_TO_DATE_PROMPT_KEY = "~ToDate~";
-	public static final String ADVANCE_SEARCH_ACCOUNT_NUMBER_PROMPT_KEY = "~AccountNumber~";
-	public static final String ADVANCE_SEARCH_CURRENCY_PROMPT_KEY = "~Currency~";
-	public static final String ADVANCE_SEARCH_AMOUNT_BETWEEN_PROMPT_KEY = "~AmountFrom~";
-	public static final String ADVANCE_SEARCH_AMOUNT_TO_PROMPT_KEY = "~AmountTo~";
-	public static final String ADVANCE_SEARCH_TRANSACTION_STATUS_PROMPT_KEY = "~TransactionStatus~";
-	public static final String ADVANCE_SEARCH_TRANSACTION_REF_NUM_PROMPT_KEY = "~TransactionReferenceNo~";
+	public static final String ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY = "FromDate";
+	public static final String ADVANCE_SEARCH_TO_DATE_PROMPT_KEY = "ToDate";
+	public static final String ADVANCE_SEARCH_ACCOUNT_NUMBER_PROMPT_KEY = "AccountNumber";
+	public static final String ADVANCE_SEARCH_CURRENCY_PROMPT_KEY = "Currency";
+	public static final String ADVANCE_SEARCH_AMOUNT_BETWEEN_PROMPT_KEY = "AmountFrom";
+	public static final String ADVANCE_SEARCH_AMOUNT_TO_PROMPT_KEY = "AmountTo";
+	public static final String ADVANCE_SEARCH_TRANSACTION_STATUS_PROMPT_KEY = "TransactionStatus";
+	public static final String ADVANCE_SEARCH_TRANSACTION_REF_NUM_PROMPT_KEY = "TransactionReferenceNo";
 	public static final String ADVANCE_SEARCH_REPORT_TRANSACTION_REJECT_STATUS = "Rejected";
 	public static final String ADVANCE_SEARCH_REPORT_TRANSACTION_CREDIT_CONFIRMED_STATUS = "Credit Confirmed";
 	public static final String ADVANCE_SEARCH_MESSAGE_THROUGH_UAEFTS = "UAEFTS";

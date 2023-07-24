@@ -33,6 +33,7 @@ import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
+import com.mashreq.paymentTracker.service.UAEFTSReportService;
 
 @Service("advanceSearch")
 public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
@@ -54,14 +55,17 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 
 	@Autowired
 	ReportOutputExecutor reportOutputExecutor;
+	
+	UAEFTSReportService Uaefts;
 
 	@Override
-	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
+	public ReportInput populateBaseInputContext(ReportContext reportContext) {
 		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
 		List<ReportPromptsInstanceDTO> promptsList = new ArrayList<ReportPromptsInstanceDTO>();
 		if (null != reportInstance) {
 			promptsList = reportInstance.getPromptsList();
 		}
+		System.out.println(promptsList.toString());
 		FederatedReportPromptDTO fromDatePrompt = getMatchedInstancePrompt(promptsList,
 				MashreqFederatedReportConstants.ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY);
 		FederatedReportPromptDTO toDatePrompt = getMatchedInstancePrompt(promptsList,
@@ -244,12 +248,14 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 			};
 
 			Thread edmsProcessor = new Thread() {
-				/*
-				 * public void run() { List<AdvanceSearchReportOutput>
-				 * advanceSearchEdmsReportOutList = edmsProcessService
-				 * .processEdmsReport(advanceSearchReportInput, componentList, reportContext);
-				 * advanceSearchReportFinalOutputList.addAll(advanceSearchEdmsReportOutList); }
-				 */
+				EdmsProcessServiceImpl edmsProcessServiceImpl = new EdmsProcessServiceImpl();
+
+				public void run() {
+					List<AdvanceSearchReportOutput> advanceSearchEdmsReportOutList = edmsProcessServiceImpl
+							.processEdmsReport(advanceSearchReportInput, componentList, reportContext);
+					advanceSearchReportFinalOutputList.addAll(advanceSearchEdmsReportOutList);
+				}
+
 			};
 
 			// run all three parallely
@@ -292,12 +298,11 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 				if (!flexMatrixBasedUaeftsTransactionsList.isEmpty()) {
 					advanceSearchReportInput
 							.setFlexMatrixBasedUaeftsTransactions(flexMatrixBasedUaeftsTransactionsList);
-					/*
-					 * ist<AdvanceSearchReportOutput> advanceSearchUAEFTSReportOutList =
-					 * UAEFTSReportService .processAdvanceSearchReport(advanceSearchReportInput,
-					 * componentList, reportContext);
-					 * advanceSearchReportFinalOutputList.addAll(advanceSearchUAEFTSReportOutList);
-					 */
+
+					List<AdvanceSearchReportOutput> advanceSearchUAEFTSReportOutList = Uaefts
+							.processAdvanceSearchReport(advanceSearchReportInput, componentList, reportContext);
+					advanceSearchReportFinalOutputList.addAll(advanceSearchUAEFTSReportOutList);
+
 				}
 			}
 		}
