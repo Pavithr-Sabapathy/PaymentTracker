@@ -52,6 +52,7 @@ public class MashreqFederatedReportConstants {
 	public static final String MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY = "MessageType";
 	public static final String MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY = "MessageSubFormat";
 	public static final String MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY = "CorrBank";
+	public static final String MESSAGE_DETAILS_MESSAGE_THROUGH_PROMPT_KEY = "MessageThrough";
 
 	public static final String DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RMESG = "RMESG";
 	public static final String DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RINTV = "RINTV";
@@ -170,5 +171,5 @@ public class MashreqFederatedReportConstants {
 	public static final String DATE_FORMATS_KEY = "federated-reports.static-values.mashreq.date-formats.format";
 	public static final String VALUE_DATE_FORMAT_KEY = "dd-MMM-yyyy";
 	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "federated-reports.static-values.mashreq.retrieve-till-prompt-default-value";
-
+	
 }
