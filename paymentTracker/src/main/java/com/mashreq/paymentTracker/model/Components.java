@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -22,7 +25,11 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @DynamicUpdate
 @Table(name = "conf_rpt_comp")
-public class Components {
+@NamedQueries({ @NamedQuery(name = "components.findComponentsByReportId", query = "SELECT comp from Components comp join Report rep on comp.report = rep.id where rep.id =: reportId") })
+public class Components implements Serializable {
+
+	private static final long serialVersionUID = -4977044664876825826L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -43,13 +50,12 @@ public class Components {
 	@JoinColumn(name = "report_id")
 	private Report report;
 
-	@OneToOne(mappedBy = "components", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToOne(mappedBy = "components", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	private ComponentsCountry componentsCountry;
 
-	@OneToMany(mappedBy = "components", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "components", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ComponentDetails> componentDetailsList = new ArrayList<ComponentDetails>();
 
-	
 	public long getId() {
 		return id;
 	}
@@ -117,7 +123,7 @@ public class Components {
 				+ ", active=" + active + ", report=" + report + ", componentsCountry=" + componentsCountry
 				+ ", componentDetailsList=" + componentDetailsList + "]";
 	}
-	
+
 	public Components(long id, @NotNull(message = "Display name should not be empty") String componentName,
 			@NotNull(message = "Display name should not be empty") String componentKey,
 			@NotNull(message = "Display name should not be empty") String active, Report report,

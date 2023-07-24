@@ -11,10 +11,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
+import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.CannedReport;
@@ -34,23 +35,23 @@ import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.CannedReportService;
-import com.mashreq.paymentTracker.service.EdmsProcessService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
+import com.mashreq.paymentTracker.service.ReportControllerService;
+import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
-@Component
-public class EdmsProcessServiceImpl implements EdmsProcessService {
+@Service
+public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
 
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
 
 	@Autowired
-	private ComponentsRepository componentRepository;
+	private ComponentsDAO componentsDAO;
 
 	@Autowired
 	QueryExecutorService queryExecutorService;
@@ -65,6 +66,67 @@ public class EdmsProcessServiceImpl implements EdmsProcessService {
 	private static final String FILENAME = "EdmsProcessServiceImpl";
 
 	@Override
+	protected FederatedReportDefaultInput populateBaseInputContext(ReportContext reportContext) {
+		FederatedReportDefaultInput federatedReportDefaultInput = new FederatedReportDefaultInput();
+		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
+		List<ReportPromptsInstanceDTO> instancePromptList = reportInstanceDTO.getPromptsList();
+		federatedReportDefaultInput.setInstancePrompts(instancePromptList);
+		return federatedReportDefaultInput;
+	}
+
+	@Override
+	protected ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
+		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
+		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
+		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
+		Boolean dataFoundFromBPM = false;
+		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
+		/** fetch the report details based on report name **/
+		Report report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
+		CannedReport cannedReport = cannedReportService.populateCannedReportInstance(report);
+		List<Components> componentList = componentsDAO.findAllByreportId(cannedReport.getId());
+		if (componentList.isEmpty()) {
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + cannedReport.getId());
+		} else {
+			for (Components component : componentList) {
+				ReportComponentDTO reportComponent = populateReportComponent(component);
+				if (null != reportComponent.getActive() && reportComponent.getActive().equals(CheckType.YES)
+						&& !dataFoundFromBPM) {
+					FederatedReportDefaultInput federatedReportDefaultInput = (FederatedReportDefaultInput) reportInput;
+					federatedReportDefaultInput.setComponent(reportComponent);
+					try {
+						List<ReportOutput> output = processReport(federatedReportDefaultInput, reportContext);
+						if (!flexReportExecuteResponse.isEmpty()) {
+							if (isEDDDetailReport(component)) {
+								dataFoundFromBPM = MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
+										.equalsIgnoreCase(component.getComponentName()) ? true : false;
+								if (flexReportExecuteResponse.isEmpty()) {
+									flexReportExecuteResponse.addAll(output);
+								} else {
+									if (MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
+											.equalsIgnoreCase(component.getComponentName())) {
+										flexReportExecuteResponse = new ArrayList<ReportOutput>();
+										flexReportExecuteResponse.addAll(output);
+									}
+								}
+							} else {
+								flexReportExecuteResponse.addAll(output);
+							}
+						}
+					} catch (Exception exception) {
+
+					}
+				}
+			}
+		}
+		List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(flexReportExecuteResponse,
+				report);
+		reportExecuteResponseCloumnDefList = reportOutputExecutor.populateColumnDef(report);
+		responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
+		responseData.setData(rowDataMapList);
+		return responseData;
+	}
+
 	public List<AdvanceSearchReportOutput> processEdmsReport(AdvanceSearchReportInput advanceSearchReportInput,
 			List<Components> componentList, ReportContext reportContext) {
 		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
@@ -182,69 +244,6 @@ public class EdmsProcessServiceImpl implements EdmsProcessService {
 			componentDetailDTO.add(reportComponentDetailDTO);
 		});
 		return componentDetailDTO;
-	}
-
-	@Override
-	public ReportExecuteResponseData ProcessEdmsCommonReport(ReportInstanceDTO reportInstanceDTO,
-			ReportContext reportContext) {
-		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
-		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
-		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
-		Boolean dataFoundFromBPM = false;
-		/** fetch the report details based on report name **/
-		Report report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
-		CannedReport cannedReport = cannedReportService.populateCannedReportInstance(report);
-		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(cannedReport.getId());
-		if (componentsOptional.isEmpty()) {
-			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + cannedReport.getId());
-		} else {
-			List<Components> componentList = componentsOptional.get();
-			if (!componentList.isEmpty()) {
-				for (Components component : componentList) {
-					ReportComponentDTO reportComponent = populateReportComponent(component);
-					if (null != reportComponent.getActive() && reportComponent.getActive().equals(CheckType.YES)
-							&& !dataFoundFromBPM) {
-						FederatedReportDefaultInput federatedReportDefaultInput = new FederatedReportDefaultInput();
-						federatedReportDefaultInput.setComponent(reportComponent);
-						List<ReportPromptsInstanceDTO> instancePromptList = reportInstanceDTO.getPromptsList();
-						federatedReportDefaultInput.setInstancePrompts(instancePromptList);
-						try {
-							List<ReportOutput> output = processReport(federatedReportDefaultInput, reportContext);
-							if (!flexReportExecuteResponse.isEmpty()) {
-								// Logic to execute EDMS/BPM EDD Detail Reports
-								// If data available in BPM systems no need to check in EDMS
-								// If data available in both EDMS and BPM systems in this case BPM data should
-								// be consider
-								// If data not available in BPM systems then need to check in EDMS data
-								if (isEDDDetailReport(component)) {
-									dataFoundFromBPM = MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
-											.equalsIgnoreCase(component.getComponentName()) ? true : false;
-									if (flexReportExecuteResponse.isEmpty()) {
-										flexReportExecuteResponse.addAll(output);
-									} else {
-										if (MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
-												.equalsIgnoreCase(component.getComponentName())) {
-											flexReportExecuteResponse = new ArrayList<ReportOutput>();
-											flexReportExecuteResponse.addAll(output);
-										}
-									}
-								} else {
-									flexReportExecuteResponse.addAll(output);
-								}
-							}
-						} catch (Exception exception) {
-
-						}
-					}
-				}
-			}
-		}
-		List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(flexReportExecuteResponse,
-				report);
-		reportExecuteResponseCloumnDefList = reportOutputExecutor.populateColumnDef(report);
-		responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
-		responseData.setData(rowDataMapList);
-		return responseData;
 	}
 
 	private boolean isEDDDetailReport(Components component) {

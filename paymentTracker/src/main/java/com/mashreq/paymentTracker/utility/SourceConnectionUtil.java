@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.mashreq.paymentTracker.configuration.TrackerConfiguration;
+import com.mashreq.paymentTracker.configuration.PaymentTrackerConfiguration;
 import com.mashreq.paymentTracker.exception.CryptographyException;
 import com.mashreq.paymentTracker.exception.DataAccessException;
 import com.mashreq.paymentTracker.exception.ExceptionCodes;
@@ -31,17 +31,17 @@ public class SourceConnectionUtil {
 	private static final Logger log = LoggerFactory.getLogger(SourceConnectionUtil.class);
 
 	@Autowired
-	private DataSourceRepository dataSourceConfigRepository;
+	DataSourceRepository dataSourceRepo;
 
 	@Autowired
-	private TrackerConfiguration trackerConfig;
+	private PaymentTrackerConfiguration trackerConfig;
 
 	private static Map<Long, String> connectionMap = new HashMap<Long, String>();
 	private static Map<String, PoolingDataSource> dataSourceMap = new HashMap<String, PoolingDataSource>();
 
 	@PostConstruct
 	void loadDataSources() throws DataAccessException {
-		List<DataSource> dataSources = dataSourceConfigRepository.findAll();
+		List<DataSource> dataSources = dataSourceRepo.findAll();
 
 		try {
 			setupDataSources(dataSources);

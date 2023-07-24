@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 import org.hibernate.annotations.DynamicUpdate;
@@ -13,13 +14,21 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
 @DynamicUpdate
 @Table(name = "conf_Metric")
-public class Metrics {
+@NamedQueries({ @NamedQuery(name = "metrics.findAll", query = "FROM Metrics"),
+		@NamedQuery(name = "metric.findMetricsByReportId", query = "select metric from Metrics metric join Report report on metric.report = report.id where report.id =: reportId"),
+		@NamedQuery(name = "metrics.findMetricsOrderByReportId", query = "select max(metrics.metricsOrder)  from Metrics metrics join Report report on metrics.report = report.id where report.id =:reportId") })
+public class Metrics implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;

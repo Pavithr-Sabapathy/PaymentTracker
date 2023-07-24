@@ -1,12 +1,8 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.io.Serializable;
+import com.mashreq.paymentTracker.service.ReportInput;
 
-public class SWIFTDetailedFederatedReportDTO implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5247030860616631609L;
+public class SWIFTDetailedFederatedReportDTO implements ReportInput {
 	private ReportComponentDTO component;
 	private FederatedReportPromptDTO aidPrompt;
 	private FederatedReportPromptDTO umidlPrompt;

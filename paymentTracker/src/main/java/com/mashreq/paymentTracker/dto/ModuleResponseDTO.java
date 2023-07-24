@@ -2,32 +2,40 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
-public class ModuleResponseDTO implements Serializable{
-
+public class ModuleResponseDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private String name;
+	private Long id;
+	
+	private String moduleName;
 
 	private String displayName;
 
-	private String description;
+	private String moduleDescription;
 
 	private String active;
 
 	private String valid;
-	
-	private String errorMessage;
-	
-	private String warningMessage;
-	
 
-	public String getName() {
-		return name;
+	private String error;
+
+	private String warning;
+
+	public Long getId() {
+		return id;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getModuleName() {
+		return moduleName;
+	}
+
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
 	}
 
 	public String getDisplayName() {
@@ -38,12 +46,12 @@ public class ModuleResponseDTO implements Serializable{
 		this.displayName = displayName;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getModuleDescription() {
+		return moduleDescription;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
+	public void setModuleDescription(String moduleDescription) {
+		this.moduleDescription = moduleDescription;
 	}
 
 	public String getActive() {
@@ -62,28 +70,27 @@ public class ModuleResponseDTO implements Serializable{
 		this.valid = valid;
 	}
 
-	public String getErrorMessage() {
-		return errorMessage;
+	public String getError() {
+		return error;
 	}
 
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
+	public void setError(String error) {
+		this.error = error;
 	}
 
-	public String getWarningMessage() {
-		return warningMessage;
+	public String getWarning() {
+		return warning;
 	}
 
-	public void setWarningMessage(String warningMessage) {
-		this.warningMessage = warningMessage;
+	public void setWarning(String warning) {
+		this.warning = warning;
 	}
 
 	@Override
 	public String toString() {
-		return "ModuleResponseDTO [name=" + name + ", displayName=" + displayName + ", description=" + description
-				+ ", active=" + active + ", valid=" + valid + ", errorMessage=" + errorMessage + ", warningMessage="
-				+ warningMessage + "]";
+		return "ModuleResponseDTO [id=" + id + ", moduleName=" + moduleName + ", displayName=" + displayName
+				+ ", moduleDescription=" + moduleDescription + ", active=" + active + ", valid=" + valid + ", error="
+				+ error + ", warning=" + warning + "]";
 	}
-
 
 }

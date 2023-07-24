@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 import org.hibernate.annotations.DynamicUpdate;
@@ -17,9 +18,12 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @DynamicUpdate
 @Table(name = "conf_data_source")
-@NamedQueries ({@NamedQuery (name = "activeDataSource",
-query = "select ds from DataSource ds where ds.active=:activeStatus")})
-public class DataSource {
+@NamedQueries({
+		@NamedQuery(name = "activeDataSource", query = "select ds from DataSource ds where ds.active=:activeStatus") })
+public class DataSource implements Serializable {
+	
+	private static final long serialVersionUID = 5675782718159496790L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -98,6 +102,7 @@ public class DataSource {
 		this.active = active;
 		this.country = country;
 	}
+
 
 	public long getId() {
 		return id;

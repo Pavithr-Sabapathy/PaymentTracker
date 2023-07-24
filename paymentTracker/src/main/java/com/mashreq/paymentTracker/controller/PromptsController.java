@@ -2,6 +2,8 @@ package com.mashreq.paymentTracker.controller;
 
 import java.util.List;
 
+import javax.ws.rs.Produces;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,21 +39,24 @@ public class PromptsController {
 	promptService promptService;
 
 	@GetMapping
+	@Produces("application/json")
 	public ResponseEntity<List<PromptResponseDTO>> fetchAllPrompts() {
 		List<PromptResponseDTO> reportListResponse = promptService.fetchAllPrompts();
 		return ResponseEntity.ok(reportListResponse);
 	}
 
 	@GetMapping("/{reportId}")
+	@Produces("application/json")
 	public ResponseEntity<List<PromptDTO>> fetchPromptsByReportId(@PathVariable("reportId") long reportId) {
 		List<PromptDTO> reportListResponse = promptService.fetchPromptsByReportId(reportId);
 		return ResponseEntity.ok(reportListResponse);
 	}
 
 	@PostMapping("/savePrompt")
+	@Produces("application/json")
 	public ResponseEntity<PromptDTO> savePrompt(@Valid @RequestBody PromptRequestDTO promptRequest) {
 		PromptDTO promptDTORepsonse = promptService.savePrompt(promptRequest);
-		return new ResponseEntity<PromptDTO>(promptDTORepsonse,HttpStatus.CREATED);
+		return new ResponseEntity<PromptDTO>(promptDTORepsonse, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{promptId}")
@@ -65,12 +70,13 @@ public class PromptsController {
 	}
 
 	@PutMapping("/{promptId}")
-	public ResponseEntity<PromptDTO> updatePrompt(@Valid @RequestBody PromptRequestDTO promptRequest, @PathVariable long promptId) {
+	@Produces("application/json")
+	public ResponseEntity<PromptDTO> updatePrompt(@Valid @RequestBody PromptRequestDTO promptRequest,
+			@PathVariable long promptId) {
 		log.info(FILENAME + "[updatePrompt Request prompt Id]--->" + promptId);
 		log.info(FILENAME + "[updatePrompt RequestBody]--->" + promptRequest.toString());
 		PromptDTO promptResponse = promptService.updatePromptById(promptRequest, promptId);
-		log.info(FILENAME + "[updatePrompt Response]--->" + ApplicationConstants.PROMPTS_UPDATE_MSG + "-->"
-				+ promptId);
+		log.info(FILENAME + "[updatePrompt Response]--->" + ApplicationConstants.PROMPTS_UPDATE_MSG + "-->" + promptId);
 		return new ResponseEntity<PromptDTO>(promptResponse, HttpStatus.ACCEPTED);
 
 	}

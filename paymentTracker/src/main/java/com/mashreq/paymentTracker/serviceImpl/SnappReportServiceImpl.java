@@ -5,9 +5,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,22 +18,22 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaSystemException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
+import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
-import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
+import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
@@ -43,18 +41,18 @@ import com.mashreq.paymentTracker.dto.SnappDetailedReportInput;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
-import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
-import com.mashreq.paymentTracker.service.SnappReportService;
+import com.mashreq.paymentTracker.service.ReportControllerService;
+import com.mashreq.paymentTracker.service.ReportInput;
+import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
-@Component
-public class SnappReportServiceImpl implements SnappReportService {
+@Service("snappDetails")
+public class SnappReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
 
 	private static final Logger log = LoggerFactory.getLogger(SnappReportServiceImpl.class);
 	private static final String FILENAME = "SnappReportServiceImpl";
@@ -66,29 +64,44 @@ public class SnappReportServiceImpl implements SnappReportService {
 	ReportConfigurationService reportConfigurationService;
 
 	@Autowired
-	private ComponentsRepository componentRepository;
+	private ComponentsDAO componentsDAO;
 
 	@Autowired
 	LinkReportService linkReportService;
 
+	@Autowired
+	ReportOutputExecutor reportOutputExecutor;
+
 	@Override
-	public List<ReportOutput> processSnappDetailedReport(ReportInstanceDTO reportInstanceDTO,
-			ReportContext reportContext) {
+	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
+		SnappDetailedReportInput snappDetailedReportInput = new SnappDetailedReportInput();
+		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
+		List<ReportPromptsInstanceDTO> promptsList = reportInstance.getPromptsList();
+		FederatedReportPromptDTO referenceNumPrompt = getMatchedInstancePrompt(promptsList,
+				MashreqFederatedReportConstants.REFERENCENUMPROMPTS);
+		if (null != referenceNumPrompt) {
+			snappDetailedReportInput.setReferenceNumPrompt(referenceNumPrompt);
+		}
+		return snappDetailedReportInput;
+	}
+
+	@Override
+	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
+		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
 		List<ReportOutput> outputList = new ArrayList<ReportOutput>();
 		List<ReportOutput> snappReportOutputList = new ArrayList<ReportOutput>();
 		Report report = new Report();
+		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
 		if (null != reportInstanceDTO) {
 			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
 		}
-		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(report.getId());
-		if (componentsOptional.isEmpty()) {
+		List<Components> componentList = componentsDAO.findAllByreportId(report.getId());
+		if (componentList.isEmpty()) {
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + report.getId());
 		} else {
-			List<Components> componentList = componentsOptional.get();
 			Components componentObj = componentList.get(0);
 			ReportComponentDTO reportComponent = populateReportComponent(componentObj);
-			SnappDetailedReportInput snappDetailedReportInput = populateBaseInputContext(
-					reportInstanceDTO.getPromptsList());
+			SnappDetailedReportInput snappDetailedReportInput = (SnappDetailedReportInput) reportInput;
 			snappDetailedReportInput.setComponent(reportComponent);
 			Set<ReportComponentDetailDTO> reportComponentDetailsList = reportComponent.getReportComponentDetails();
 			for (ReportComponentDetailDTO reportComponetDetail : reportComponentDetailsList) {
@@ -116,10 +129,17 @@ public class SnappReportServiceImpl implements SnappReportService {
 					defaultOutput.setRowData(rowData);
 					outputList.add(defaultOutput);
 				}
-
 			}
+			if (!outputList.isEmpty()) {
+				List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(outputList, report);
+				List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = reportOutputExecutor
+						.populateColumnDef(report);
+				responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
+				responseData.setData(rowDataMapList);
+			}
+			log.info(FILENAME + "[SnappReportServiceImpl processReport Response] -->" + responseData.toString());
 		}
-		return outputList;
+		return responseData;
 	}
 
 	private PaymentInvestigationReportOutput populateReportOutputForSingleRecord(
@@ -283,16 +303,6 @@ public class SnappReportServiceImpl implements SnappReportService {
 		return null;
 	}
 
-	private SnappDetailedReportInput populateBaseInputContext(List<ReportPromptsInstanceDTO> promptsList) {
-		SnappDetailedReportInput snappDetailedReportInput = new SnappDetailedReportInput();
-		FederatedReportPromptDTO referenceNumPrompt = getMatchedInstancePrompt(promptsList,
-				MashreqFederatedReportConstants.REFERENCENUMPROMPTS);
-		if (null != referenceNumPrompt) {
-			snappDetailedReportInput.setReferenceNumPrompt(referenceNumPrompt);
-		}
-		return snappDetailedReportInput;
-	}
-
 	private ReportComponentDTO populateReportComponent(Components component) {
 		ReportComponentDTO reportComponentDTO = new ReportComponentDTO();
 		reportComponentDTO.setActive(CheckType.getCheckType(component.getActive()));
@@ -340,59 +350,4 @@ public class SnappReportServiceImpl implements SnappReportService {
 		return federatedReportPromptDTO;
 	}
 
-	private List<Map<String, Object>> populateRowData(List<ReportOutput> flexReportExecuteResponseList, Report report) {
-		List<Map<String, Object>> rowDataList = new ArrayList<Map<String, Object>>();
-		List<Metrics> reportMetricsList = report.getMetricsList();
-		List<String> metricsDisplayNameList = reportMetricsList.stream().map(Metrics::getDisplayName)
-				.collect(Collectors.toList());
-		Map<String, Object> rowMap = new HashMap<String, Object>();
-		flexReportExecuteResponseList.stream().forEach(flexReport -> {
-			List<Object> dataList = flexReport.getRowData();
-
-			Iterator<Object> ik = dataList.iterator();
-			Iterator<String> iv = metricsDisplayNameList.iterator();
-
-			while (ik.hasNext() && iv.hasNext()) {
-				rowMap.put(iv.next(), ik.next());
-			}
-
-			rowDataList.add(rowMap);
-
-		});
-		return rowDataList;
-	}
-
-	private List<ReportExecuteResponseColumnDefDTO> populateColumnDef(Report reportObject) {
-		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = new ArrayList<ReportExecuteResponseColumnDefDTO>();
-		try {
-			List<Metrics> metricsList = reportObject.getMetricsList();
-			metricsList.stream().forEach(metrics -> {
-				ReportExecuteResponseColumnDefDTO reportExecuteResponseCloumnDef = new ReportExecuteResponseColumnDefDTO();
-				reportExecuteResponseCloumnDef.setField(metrics.getDisplayName());
-				reportExecuteResponseCloumnDefList.add(reportExecuteResponseCloumnDef);
-			});
-			List<String> metricsWithLinkList = prepareLinkReportInfo(reportObject);
-			reportExecuteResponseCloumnDefList.stream().forEach(colummnDef -> {
-				if (metricsWithLinkList.contains(colummnDef.getField())) {
-					colummnDef.setLinkExists(Boolean.TRUE);
-				}
-			});
-
-		} catch (JpaSystemException exception) {
-			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
-		} catch (ResourceNotFoundException exception) {
-			log.error(FILENAME + " [Exception Occured] " + exception.getMessage());
-		}
-		return reportExecuteResponseCloumnDefList;
-	}
-
-	private List<String> prepareLinkReportInfo(Report reportObject) {
-		List<String> metricsWithLinks = new ArrayList<String>();
-		List<LinkedReportResponseDTO> linkedreportResponseDTOList = linkReportService
-				.fetchLinkedReportByReportId(reportObject.getId());
-		linkedreportResponseDTOList.stream().forEach(linkedreportResponseDTO -> {
-			metricsWithLinks.add(linkedreportResponseDTO.getSourceMetricName());
-		});
-		return metricsWithLinks;
-	}
 }

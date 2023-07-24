@@ -36,9 +36,9 @@ public class ComponentsController {
 
 	@PostMapping("/saveComponents")
 	public ResponseEntity<String> saveComponents(@RequestBody ComponentsRequestDTO componentsRequest) {
-			log.info(FILENAME + "[saveMetrics Request]--->" + componentsRequest.toString());
-			componentService.saveComponents(componentsRequest);
-			return new ResponseEntity<String>(ApplicationConstants.COMPONENT_CREATION_MSG, HttpStatus.CREATED);
+		log.info(FILENAME + "[saveMetrics Request]--->" + componentsRequest.toString());
+		componentService.saveComponents(componentsRequest);
+		return new ResponseEntity<String>(ApplicationConstants.COMPONENT_CREATION_MSG, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/{componentId}")
@@ -59,14 +59,9 @@ public class ComponentsController {
 	@PostMapping("/saveDetails")
 	public ResponseEntity<String> saveComponentsDetails(
 			@RequestBody ComponentDetailsRequestDTO componentDetailsRequest) {
-		try {
-			log.info(FILENAME + "[saveComponentsDetails Request]--->" + componentDetailsRequest.toString());
-			componentService.saveComponentsDetails(componentDetailsRequest);
-			return new ResponseEntity<String>(ApplicationConstants.COMPONENT_DETAILS_CREATION_MSG, HttpStatus.CREATED);
-		} catch (Exception e) {
-			log.error(FILENAME + "[Exception Occured]" + e.getMessage());
-			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		log.info(FILENAME + "[saveComponentsDetails Request]--->" + componentDetailsRequest.toString());
+		componentService.saveComponentsDetails(componentDetailsRequest);
+		return new ResponseEntity<String>(ApplicationConstants.COMPONENT_DETAILS_CREATION_MSG, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/componentDetail/{componentDetailId}")

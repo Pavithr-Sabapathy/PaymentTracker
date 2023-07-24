@@ -1,9 +1,8 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.hibernate.annotations.DynamicUpdate;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -14,14 +13,24 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "conf_report")
-@DynamicUpdate
-public class Report {
+@NamedQueries({ @NamedQuery(name = "report.findByReportName", query = "FROM Report rep where reportName = :reportName"),
+		@NamedQuery(name = "report.getAllActiveReports", query = "From Report rep where active='Y'"),
+		@NamedQuery(name = "report.findByModuleId",query = "From Report where moduleId = :moduleId"),
+		@NamedQuery(name = "report.findReportByModule",query = "select report from Report report join ApplicationModule module on report.moduleId = module.id where module.moduleName =:moduleName")})
+public class Report implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -48,13 +57,13 @@ public class Report {
 	@NotNull(message = "valid should not be empty")
 	@Column(name = "valid")
 	private String valid;
-	
+
 	@Column(name = "module_id")
 	private long moduleId;
 
 	@Column(name = "connector_key")
 	private String connectorKey;
-	
+
 	@OneToMany(mappedBy = "report", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	List<Prompts> promptList = new ArrayList<Prompts>();
@@ -62,7 +71,6 @@ public class Report {
 	@OneToMany(mappedBy = "report", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	List<Metrics> metricsList = new ArrayList<Metrics>();
 
-	
 	public Report() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -183,9 +191,14 @@ public class Report {
 	public String toString() {
 		return "Report [id=" + id + ", reportName=" + reportName + ", displayName=" + displayName
 				+ ", reportDescription=" + reportDescription + ", reportCategory=" + reportCategory + ", active="
-				+ active + ", valid=" + valid + ", promptList=" + promptList + ", metricsList=" + metricsList + "]";
+				+ active + ", valid=" + valid + ", moduleId=" + moduleId + ", connectorKey=" + connectorKey
+				+ ", promptList=" + promptList + ", metricsList=" + metricsList + ", getId()=" + getId()
+				+ ", getReportName()=" + getReportName() + ", getDisplayName()=" + getDisplayName()
+				+ ", getReportDescription()=" + getReportDescription() + ", getReportCategory()=" + getReportCategory()
+				+ ", getActive()=" + getActive() + ", getValid()=" + getValid() + ", getPromptList()=" + getPromptList()
+				+ ", getMetricsList()=" + getMetricsList() + ", getModuleId()=" + getModuleId() + ", getConnectorKey()="
+				+ getConnectorKey() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode() + ", toString()="
+				+ super.toString() + "]";
 	}
-
-	
 
 }

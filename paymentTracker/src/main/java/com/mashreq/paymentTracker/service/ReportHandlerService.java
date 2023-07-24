@@ -8,7 +8,7 @@ import com.mashreq.paymentTracker.exception.ReportException;
 
 public interface ReportHandlerService{
 
-	ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest) throws ReportException, JsonProcessingException;
+	ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest) throws ReportException, JsonProcessingException, Exception;
 
 	APIResponse populateSuccessAPIRespone(ReportExecuteResponseData flexList);
 	

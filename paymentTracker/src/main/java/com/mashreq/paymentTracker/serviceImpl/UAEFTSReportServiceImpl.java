@@ -11,10 +11,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
+import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
@@ -32,17 +33,17 @@ import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
+import com.mashreq.paymentTracker.service.ReportControllerService;
+import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
-import com.mashreq.paymentTracker.service.UAEFTSReportService;
 import com.mashreq.paymentTracker.type.PromptValueType;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
-@Component
-public class UAEFTSReportServiceImpl implements UAEFTSReportService {
+@Service("Uaefts")
+public class UAEFTSReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
 
 	private static final Logger log = LoggerFactory.getLogger(UAEFTSReportServiceImpl.class);
 	private static final String FILENAME = "UAEFTSReportServiceImpl";
@@ -54,12 +55,11 @@ public class UAEFTSReportServiceImpl implements UAEFTSReportService {
 	ReportConfigurationService reportConfigurationService;
 
 	@Autowired
-	private ComponentsRepository componentRepository;
+	private ComponentsDAO componentsDAO;
 
 	@Autowired
 	ReportOutputExecutor reportOutputExecutor;
 
-	@Override
 	public List<AdvanceSearchReportOutput> processAdvanceSearchReport(AdvanceSearchReportInput advanceSearchReportInput,
 			List<Components> componentList, ReportContext reportContext) {
 		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
@@ -169,57 +169,10 @@ public class UAEFTSReportServiceImpl implements UAEFTSReportService {
 	}
 
 	@Override
-	public ReportExecuteResponseData processUAEFTSReport(ReportInstanceDTO reportInstanceDTO,
-			ReportContext reportContext) {
-		ReportExecuteResponseData reportExecuteResponseData = new ReportExecuteResponseData();
-		List<ReportOutput> UAEFTSReportOutputList = new ArrayList<ReportOutput>();
-		ReportComponentDetailDTO matchedComponentDetail = new ReportComponentDetailDTO();
-		Report report = new Report();
-		if (null != reportInstanceDTO) {
-			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
-		}
-		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(report.getId());
-		if (componentsOptional.isEmpty()) {
-			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + report.getId());
-		} else {
-			List<Components> componentList = componentsOptional.get();
-			UAEFTSDetailedReportInput UAEFTSDetailedReportInput = populateBaseInputContext(
-					reportInstanceDTO.getPromptsList());
-			if (!componentList.isEmpty()) {
-				for (Components component : componentList) {
-					ReportComponentDTO reportComponent = populateReportComponent(component);
-					UAEFTSDetailedReportInput.setComponent(reportComponent);
-
-					matchedComponentDetail = reportComponent.getReportComponentDetails().stream()
-							.filter(componentDetail -> componentDetail.getQueryKey().toLowerCase().contains(
-									UAEFTSDetailedReportInput.getMesgTypePrompt().getPromptValue().toLowerCase()))
-							.findFirst().orElse(null);
-				}
-				if (null != matchedComponentDetail) {
-					FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
-					List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-					context.setQueryId(matchedComponentDetail.getId());
-					context.setQueryKey(matchedComponentDetail.getQueryKey());
-					context.setQueryString(matchedComponentDetail.getQuery());
-					promptsList.add(UAEFTSDetailedReportInput.getReferenceNumPrompt());
-					context.setPrompts(promptsList);
-					context.setExecutionId(reportContext.getExecutionId());
-					UAEFTSReportOutputList = queryExecutorService.executeQuery(matchedComponentDetail, context);
-				}
-
-			}
-			List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(UAEFTSReportOutputList,
-					report);
-			List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = reportOutputExecutor
-					.populateColumnDef(report);
-			reportExecuteResponseData.setColumnDefs(reportExecuteResponseCloumnDefList);
-			reportExecuteResponseData.setData(rowDataMapList);
-		}
-		return reportExecuteResponseData;
-	}
-
-	private UAEFTSDetailedReportInput populateBaseInputContext(List<ReportPromptsInstanceDTO> promptsList) {
+	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
 		UAEFTSDetailedReportInput UAEFTSDetailedReportInput = new UAEFTSDetailedReportInput();
+		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
+		List<ReportPromptsInstanceDTO> promptsList = reportInstance.getPromptsList();
 		FederatedReportPromptDTO referenceNumPrompt = getMatchedInstancePrompt(promptsList,
 				MashreqFederatedReportConstants.REFERENCENUMPROMPTS);
 		FederatedReportPromptDTO mesgTypePrompt = getMatchedInstancePrompt(promptsList,
@@ -231,6 +184,53 @@ public class UAEFTSReportServiceImpl implements UAEFTSReportService {
 			UAEFTSDetailedReportInput.setMesgTypePrompt(mesgTypePrompt);
 		}
 		return UAEFTSDetailedReportInput;
+	}
+
+	@Override
+	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
+		ReportExecuteResponseData reportExecuteResponseData = new ReportExecuteResponseData();
+		List<ReportOutput> UAEFTSReportOutputList = new ArrayList<ReportOutput>();
+		ReportComponentDetailDTO matchedComponentDetail = new ReportComponentDetailDTO();
+		Report report = new Report();
+		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
+		if (null != reportContext.getReportInstance()) {
+			reportInstanceDTO = reportContext.getReportInstance();
+			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
+		}
+		List<Components> componentList = componentsDAO.findAllByreportId(report.getId());
+		if (componentList.isEmpty()) {
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + report.getId());
+		} else {
+			UAEFTSDetailedReportInput UAEFTSDetailedReportInput = (UAEFTSDetailedReportInput) reportInput;
+			for (Components component : componentList) {
+				ReportComponentDTO reportComponent = populateReportComponent(component);
+				UAEFTSDetailedReportInput.setComponent(reportComponent);
+
+				matchedComponentDetail = reportComponent.getReportComponentDetails().stream()
+						.filter(componentDetail -> componentDetail.getQueryKey().toLowerCase()
+								.contains(UAEFTSDetailedReportInput.getMesgTypePrompt().getPromptValue().toLowerCase()))
+						.findFirst().orElse(null);
+			}
+			if (null != matchedComponentDetail) {
+				FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+				List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
+				context.setQueryId(matchedComponentDetail.getId());
+				context.setQueryKey(matchedComponentDetail.getQueryKey());
+				context.setQueryString(matchedComponentDetail.getQuery());
+				promptsList.add(UAEFTSDetailedReportInput.getReferenceNumPrompt());
+				context.setPrompts(promptsList);
+				context.setExecutionId(reportContext.getExecutionId());
+				UAEFTSReportOutputList = queryExecutorService.executeQuery(matchedComponentDetail, context);
+			}
+
+			List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(UAEFTSReportOutputList,
+					report);
+			List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = reportOutputExecutor
+					.populateColumnDef(report);
+			reportExecuteResponseData.setColumnDefs(reportExecuteResponseCloumnDefList);
+			reportExecuteResponseData.setData(rowDataMapList);
+		}
+		return reportExecuteResponseData;
 	}
 
 	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> reportPromptsList,

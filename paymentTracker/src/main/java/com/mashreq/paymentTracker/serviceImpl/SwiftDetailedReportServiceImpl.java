@@ -12,10 +12,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
+import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
@@ -37,23 +38,23 @@ import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
+import com.mashreq.paymentTracker.service.ReportControllerService;
+import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
-import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.utility.CheckType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
-@Component
-public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportService {
+@Service("swiftDetails")
+public class SwiftDetailedReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
 
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
 
 	@Autowired
-	private ComponentsRepository componentRepository;
+	private ComponentsDAO componentsDAO;
 
 	@Autowired
 	QueryExecutorService queryExecutorService;
@@ -67,31 +68,72 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 	private static final Logger log = LoggerFactory.getLogger(SwiftDetailedReportServiceImpl.class);
 	private static final String FILENAME = "SwiftDetailedReportServiceImpl";
 
-	public ReportExecuteResponseData processSwiftDetailReport(ReportInstanceDTO reportInstanceDTO,
-			ReportContext reportContext) {
+	@Override
+	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
+		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
+		List<ReportPromptsInstanceDTO> list = reportInstance.getPromptsList();
+		SWIFTDetailedFederatedReportDTO swiftDetailedFederatedReportDTO = new SWIFTDetailedFederatedReportDTO();
+		FederatedReportPromptDTO aidPrompt = getMatchedInstancePrompt(list,
+				MashreqFederatedReportConstants.AID_PROMPT_KEY);
+		FederatedReportPromptDTO umidhPrompt = getMatchedInstancePrompt(list,
+				MashreqFederatedReportConstants.S_UMIDH_PROMPT_KEY);
+		FederatedReportPromptDTO umidlPrompt = getMatchedInstancePrompt(list,
+				MashreqFederatedReportConstants.S_UMIDL_PROMPT_KEY);
+		FederatedReportPromptDTO SWIFTDetailedTypePrompt = getMatchedInstancePrompt(list,
+				MashreqFederatedReportConstants.SWIFT_DETAILED_REPORT_TYPE_PROMPT_KEY);
+		FederatedReportPromptDTO referenceNumPrompt = getMatchedInstancePrompt(list,
+				MashreqFederatedReportConstants.MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY);
+		FederatedReportPromptDTO messageTypePrompt = getMatchedInstancePrompt(list,
+				MashreqFederatedReportConstants.MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY);
+		FederatedReportPromptDTO messageSubFormatFormat = getMatchedInstancePrompt(list,
+				MashreqFederatedReportConstants.MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY);
+		if (null != aidPrompt) {
+			swiftDetailedFederatedReportDTO.setAidPrompt(aidPrompt);
+		}
+		if (null != umidhPrompt) {
+			swiftDetailedFederatedReportDTO.setUmidhPrompt(umidhPrompt);
+		}
+		if (null != umidlPrompt) {
+			swiftDetailedFederatedReportDTO.setUmidlPrompt(umidlPrompt);
+		}
+		if (null != SWIFTDetailedTypePrompt) {
+			swiftDetailedFederatedReportDTO.setDetailedType(SWIFTDetailedTypePrompt);
+		}
+		if (null != referenceNumPrompt) {
+			swiftDetailedFederatedReportDTO.setReferenceNumPrompt(referenceNumPrompt);
+		}
+		if (null != messageTypePrompt) {
+			swiftDetailedFederatedReportDTO.setMessageTypePrompt(messageTypePrompt);
+		}
+		if (null != messageSubFormatFormat) {
+			swiftDetailedFederatedReportDTO.setMessageSubFormatPrompt(messageSubFormatFormat);
+		}
+		return swiftDetailedFederatedReportDTO;
+
+	}
+
+	@Override
+	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
 		List<Map<String, Object>> swiftData = null;
+		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
 		/** fetch the report details based on report name **/
 		Report report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
 		CannedReport cannedReport = cannedReportService.populateCannedReportInstance(report);
-		Optional<List<Components>> componentsOptional = componentRepository.findAllByreportId(cannedReport.getId());
-		if (componentsOptional.isEmpty()) {
+		List<Components> componentList = componentsDAO.findAllByreportId(cannedReport.getId());
+		if (componentList.isEmpty()) {
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + cannedReport.getId());
 		} else {
-			List<Components> componentList = componentsOptional.get();
-			if (!componentList.isEmpty()) {
-				for (Components component : componentList) {
-					ReportComponentDTO reportComponent = populateReportComponent(component);
-					if (null != reportComponent.getActive() && reportComponent.getActive().equals(CheckType.YES)) {
-						SWIFTDetailedFederatedReportDTO swiftDetailedReportDTO = new SWIFTDetailedFederatedReportDTO();
-						swiftDetailedReportDTO.setComponent(reportComponent);
-						swiftDetailedReportDTO = populateBaseInputContext(reportInstanceDTO.getPromptsList());
-						List<SWIFTMessageDetailsFederatedReportOutput> messageDetails = processSwiftDetailedReport(
-								swiftDetailedReportDTO, reportComponent, reportContext);
-						swiftData = populateSwiftDetailedReportData(messageDetails);
-						reportExecuteResponseCloumnDefList = reportOutputExecutor.populateColumnDef(report);
-					}
+			for (Components component : componentList) {
+				ReportComponentDTO reportComponent = populateReportComponent(component);
+				if (null != reportComponent.getActive() && reportComponent.getActive().equals(CheckType.YES)) {
+					SWIFTDetailedFederatedReportDTO swiftDetailedReportDTO = (SWIFTDetailedFederatedReportDTO) reportInput;
+					swiftDetailedReportDTO.setComponent(reportComponent);
+					List<SWIFTMessageDetailsFederatedReportOutput> messageDetails = processSwiftDetailedReport(
+							swiftDetailedReportDTO, reportComponent, reportContext);
+					swiftData = populateSwiftDetailedReportData(messageDetails);
+					reportExecuteResponseCloumnDefList = reportOutputExecutor.populateColumnDef(report);
 				}
 			}
 			responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
@@ -99,6 +141,7 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 			log.info(FILENAME + "[processSwiftDetailReport Response]-->" + responseData.toString());
 		}
 		return responseData;
+
 	}
 
 	private ReportComponentDTO populateReportComponent(Components component) {
@@ -679,46 +722,6 @@ public class SwiftDetailedReportServiceImpl implements SwiftDetailedReportServic
 		ReportComponentDetailDTO componentDetailsObject = componentDetailsList.stream()
 				.filter(component -> componentKey.equalsIgnoreCase(component.getQueryKey())).findAny().orElse(null);
 		return componentDetailsObject;
-	}
-
-	private SWIFTDetailedFederatedReportDTO populateBaseInputContext(List<ReportPromptsInstanceDTO> list) {
-		SWIFTDetailedFederatedReportDTO swiftDetailedFederatedReportDTO = new SWIFTDetailedFederatedReportDTO();
-		FederatedReportPromptDTO aidPrompt = getMatchedInstancePrompt(list,
-				MashreqFederatedReportConstants.AID_PROMPT_KEY);
-		FederatedReportPromptDTO umidhPrompt = getMatchedInstancePrompt(list,
-				MashreqFederatedReportConstants.S_UMIDH_PROMPT_KEY);
-		FederatedReportPromptDTO umidlPrompt = getMatchedInstancePrompt(list,
-				MashreqFederatedReportConstants.S_UMIDL_PROMPT_KEY);
-		FederatedReportPromptDTO SWIFTDetailedTypePrompt = getMatchedInstancePrompt(list,
-				MashreqFederatedReportConstants.SWIFT_DETAILED_REPORT_TYPE_PROMPT_KEY);
-		FederatedReportPromptDTO referenceNumPrompt = getMatchedInstancePrompt(list,
-				MashreqFederatedReportConstants.MESSAGE_DETAILS_REFERENCE_NUM_PROMPT_KEY);
-		FederatedReportPromptDTO messageTypePrompt = getMatchedInstancePrompt(list,
-				MashreqFederatedReportConstants.MESSAGE_DETAILS_MESSAGE_TYPE_PROMPT_KEY);
-		FederatedReportPromptDTO messageSubFormatFormat = getMatchedInstancePrompt(list,
-				MashreqFederatedReportConstants.MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY);
-		if (null != aidPrompt) {
-			swiftDetailedFederatedReportDTO.setAidPrompt(aidPrompt);
-		}
-		if (null != umidhPrompt) {
-			swiftDetailedFederatedReportDTO.setUmidhPrompt(umidhPrompt);
-		}
-		if (null != umidlPrompt) {
-			swiftDetailedFederatedReportDTO.setUmidlPrompt(umidlPrompt);
-		}
-		if (null != SWIFTDetailedTypePrompt) {
-			swiftDetailedFederatedReportDTO.setDetailedType(SWIFTDetailedTypePrompt);
-		}
-		if (null != referenceNumPrompt) {
-			swiftDetailedFederatedReportDTO.setReferenceNumPrompt(referenceNumPrompt);
-		}
-		if (null != messageTypePrompt) {
-			swiftDetailedFederatedReportDTO.setMessageTypePrompt(messageTypePrompt);
-		}
-		if (null != messageSubFormatFormat) {
-			swiftDetailedFederatedReportDTO.setMessageSubFormatPrompt(messageSubFormatFormat);
-		}
-		return swiftDetailedFederatedReportDTO;
 	}
 
 	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> list, String promptKey) {

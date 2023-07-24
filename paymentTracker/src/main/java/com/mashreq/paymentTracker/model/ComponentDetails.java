@@ -1,5 +1,7 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
+
 import org.hibernate.annotations.DynamicUpdate;
 
 import jakarta.persistence.Column;
@@ -15,7 +17,10 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @DynamicUpdate
 @Table(name = "conf_rpt_comp_det")
-public class ComponentDetails {
+public class ComponentDetails implements Serializable{
+
+	private static final long serialVersionUID = -7472347894279409417L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;

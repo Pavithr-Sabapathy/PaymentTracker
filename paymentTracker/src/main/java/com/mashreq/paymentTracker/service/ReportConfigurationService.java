@@ -1,6 +1,5 @@
 package com.mashreq.paymentTracker.service;
 
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import com.mashreq.paymentTracker.dto.ReportDTO;
@@ -15,12 +14,8 @@ public interface ReportConfigurationService {
 	
 	void deleteReportById(long reportId);
 
-	List<Report> fetchReportsAsExcel();
-
 	ReportDTO updateReportById(ReportDTORequest reportUpdateRequest, long reportId);
 	
-	ByteArrayOutputStream generateReportPDF();
-
 	List<ReportDTO> fetchReportsByModule(String moduleName);
 
 	List<ReportDTO> fetchReportsByModuleId(Long moduleId);

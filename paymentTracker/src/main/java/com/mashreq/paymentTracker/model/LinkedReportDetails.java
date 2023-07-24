@@ -1,5 +1,7 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
+
 import org.hibernate.annotations.DynamicUpdate;
 
 import jakarta.persistence.Column;
@@ -7,25 +9,31 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
 @Entity
 @DynamicUpdate
 @Table(name = "conf_linked_report_info_det")
-public class LinkedReportDetails {
+@NamedQueries({
+		@NamedQuery(name = "LinkedReportDetails.findByLinkReportPromptId", query = "SELECT comp from Components comp join Report rep on comp.report = rep.id where rep.id =: reportId") })
+public class LinkedReportDetails implements Serializable {
+	private static final long serialVersionUID = -5922435091719149617L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	
+
 	@Column(name = "link_rep_id")
 	private long linkReportId;
-	
+
 	@Column(name = "link_rpt_prompt_id")
 	private long linkReportPromptId;
-	
+
 	@Column(name = "mapped_id")
 	private long mappedId;
-	
+
 	@Column(name = "mapping_type")
 	private String mappingType;
 
@@ -85,9 +93,8 @@ public class LinkedReportDetails {
 
 	@Override
 	public String toString() {
-		return "LinkedReportDetails [id=" + id + ", linkReportId=" + linkReportId + ", linkReportPromptId=" + linkReportPromptId
-				+ ", mappedId=" + mappedId + ", mappingType=" + mappingType + "]";
+		return "LinkedReportDetails [id=" + id + ", linkReportId=" + linkReportId + ", linkReportPromptId="
+				+ linkReportPromptId + ", mappedId=" + mappedId + ", mappingType=" + mappingType + "]";
 	}
-
 
 }

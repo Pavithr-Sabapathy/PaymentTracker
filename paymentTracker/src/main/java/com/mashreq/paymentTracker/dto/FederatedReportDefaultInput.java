@@ -1,11 +1,11 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.io.Serializable;
 import java.util.List;
 
-public class FederatedReportDefaultInput implements Serializable{
+import com.mashreq.paymentTracker.service.ReportInput;
 
-	private static final long serialVersionUID = 3160742869431264893L;
+public class FederatedReportDefaultInput implements ReportInput{
+
 	private ReportComponentDTO component;
 	private List<ReportPromptsInstanceDTO> instancePrompts;
 	private boolean transpose;

@@ -49,6 +49,7 @@ public class ApplicationConstants {
 	public static final String LINK_REPORT_CREATION_MSG = "Linked Report Created Successfully";
 	public static final String LINK_REPORT_DELETION_MSG = "Linked Report Deleted Successfully";
 	public static final String LINK_REPORT_DOES_NOT_EXISTS = "Linked Report not exist with this id";
+	public static final String LINK_REPORT_DOES_NOT_EXISTS_REPORT_ID = "Linked Report not exist with this report id";
 	public static final String LINK_MAPPING_REPORT_CREATION_MSG = "Link Mapping Created Successfully";
 	public static final String LINK_MAPPING_REPORT_DELETION_MSG = "Linked Mapping Deleted Successfully";
 	public static final String LINK_MAPPING_DOES_NOT_EXISTS = "Link Mapping not exist with this id";

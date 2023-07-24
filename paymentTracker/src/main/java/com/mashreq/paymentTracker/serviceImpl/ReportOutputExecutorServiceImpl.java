@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.JpaSystemException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
@@ -22,7 +22,7 @@ import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 
-@Component
+@Service
 public class ReportOutputExecutorServiceImpl implements ReportOutputExecutor{
 	
 	@Autowired
