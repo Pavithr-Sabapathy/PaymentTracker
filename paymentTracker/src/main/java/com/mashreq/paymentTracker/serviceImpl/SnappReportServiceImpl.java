@@ -73,7 +73,7 @@ public class SnappReportServiceImpl extends ReportControllerServiceImpl implemen
 	ReportOutputExecutor reportOutputExecutor;
 
 	@Override
-	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
+	public ReportInput populateBaseInputContext(ReportContext reportContext) {
 		SnappDetailedReportInput snappDetailedReportInput = new SnappDetailedReportInput();
 		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
 		List<ReportPromptsInstanceDTO> promptsList = reportInstance.getPromptsList();
