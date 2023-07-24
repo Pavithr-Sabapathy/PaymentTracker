@@ -7,32 +7,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.controller.LinkMappingController;
 import com.mashreq.paymentTracker.dto.LinkMappingResponseDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportMappingRequestDTO;
 import com.mashreq.paymentTracker.service.LinkMappingService;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(LinkMappingController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class LinkMappingControllerTest {
 
 	@Autowired

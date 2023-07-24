@@ -31,25 +31,25 @@ public class ReportsController {
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
 
-	@GetMapping("id/{id}")
+	@GetMapping(value ="/{id}",produces = "application/json")
 	public ResponseEntity<ReportDTO> fetchReportById(@PathVariable("id") Long id) {
 		ReportDTO reportResponse = reportConfigurationService.fetchReportById(id);
 		return new ResponseEntity<ReportDTO>(reportResponse, HttpStatus.OK);
 	}
 
-	@GetMapping("/fetchByModuleId")
-	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleId(Long moduleId) {
+	@GetMapping(value = "moduleId/{moduleId}",produces = "application/json")	
+	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleId(@PathVariable("moduleId") Long moduleId) {
 		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModuleId(moduleId);
 		return new ResponseEntity<List<ReportDTO>>(reportListResponse, HttpStatus.OK);
 	}
 
-	@GetMapping("/fetchByModuleName")
-	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleName(String ModuleName) {
-		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModule(ModuleName);
+	@GetMapping(value = "moduleName/{moduleName}",produces = "application/json")
+	public ResponseEntity<List<ReportDTO>> fetchReportsByModuleName(@PathVariable("moduleName") String moduleName) {
+		List<ReportDTO> reportListResponse = reportConfigurationService.fetchReportsByModule(moduleName);
 		return new ResponseEntity<List<ReportDTO>>(reportListResponse, HttpStatus.OK);
 	}
 
-	@GetMapping("name/{reportname}")
+	@GetMapping(value = "name/{reportname}",produces = "application/json")
 	public ResponseEntity<Report> fetchReportByName(@PathVariable("reportname") String reportName) {
 		Report reportResponse = reportConfigurationService.fetchReportByName(reportName);
 		return new ResponseEntity<Report>(reportResponse, HttpStatus.OK);
@@ -69,24 +69,10 @@ public class ReportsController {
 		return new ResponseEntity<ReportDTO>(reportDTO, HttpStatus.ACCEPTED);
 	}
 
-	@DeleteMapping("/{reportId}")
+	@DeleteMapping("id/{reportId}")
 	public ResponseEntity<String> deleteReport(@PathVariable long reportId) {
 		reportConfigurationService.deleteReportById(reportId);
 		return new ResponseEntity<String>(ApplicationConstants.REPORT_DELETION_MSG, HttpStatus.ACCEPTED);
 	}
 
-	/*
-	 * @GetMapping("/allReports/pdf") public ResponseEntity<byte[]> getTeacherPdf()
-	 * throws IOException { ByteArrayOutputStream baos =
-	 * reportConfigurationService.generateReportPDF();
-	 * 
-	 * SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
-	 * Date date = new Date(); String currentDate = dateFormat.format(date);
-	 * HttpHeaders headers = new HttpHeaders();
-	 * headers.setContentType(MediaType.APPLICATION_PDF);
-	 * headers.add(HttpHeaders.CONTENT_DISPOSITION,
-	 * "attachment; filename=REPORT_DATA"+currentDate+".pdf");
-	 * headers.setCacheControl("must-revalidate, post-check=0, pre-check=0"); return
-	 * new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK); }
-	 */
 }

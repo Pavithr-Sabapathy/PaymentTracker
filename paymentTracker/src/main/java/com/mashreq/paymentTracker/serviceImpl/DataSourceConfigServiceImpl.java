@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -39,7 +38,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	ModelMapper modelMapper;
 
 	@Autowired
-	private DataSourceRepository dataSourceConfigRepository;
+	DataSourceRepository dataSourceRepo;
 
 	@Override
 	public DataSourceResponseDTO saveDataSourceConfiguration(DataSourceRequestDTO dataSourceRequest) {
@@ -59,7 +58,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 			dataSourceRequest.setPassword(encryptedPassword);
 			dataSource = modelMapper.map(dataSourceRequest, DataSource.class);
 		}
-		dataSource = dataSourceConfigRepository.save(dataSource);
+		dataSource = dataSourceRepo.save(dataSource);
 		dataSourceResponse = modelMapper.map(dataSource, DataSourceResponseDTO.class);
 		return dataSourceResponse;
 	}
@@ -67,39 +66,30 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	@Override
 	public DataSourceResponseDTO getDataSourceConfigById(long dataSourceId) {
 		DataSourceResponseDTO dataSourceDTOResponse = new DataSourceResponseDTO();
-		Optional<DataSource> dataSourceConfigurationOptional = dataSourceConfigRepository.findById(dataSourceId);
-		if (dataSourceConfigurationOptional.isEmpty()) {
+		DataSource dataSource = dataSourceRepo.getDataSourceById(dataSourceId);
+		if (null == dataSource) {
 			log.error(FILENAME + "[getDataSourceConfigById] " + ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS
 					+ dataSourceId);
 			throw new ResourceNotFoundException(ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceId);
-		} else {
-			DataSource dataSourceConfigResponse = dataSourceConfigurationOptional.get();
-			dataSourceDTOResponse = modelMapper.map(dataSourceConfigResponse, DataSourceResponseDTO.class);
-			if (dataSourceDTOResponse.getEncryptedPassword().equals("Y")) {
-				String decryptedPassword = null;
-				try {
-					decryptedPassword = AesUtil.decryptBase64(dataSourceDTOResponse.getPassword(),
-							"execueDatasourceConnection", EncryptionAlgorithm.TRIPLE_DES);
-				} catch (CryptographyException e) {
-					e.printStackTrace();
-				}
-				dataSourceDTOResponse.setPassword(decryptedPassword);
-			}
-			log.info(FILENAME + "[getDataSourceConfigById] " + dataSourceDTOResponse.toString());
 		}
+		dataSourceDTOResponse = modelMapper.map(dataSource, DataSourceResponseDTO.class);
+		if (dataSourceDTOResponse.getEncryptedPassword().equals("Y")) {
+			String decryptedPassword = null;
+			try {
+				decryptedPassword = AesUtil.decryptBase64(dataSourceDTOResponse.getPassword(),
+						"execueDatasourceConnection", EncryptionAlgorithm.TRIPLE_DES);
+			} catch (CryptographyException e) {
+				e.printStackTrace();
+			}
+			dataSourceDTOResponse.setPassword(decryptedPassword);
+		}
+		log.info(FILENAME + "[getDataSourceConfigById] " + dataSourceDTOResponse.toString());
 		return dataSourceDTOResponse;
 	}
 
 	@Override
 	public void deleteDataSourceById(long dataSourceId) {
-		if (dataSourceConfigRepository.existsById(dataSourceId)) {
-			dataSourceConfigRepository.deleteById(dataSourceId);
-		} else {
-			log.error(FILENAME + "[deleteDataSourceConfigById] "
-					+ ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceId);
-
-			throw new ResourceNotFoundException(ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + dataSourceId);
-		}
+		dataSourceRepo.deleteById(dataSourceId);
 	}
 
 	@Override
@@ -117,7 +107,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		}
 
 		Pageable pagingSort = PageRequest.of(page, size, Sort.by(orders));
-		Page<DataSource> dataSourceList = dataSourceConfigRepository.findAll(pagingSort);
+		Page<DataSource> dataSourceList = dataSourceRepo.findAll(pagingSort);
 		if (!dataSourceList.isEmpty()) {
 			dataSourceList.stream().forEach(datasource -> {
 				DataSourceResponseDTO dataSourceMapper = modelMapper.map(datasource, DataSourceResponseDTO.class);
@@ -164,7 +154,7 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 		}
 
 		Pageable pagingSort = PageRequest.of(page, size, Sort.by(orders));
-		Page<DataSource> dataSourceList = dataSourceConfigRepository.findByActiveContaining(activeStatus, pagingSort);
+		Page<DataSource> dataSourceList = dataSourceRepo.findByActiveContaining(activeStatus, pagingSort);
 		if (!dataSourceList.isEmpty()) {
 
 			dataSourceList.stream().forEach(datasource -> {
@@ -189,8 +179,8 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 	public DataSourceResponseDTO updateDataSourceById(DataSourceRequestDTO dataSourceRequest, Long datasourceId) {
 		DataSource dataSourceResponse = new DataSource();
 		DataSourceResponseDTO dataSourceResponseDTO = new DataSourceResponseDTO();
-		Optional<DataSource> dataSourceOptional = dataSourceConfigRepository.findById(datasourceId);
-		if (dataSourceOptional.isEmpty()) {
+		DataSource dataSource = dataSourceRepo.getDataSourceById(datasourceId);
+		if (null == dataSource) {
 			log.error(FILENAME + "[updateDataSourceConfigById] "
 					+ ApplicationConstants.DATA_SOURCE_CONFIG_DOES_NOT_EXISTS + datasourceId);
 
@@ -210,9 +200,10 @@ public class DataSourceConfigServiceImpl implements DataSourceConfigService {
 			dataSourceRequest.setEncryptedPassword("Y");
 			dataSourceRequest.setPassword(encryptedPassword);
 			dataSourceResponse = modelMapper.map(dataSourceRequest, DataSource.class);
+			dataSourceResponse.setId(datasourceId);
 		}
-		dataSourceResponse = dataSourceConfigRepository.save(dataSourceResponse);
-		dataSourceResponseDTO = modelMapper.map(dataSourceRequest, DataSourceResponseDTO.class);
+		dataSourceResponse = dataSourceRepo.update(dataSourceResponse);
+		dataSourceResponseDTO = modelMapper.map(dataSourceResponse, DataSourceResponseDTO.class);
 		return dataSourceResponseDTO;
 	}
 

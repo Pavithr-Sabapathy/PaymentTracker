@@ -4,10 +4,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,24 +13,24 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dao.PromptsDAO;
+import com.mashreq.paymentTracker.dao.ReportDAO;
 import com.mashreq.paymentTracker.dto.PromptDTO;
 import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.PromptsRepository;
-import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.service.promptService;
 
 @Component
 public class PromptServiceImpl implements promptService {
 
 	@Autowired
-	PromptsRepository promptsRepository;
+	PromptsDAO promptsDAO;
 
 	@Autowired
-	ReportConfigurationRepository reportConfigurationRepo;
+	ReportDAO reportDAO;
 
 	private static final Logger log = LoggerFactory.getLogger(PromptServiceImpl.class);
 	private static final String FILENAME = "PromptServiceImpl";
@@ -41,7 +39,7 @@ public class PromptServiceImpl implements promptService {
 	public List<PromptResponseDTO> fetchAllPrompts() {
 		List<PromptResponseDTO> promptResponseDTOList = new ArrayList<PromptResponseDTO>();
 
-		List<Prompts> promptsList = promptsRepository.findAll();
+		List<Prompts> promptsList = promptsDAO.findAll();
 		List<Long> reportId = promptsList.stream().map(Prompts::getReport).map(Prompts -> Prompts.getId())
 				.collect(Collectors.toList());
 
@@ -74,23 +72,24 @@ public class PromptServiceImpl implements promptService {
 	public PromptDTO savePrompt(PromptRequestDTO promptRequest) {
 		PromptDTO promptDTO = new PromptDTO();
 		Prompts promptsObject = new Prompts();
-		Optional<Report> reportOptional = reportConfigurationRepo.findById(promptRequest.getReportId());
-		if (reportOptional.isEmpty()) {
+
+		Report report = reportDAO.getReportById(promptRequest.getReportId());
+		if (null == report) {
 			log.error(FILENAME + "[savePrompt]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS
 					+ promptRequest.getReportId());
 			throw new ResourceNotFoundException(
 					ApplicationConstants.REPORT_DOES_NOT_EXISTS + promptRequest.getReportId());
 		} else {
-			Long promptOrderId = promptsRepository.findPromptOrderByReportId(promptRequest.getReportId());
+			BigInteger promptOrderId = promptsDAO.findPromptOrderByReportId(promptRequest.getReportId());
 			promptsObject.setPromptOrder(
-					promptOrderId != null ? BigInteger.valueOf(promptOrderId).add(BigInteger.ONE) : BigInteger.ONE);
+					promptOrderId != null ? promptOrderId.add(BigInteger.ONE) : BigInteger.ONE);
 			promptsObject.setDisplayName(promptRequest.getDisplayName());
 			promptsObject.setEntity(null);
 			promptsObject.setPromptKey(promptRequest.getPromptKey());
 			promptsObject.setPromptRequired(promptRequest.getPromptRequired());
-			promptsObject.setReport(reportOptional.get());
-			Prompts promptsReponse = promptsRepository.save(promptsObject);
-			if(null != promptsReponse) {
+			promptsObject.setReport(report);
+			Prompts promptsReponse = promptsDAO.save(promptsObject);
+			if (null != promptsReponse) {
 				promptDTO.setPromptId(promptsReponse.getId());
 				promptDTO.setDisplayName(promptsReponse.getDisplayName());
 				// promptDTO.setEntityId(prompts.getEntityId());
@@ -105,24 +104,22 @@ public class PromptServiceImpl implements promptService {
 
 	@Override
 	public void deletePromptById(long promptId) {
-		if (promptsRepository.existsById(promptId)) {
-			promptsRepository.deleteById(promptId);
-		} else {
-			throw new ResourceNotFoundException(ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + promptId);
-		}
+		promptsDAO.deleteById(promptId);
 	}
 
 	@Override
 	public PromptDTO updatePromptById(PromptRequestDTO promptRequest, long promptId) {
 		PromptDTO promptDTO = new PromptDTO();
 		Prompts promptsObject = new Prompts();
-		Optional<Report> reportOptional = reportConfigurationRepo.findById(promptRequest.getReportId());
-		if (reportOptional.isEmpty()) {
+		Report report = reportDAO.getReportById(promptRequest.getReportId());
+		if (null == report) {
+			log.error(FILENAME + "[savePrompt]" + ApplicationConstants.REPORT_DOES_NOT_EXISTS
+					+ promptRequest.getReportId());
 			throw new ResourceNotFoundException(
 					ApplicationConstants.REPORT_DOES_NOT_EXISTS + promptRequest.getReportId());
 		} else {
-			Optional<Prompts> promptResponseOptional = promptsRepository.findById(promptId);
-			if (promptResponseOptional.isEmpty()) {
+			Prompts prompts = promptsDAO.getPromptById(promptId);
+			if (null == prompts) {
 				throw new ResourceNotFoundException(ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + promptId);
 			}
 			promptsObject.setDisplayName(promptRequest.getDisplayName());
@@ -131,9 +128,9 @@ public class PromptServiceImpl implements promptService {
 			promptsObject.setPromptKey(promptRequest.getPromptKey());
 			promptsObject.setPromptOrder(promptRequest.getPromptOrder());
 			promptsObject.setPromptRequired(promptRequest.getPromptRequired());
-			promptsObject.setReport(reportOptional.get());
-			Prompts promptsReponse = promptsRepository.save(promptsObject);
-			if(null != promptsReponse) {
+			promptsObject.setReport(report);
+			Prompts promptsReponse = promptsDAO.updatePrompt(promptsObject);
+			if (null != promptsReponse) {
 				promptDTO.setPromptId(promptsReponse.getId());
 				promptDTO.setDisplayName(promptsReponse.getDisplayName());
 				// promptDTO.setEntityId(prompts.getEntityId());
@@ -149,8 +146,8 @@ public class PromptServiceImpl implements promptService {
 	@Override
 	public List<PromptDTO> fetchPromptsByReportId(long reportId) {
 		List<PromptDTO> promptDTOList = new ArrayList<PromptDTO>();
-		List<Prompts> promptsListResponse = promptsRepository.findPromptByReportId(reportId);
-		if (!CollectionUtils.isEmpty(promptsListResponse)) {
+		List<Prompts> promptsListResponse = promptsDAO.getPromptsByReportId(reportId);
+		if (null != promptsListResponse && !promptsListResponse.isEmpty()) {
 			promptsListResponse.stream().forEach(promptsResponse -> {
 				PromptDTO promptDTO = new PromptDTO();
 				promptDTO.setPromptId(promptsResponse.getId());

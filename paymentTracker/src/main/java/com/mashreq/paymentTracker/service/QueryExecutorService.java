@@ -6,12 +6,12 @@ import com.mashreq.paymentTracker.dto.FlexReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
+import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.exception.ReportException;
 
 public interface QueryExecutorService {
 
-	List<FederatedReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
+	List<ReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
 			FederatedReportComponentDetailContext context);
 
 }

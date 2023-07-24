@@ -1,15 +1,10 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class ReportExecuteResponseData implements Serializable {
+public class ReportExecuteResponseData {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8746030120396077816L;
 	private ReportExecuteResponseMetaDTO meta;
 	private List<ReportExecuteResponseColumnDefDTO> columnDefs;
 	private List<Map<String, Object>> data;

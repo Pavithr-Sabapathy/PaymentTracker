@@ -1,21 +1,22 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dao.ModuleDAO;
 import com.mashreq.paymentTracker.dto.ModuleDTO;
+import com.mashreq.paymentTracker.dto.ModuleResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ApplicationModule;
-import com.mashreq.paymentTracker.repository.ModuleRepository;
 import com.mashreq.paymentTracker.service.ModuleService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 
@@ -26,7 +27,7 @@ public class ModuleServiceImpl implements ModuleService {
 	private static final String FILENAME = "ModuleServiceImpl";
 
 	@Autowired
-	ModuleRepository moduleRepository;
+	ModuleDAO moduleDAO;
 
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
@@ -35,13 +36,16 @@ public class ModuleServiceImpl implements ModuleService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public List<ApplicationModule> fetchAllModule() {
-		List<ApplicationModule> moduleList = moduleRepository.findAll();
-		return moduleList;
+	public List<ModuleResponseDTO> fetchAllModule() {
+		List<ApplicationModule> moduleList = moduleDAO.findAll();
+		List<ModuleResponseDTO> moduleResponseDTOList = modelMapper.map(moduleList,
+				new TypeToken<List<ModuleResponseDTO>>() {
+				}.getType());
+		return moduleResponseDTOList;
 	}
 
 	@Override
-	public ApplicationModule saveModule(ModuleDTO moduleRequest) {
+	public ModuleResponseDTO saveModule(ModuleDTO moduleRequest) {
 		ModuleDTO moduleDTOResponse = new ModuleDTO();
 		ApplicationModule applicationModule = modelMapper.map(moduleRequest, ApplicationModule.class);
 		List<ReportDTO> reportList = reportConfigurationService.fetchReportsByModule(moduleRequest.getName());
@@ -51,40 +55,36 @@ public class ModuleServiceImpl implements ModuleService {
 		applicationModule
 				.setWarning((activeReportList.isEmpty() ? ApplicationConstants.REPORT_WARNING_DESCRIPTION : null));
 		log.info(FILENAME + "[saveModule]" + moduleDTOResponse.toString());
-		applicationModule = moduleRepository.save(applicationModule);
-		return applicationModule;
+		applicationModule = moduleDAO.save(applicationModule);
+		ModuleResponseDTO moduleResponseDTO = modelMapper.map(applicationModule, ModuleResponseDTO.class);
+		return moduleResponseDTO;
 	}
 
 	@Override
 	public void deleteModule(long moduleId) {
-		if (moduleRepository.existsById(moduleId)) {
-			moduleRepository.deleteById(moduleId);
-		} else {
-			log.error(FILENAME + "[deleteModule] " + ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
-
-			throw new ResourceNotFoundException(ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
-		}
-		log.info(FILENAME + "[deleteModule]--->" + ApplicationConstants.MODULE_DELETION_MSG);
-
+		moduleDAO.deleteById(moduleId);
 	}
 
 	@Override
-	public ApplicationModule fetchModuleByName(String moduleName) {
-		ApplicationModule module = moduleRepository.findByModuleName(moduleName);
-		if (null == module) {
+	public List<ModuleResponseDTO> fetchModuleByName(String moduleName) {
+		List<ApplicationModule> moduleList = moduleDAO.findByModuleName(moduleName);
+		if (null == moduleList) {
 			log.error(FILENAME + "[fetchModuleByName]" + ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleName);
 			throw new ResourceNotFoundException(ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleName);
 		}
-		log.info(FILENAME + "[fetchModuleByName]--->" + moduleName + "--->" + module.toString());
-		return module;
+		log.info(FILENAME + "[fetchModuleByName]--->" + moduleName + "--->" + moduleList.toString());
+		List<ModuleResponseDTO> moduleResponseDTOList = modelMapper.map(moduleList,
+				new TypeToken<List<ModuleResponseDTO>>() {
+				}.getType());
+		return moduleResponseDTOList;
 	}
 
 	@Override
-	public ApplicationModule updateModule(ModuleDTO moduleRequest, Long moduleId) {
+	public ModuleResponseDTO updateModule(ModuleDTO moduleRequest, Long moduleId) {
 		ApplicationModule applicationModule = new ApplicationModule();
 
-		Optional<ApplicationModule> moduleOptional = moduleRepository.findById(moduleId);
-		if (moduleOptional.isEmpty()) {
+		ApplicationModule module = moduleDAO.findById(moduleId);
+		if (null == module) {
 			log.error(FILENAME + "[updateReportById]" + ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
 			throw new ResourceNotFoundException(ApplicationConstants.MODULE_DOES_NOT_EXISTS + moduleId);
 		} else {
@@ -97,8 +97,9 @@ public class ModuleServiceImpl implements ModuleService {
 			applicationModule
 					.setWarning((activeReportList.isEmpty() ? ApplicationConstants.REPORT_WARNING_DESCRIPTION : null));
 			applicationModule.setId(moduleId);
-			applicationModule = moduleRepository.save(applicationModule);
+			applicationModule = moduleDAO.update(applicationModule);
+			ModuleResponseDTO moduleResponseDTO = modelMapper.map(applicationModule, ModuleResponseDTO.class);
+			return moduleResponseDTO;
 		}
-		return applicationModule;
 	}
 }

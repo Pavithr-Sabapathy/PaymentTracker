@@ -1,13 +1,9 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.io.Serializable;
+import com.mashreq.paymentTracker.service.ReportInput;
 
-public class FlexAccountingDetailedFederatedReportInput implements Serializable {
+public class FlexDetailedReportInput implements ReportInput {
 
-	/**
-	* 
-	*/
-	private static final long serialVersionUID = 7927096187166893563L;
 	private ReportComponentDTO component;
 	private FederatedReportPromptDTO referenceNumPrompt;
 	private FederatedReportPromptDTO accountingSourcePrompt;

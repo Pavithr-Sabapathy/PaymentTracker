@@ -1,16 +1,12 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class AdvanceSearchReportInput implements Serializable {
+import com.mashreq.paymentTracker.service.ReportInput;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3961694452431306972L;
+public class AdvanceSearchReportInput implements ReportInput {
 	private FederatedReportPromptDTO accountNumPrompt;
 	private FederatedReportPromptDTO fromDatePrompt;
 	private FederatedReportPromptDTO toDatePrompt;

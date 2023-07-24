@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.ModuleDTO;
-import com.mashreq.paymentTracker.model.ApplicationModule;
+import com.mashreq.paymentTracker.dto.ModuleResponseDTO;
 import com.mashreq.paymentTracker.service.ModuleService;
 
 import jakarta.validation.Valid;
@@ -31,23 +31,23 @@ public class ModuleController {
 	ModuleService moduleService;
 
 	@GetMapping
-	public ResponseEntity<List<ApplicationModule>> fetchModule() {
-		List<ApplicationModule> moduleList = moduleService.fetchAllModule();
+	public ResponseEntity<List<ModuleResponseDTO>> fetchModule() {
+		List<ModuleResponseDTO> moduleList = moduleService.fetchAllModule();
 		return ResponseEntity.ok(moduleList);
 
 	}
 
 	@PostMapping
-	public ResponseEntity<ApplicationModule> saveModule(@Valid @RequestBody ModuleDTO moduleRequest) {
-		ApplicationModule moduleDTOResponse = moduleService.saveModule(moduleRequest);
-		return new ResponseEntity<ApplicationModule>(moduleDTOResponse, HttpStatus.OK);
+	public ResponseEntity<ModuleResponseDTO> saveModule(@Valid @RequestBody ModuleDTO moduleRequest) {
+		 ModuleResponseDTO moduleDTOResponse = moduleService.saveModule(moduleRequest);
+		return new ResponseEntity<ModuleResponseDTO>(moduleDTOResponse, HttpStatus.OK);
 	}
 
-	@PutMapping("id/{moduleId}")
-	public ResponseEntity<ApplicationModule> updateReport(@Valid @RequestBody ModuleDTO moduleRequest,
+	@PutMapping("/{moduleId}")
+	public ResponseEntity<ModuleResponseDTO> updateReport(@Valid @RequestBody ModuleDTO moduleRequest,
 			@PathVariable Long moduleId) {
-		ApplicationModule moduleDTOResponse = moduleService.updateModule(moduleRequest, moduleId);
-		return new ResponseEntity<ApplicationModule>(moduleDTOResponse, HttpStatus.OK);
+		ModuleResponseDTO moduleDTOResponse = moduleService.updateModule(moduleRequest, moduleId);
+		return new ResponseEntity<ModuleResponseDTO>(moduleDTOResponse, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{moduleId}")
@@ -56,10 +56,10 @@ public class ModuleController {
 		return ResponseEntity.ok(ApplicationConstants.MODULE_DELETION_MSG);
 	}
 
-	@GetMapping("{moduleName}")
-	public ResponseEntity<ApplicationModule> fetchModuleByName(@PathVariable("moduleName") String moduleName) {
-		ApplicationModule module = moduleService.fetchModuleByName(moduleName);
-		return ResponseEntity.ok(module);
+	@GetMapping("/{moduleName}")
+	public ResponseEntity<List<ModuleResponseDTO>> fetchModuleByName(@PathVariable("moduleName") String moduleName) {
+		List<ModuleResponseDTO> moduleList = moduleService.fetchModuleByName(moduleName);
+		return ResponseEntity.ok(moduleList);
 
 	}
 

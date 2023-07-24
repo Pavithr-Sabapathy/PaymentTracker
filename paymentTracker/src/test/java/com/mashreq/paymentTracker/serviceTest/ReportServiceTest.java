@@ -10,32 +10,29 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 
+import com.mashreq.paymentTracker.dao.ReportDAO;
 import com.mashreq.paymentTracker.dto.ReportDTO;
 import com.mashreq.paymentTracker.dto.ReportDTORequest;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.serviceImpl.ReportConfigurationServiceImpl;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class ReportServiceTest {
 
 	@InjectMocks
 	ReportConfigurationServiceImpl reportConfigurationService;
 
 	@Mock
-	ReportConfigurationRepository mockreportConfigurationRepo;
+	ReportDAO mockreportConfigurationRepo;
 	
 	@Mock
     private ModelMapper modelMapper;
@@ -62,11 +59,11 @@ public class ReportServiceTest {
 		//Report reportsResponse = modelMapper.map(mockReportDTORequest, Report.class);
 		
 		when(modelMapper.map(mockReportDTORequest, Report.class)).thenReturn(mockReportsResponse);
-		when(mockreportConfigurationRepo.save(mockReportsResponse)).thenReturn(mockReportsResponse);
+		when(mockreportConfigurationRepo.saveReport(mockReportsResponse)).thenReturn(mockReportsResponse);
 		
 		ReportDTO reportDTO = reportConfigurationService.saveReport(mockReportDTORequest);
 		assertEquals(reportDTO.getDisplayName(), "Reference Number");
-		verify(mockreportConfigurationRepo, times(1)).save(mockReportsResponse);
+		verify(mockreportConfigurationRepo, times(1)).saveReport(mockReportsResponse);
 	}
 
 	@Test
@@ -88,20 +85,17 @@ public class ReportServiceTest {
 	public void testdeleteReportById() {
 		long reportId = 1L;
 
-		when(mockreportConfigurationRepo.existsById(reportId)).thenReturn(true);
-		doNothing().when(mockreportConfigurationRepo).deleteById(reportId);
+		doNothing().when(mockreportConfigurationRepo).deleteReport(reportId);
 
 		reportConfigurationService.deleteReportById(reportId);
 
-		verify(mockreportConfigurationRepo).existsById(1L);
-		verify(mockreportConfigurationRepo).deleteById(1L);
+		verify(mockreportConfigurationRepo).deleteReport(1L);
 	}
 
 	@Test
 	void testdeleteReportByIdNotExists() throws ResourceNotFoundException {
 		long reportId = 1L;
 
-		when(mockreportConfigurationRepo.existsById(reportId)).thenReturn(false);
 
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> reportConfigurationService.deleteReportById(reportId),
@@ -122,22 +116,21 @@ public class ReportServiceTest {
 		mockReportsResponse.setReportName("Refernce_No");
 		mockReportsResponse.setValid("N");
 		
-		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(mockReportsResponse));
+		when(mockreportConfigurationRepo.getReportById(reportId)).thenReturn(mockReportsResponse);
 		
 		ReportDTORequest reportDtoRequest = new ReportDTORequest();
 		when(modelMapper.map(reportDtoRequest, Report.class)).thenReturn(mockReportsResponse);
 		
 		//reportConfigurationService.updateReportById(any(ReportDTORequest.class), reportId);
 		reportConfigurationService.updateReportById(reportDtoRequest, reportId);
-		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
-		verify(mockreportConfigurationRepo, times(1)).save(mockReportsResponse);
+		verify(mockreportConfigurationRepo, times(1)).getReportById(reportId);
+		verify(mockreportConfigurationRepo, times(1)).saveReport(mockReportsResponse);
 	}
 
 	@Test
 	public void testupdateReportByIdNotExists() throws ResourceNotFoundException {
 		long reportId = 1L;
-		Report mockReportsResponse = null;
-		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.ofNullable(mockReportsResponse));
+		when(mockreportConfigurationRepo.getReportById(reportId)).thenReturn(null);
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> reportConfigurationService.updateReportById(any(ReportDTORequest.class), reportId),
 				"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");

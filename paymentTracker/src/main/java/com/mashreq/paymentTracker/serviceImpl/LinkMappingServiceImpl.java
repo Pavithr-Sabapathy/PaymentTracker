@@ -1,6 +1,5 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
-import java.util.Optional;
 import java.util.OptionalLong;
 
 import org.modelmapper.ModelMapper;
@@ -11,15 +10,15 @@ import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
+import com.mashreq.paymentTracker.dao.LinkMappingDAO;
+import com.mashreq.paymentTracker.dao.MetricsDAO;
+import com.mashreq.paymentTracker.dao.PromptsDAO;
 import com.mashreq.paymentTracker.dto.LinkMappingResponseDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportMappingRequestDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.LinkedReportDetails;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Prompts;
-import com.mashreq.paymentTracker.repository.LinkMappingRepository;
-import com.mashreq.paymentTracker.repository.MetricsRepository;
-import com.mashreq.paymentTracker.repository.PromptsRepository;
 import com.mashreq.paymentTracker.service.LinkMappingService;
 
 @Component
@@ -32,16 +31,17 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 	ModelMapper modelMapper;
 
 	@Autowired
-	LinkMappingRepository linkMappingRepo;
+	LinkMappingDAO linkMappingDAO;
 
 	@Autowired
-	MetricsRepository metricsRepository;
+	MetricsDAO metricsDAO;
 
 	@Autowired
-	PromptsRepository promptsRepository;
+	PromptsDAO promptsDAO;
 
 	@Override
 	public LinkedReportDetails saveOrUpdateLinkMapping(LinkedReportMappingRequestDTO linkedReportMappingRequestDTO) {
+		LinkedReportDetails linkMappingResponse = new LinkedReportDetails();
 		/** Whether to save or update based on link Mapping id ***/
 		OptionalLong linkedReportId = OptionalLong.of(linkedReportMappingRequestDTO.getId());
 		LinkedReportDetails linkReportDetails = modelMapper.map(linkedReportMappingRequestDTO,
@@ -49,17 +49,19 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 		if (linkedReportId.isPresent()) {
 			linkReportDetails.setId(linkedReportMappingRequestDTO.getId());
 			log.info(FILENAME + "[Updating Link Mapping Request]--->" + linkedReportMappingRequestDTO.toString());
+			linkMappingResponse = linkMappingDAO.update(linkReportDetails);
 		} else {
 			log.info(FILENAME + "[save Link Mapping Request]--->" + linkedReportMappingRequestDTO.toString());
+			linkMappingResponse = linkMappingDAO.save(linkReportDetails);
 		}
-		LinkedReportDetails linkMappingResponse = linkMappingRepo.save(linkReportDetails);
+
 		return linkMappingResponse;
 	}
 
 	@Override
 	public LinkMappingResponseDTO fetchLinkMappingById(long linkPromptId) {
 
-		LinkedReportDetails linkMappingDetailResponse = linkMappingRepo.findByLinkReportPromptId(linkPromptId);
+		LinkedReportDetails linkMappingDetailResponse = linkMappingDAO.findByLinkReportPromptId(linkPromptId);
 		LinkMappingResponseDTO linkMappingResponseDTO = new LinkMappingResponseDTO();
 		linkMappingResponseDTO.setMappingType(linkMappingDetailResponse.getMappingType());
 		linkMappingResponseDTO.setId(linkMappingDetailResponse.getId());
@@ -70,26 +72,22 @@ public class LinkMappingServiceImpl implements LinkMappingService {
 		 * Mapping type is 'P' then get from Prompts table
 		 **/
 		if (MashreqFederatedReportConstants.METRIC.equalsIgnoreCase(linkMappingResponseDTO.getMappingType())) {
-			Optional<Metrics> metricsResponseOptional = metricsRepository
-					.findById(linkMappingDetailResponse.getMappedId());
-			if (metricsResponseOptional.isEmpty()) {
+			Metrics metricResponse = metricsDAO.getMetricsById(linkMappingDetailResponse.getMappedId());
+			if (null == metricResponse) {
 				throw new ResourceNotFoundException(
 						ApplicationConstants.METRICS_DOES_NOT_EXISTS + linkMappingDetailResponse.getMappedId());
 			} else {
-				Metrics metricResponse = metricsResponseOptional.get();
-				linkMappingResponseDTO.setMappedEnitytId(metricResponse.getId());
+				linkMappingResponseDTO.setMappedEntityId(metricResponse.getId());
 				linkMappingResponseDTO.setMappedEntity(metricResponse.getDisplayName());
 			}
 		} else if (MashreqFederatedReportConstants.PROMPT
 				.equalsIgnoreCase(linkMappingDetailResponse.getMappingType())) {
-			Optional<Prompts> promptResponseOptional = promptsRepository
-					.findById(linkMappingDetailResponse.getMappedId());
-			if (promptResponseOptional.isEmpty()) {
+			Prompts promptsResponse = promptsDAO.getPromptById(linkMappingDetailResponse.getMappedId());
+			if (null == promptsResponse) {
 				throw new ResourceNotFoundException(
 						ApplicationConstants.PROMPTS_DOES_NOT_EXISTS + linkMappingDetailResponse.getMappedId());
 			} else {
-				Prompts promptsResponse = promptResponseOptional.get();
-				linkMappingResponseDTO.setMappedEnitytId(promptsResponse.getId());
+				linkMappingResponseDTO.setMappedEntityId(promptsResponse.getId());
 				linkMappingResponseDTO.setMappedEntity(promptsResponse.getDisplayName());
 			}
 		}

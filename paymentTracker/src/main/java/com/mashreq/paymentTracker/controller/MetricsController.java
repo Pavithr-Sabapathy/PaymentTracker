@@ -2,6 +2,9 @@ package com.mashreq.paymentTracker.controller;
 
 import java.util.List;
 
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,7 @@ import jakarta.validation.Valid;
 @RestController
 @Component
 @RequestMapping("/metrics")
+@Produces(MediaType.APPLICATION_JSON)
 public class MetricsController {
 
 	private static final Logger log = LoggerFactory.getLogger(MetricsController.class);
@@ -37,27 +41,30 @@ public class MetricsController {
 	MetricsService metricsService;
 
 	@GetMapping
+	@Produces(MediaType.APPLICATION_JSON)
 	public ResponseEntity<List<MetricsResponse>> fetchAllMetrics() {
-	
+
 		List<MetricsResponse> metrics = metricsService.fetchAllMetrics();
 		log.info(FILENAME + "[fetchMetrics Reponse]--->" + metrics.toString());
 		return ResponseEntity.ok(metrics);
-		
+
 	}
-	
-	@GetMapping("/{reportId}")
+
+	@GetMapping("report/{reportId}")
+	@Produces(MediaType.APPLICATION_JSON)
 	public ResponseEntity<List<MetricsResponseDTO>> fetchMetricsByReportId(@PathVariable("reportId") long reportId) {
-		
+
 		List<MetricsResponseDTO> metricsRIdResponse = metricsService.fetchMetricsByReportId(reportId);
 		return ResponseEntity.ok(metricsRIdResponse);
 	}
 
 	@PostMapping("/saveMetrics")
+	@Produces(MediaType.APPLICATION_JSON)
 	public ResponseEntity<MetricsResponseDTO> saveMetrics(@Valid @RequestBody MetricsRequestDTO metricsRequest) {
-		
-			log.info(FILENAME + "[saveMetrics Request]--->" + metricsRequest.toString());
-			MetricsResponseDTO metricsReponse = metricsService.saveMetrics(metricsRequest);
-			return new ResponseEntity<MetricsResponseDTO>(metricsReponse, HttpStatus.CREATED);
+
+		log.info(FILENAME + "[saveMetrics Request]--->" + metricsRequest.toString());
+		MetricsResponseDTO metricsReponse = metricsService.saveMetrics(metricsRequest);
+		return new ResponseEntity<MetricsResponseDTO>(metricsReponse, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{metricsId}")
@@ -68,7 +75,8 @@ public class MetricsController {
 
 	}
 
-	@PutMapping("/{metricsId}")
+	@PutMapping("update/{metricsId}")
+	@Produces(MediaType.APPLICATION_JSON)
 	public ResponseEntity<MetricsResponseDTO> updateMetrics(@RequestBody MetricsRequestDTO metricsDTORequest,
 			@PathVariable long metricsId) {
 		log.info(FILENAME + "[updateMetrics Request]--->" + metricsDTORequest.toString());

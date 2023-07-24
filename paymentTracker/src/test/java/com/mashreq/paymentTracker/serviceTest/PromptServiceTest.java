@@ -13,39 +13,39 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashreq.paymentTracker.dao.PromptsDAO;
+import com.mashreq.paymentTracker.dao.ReportDAO;
 import com.mashreq.paymentTracker.dto.PromptDTO;
 import com.mashreq.paymentTracker.dto.PromptRequestDTO;
 import com.mashreq.paymentTracker.dto.PromptResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Prompts;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.PromptsRepository;
-import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.serviceImpl.PromptServiceImpl;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class PromptServiceTest {
 
 	@InjectMocks
 	PromptServiceImpl promptService;
 
 	@Mock
-	PromptsRepository mockpromptsRepository;
+	PromptsDAO mockpromptsRepository;
 
 	@Mock
-	ReportConfigurationRepository mockreportConfigurationRepo;
+	ReportDAO mockreportConfigurationRepo;
 
 	@Test
 	public void testSavePrompt() {
@@ -60,7 +60,7 @@ public class PromptServiceTest {
 		report.setReportName("Refernce_No");
 		report.setValid("y");
 
-		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
+		when(mockreportConfigurationRepo.getReportById(reportId)).thenReturn(report);
 		PromptRequestDTO mockPromptDto = new PromptRequestDTO("promptKey", "displaynm", BigInteger.ONE, "y", reportId,
 				BigInteger.ONE);
 		when(mockpromptsRepository.findPromptOrderByReportId(reportId)).thenReturn(null);
@@ -73,7 +73,7 @@ public class PromptServiceTest {
 		verify(mockpromptsRepository).save(promptCaptor.capture());
 		Prompts result = promptCaptor.getValue();
 		assertEquals("displaynm", result.getDisplayName());
-		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
+		verify(mockreportConfigurationRepo, times(1)).getReportById(reportId);
 
 	}
 
@@ -100,20 +100,16 @@ public class PromptServiceTest {
 	public void testDeletePromptById() {
 		long promptId = 1L;
 
-		when(mockpromptsRepository.existsById(promptId)).thenReturn(true);
 		doNothing().when(mockpromptsRepository).deleteById(promptId);
 
 		promptService.deletePromptById(promptId);
 
-		verify(mockpromptsRepository).existsById(1L);
 		verify(mockpromptsRepository).deleteById(1L);
 	}
 
 	@Test
 	void testdeleteReportByIdNotExists() throws ResourceNotFoundException {
 		long promptId = 1L;
-
-		when(mockpromptsRepository.existsById(promptId)).thenReturn(false);
 
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> promptService.deletePromptById(promptId),
@@ -140,19 +136,18 @@ public class PromptServiceTest {
 
 		Prompts mockPromptResponse = mapper.readValue(promptResponseString, Prompts.class);
 
-		when(mockreportConfigurationRepo.findById(1L)).thenReturn(Optional.of(mockReportsResponse));
-		when(mockpromptsRepository.findById(1L)).thenReturn(Optional.of(mockPromptResponse));
+		when(mockreportConfigurationRepo.getReportById(1L)).thenReturn(mockReportsResponse);
+		when(mockpromptsRepository.getPromptById(1L)).thenReturn(mockPromptResponse);
 		promptService.updatePromptById(mockPromptDTO, promptId);
-		verify(mockpromptsRepository, times(1)).findById(promptId);
+		verify(mockpromptsRepository, times(1)).getPromptById(promptId);
 	}
 
 	@Test
 	public void testupdateReportByIdNotExists() throws ResourceNotFoundException {
 		long reportId = 1L;
-		Report mockReportsResponse = null;
 		PromptRequestDTO mockPromptDTO = new PromptRequestDTO("Reference_Sample", "Reference Sample", BigInteger.ONE,
 				"N", 1, BigInteger.ZERO);
-		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.ofNullable(mockReportsResponse));
+		when(mockreportConfigurationRepo.getReportById(reportId)).thenReturn(null);
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> promptService.updatePromptById(mockPromptDTO, reportId),
 				"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");
@@ -165,7 +160,7 @@ public class PromptServiceTest {
 		long reportId = 1L;
 		Report report = new Report();
 		report.setId(reportId);
-		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(report));
+		when(mockreportConfigurationRepo.getReportById(reportId)).thenReturn(report);
 
 		List<Prompts> mockPromptList = new ArrayList<Prompts>();
 		Prompts prompt1 = new Prompts();
@@ -187,25 +182,25 @@ public class PromptServiceTest {
 		mockPromptList.add(prompt1);
 		mockPromptList.add(prompt2);
 
-		when(mockpromptsRepository.findPromptByReportId(reportId)).thenReturn(mockPromptList);
+		when(mockpromptsRepository.getPromptsByReportId(reportId)).thenReturn(mockPromptList);
 
 		List<PromptDTO> result = promptService.fetchPromptsByReportId(reportId);
 		assertEquals(2, result.size());
 		assertEquals(result.get(0).getDisplayName(), "display-1");
-		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
-		verify(mockpromptsRepository, times(1)).findPromptByReportId(reportId);
+		verify(mockreportConfigurationRepo, times(1)).getReportById(reportId);
+		verify(mockpromptsRepository, times(1)).getPromptsByReportId(reportId);
 	}
 
 	@Test
 	public void testFetchPromptByReportIdNotExist() {
 		long reportId = 1L;
-		when(mockreportConfigurationRepo.findById(reportId)).thenReturn(Optional.empty());
+		when(mockreportConfigurationRepo.getReportById(reportId)).thenReturn(null);
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> promptService.fetchPromptsByReportId(reportId),
 				"Expected ResourceNotFoundException But It was not");
 		assertNotNull(thrown);
 		assertTrue(thrown.getMessage().contains("Report Configuration not exist with this id :1"));
-		verify(mockreportConfigurationRepo, times(1)).findById(reportId);
+		verify(mockreportConfigurationRepo, times(1)).getReportById(reportId);
 	}
 
 	@Test
@@ -213,7 +208,7 @@ public class PromptServiceTest {
 
 		PromptRequestDTO mockPromptDto = new PromptRequestDTO("promptKey", "displaynm", BigInteger.ONE, "y", 1L,
 				BigInteger.ONE);
-		when(mockreportConfigurationRepo.findById(1L)).thenReturn(Optional.empty());
+		when(mockreportConfigurationRepo.getReportById(1L)).thenReturn(null);
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> promptService.savePrompt(mockPromptDto), "Report Configuration not exist with this id :1");
 		assertNotNull(thrown);

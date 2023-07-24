@@ -9,9 +9,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import com.mashreq.paymentTracker.serviceImpl.EdmsProcessServiceImpl;
+
 @Configuration
 @PropertySource ("classpath:application.properties")
-public class TrackerConfiguration {
+public class PaymentTrackerConfiguration {
 
 	@Bean
 	@ConfigurationProperties(prefix = "threadpool")
@@ -35,17 +37,27 @@ public class TrackerConfiguration {
 	}
 
 	@Bean
-	@ConfigurationProperties(prefix = "querykey")
-	public QueryKeyConfig getQueryKeyConfig() {
-		return new QueryKeyConfig();
-	}
-
-	@Bean
 	@ConfigurationProperties(prefix = "regex")
 	public RegexConfig getPromptKeyConfig() {
 		return new RegexConfig();
 	}
+	
+	@Bean
+	public EdmsProcessServiceImpl edmsRidDetails() {
+		return new EdmsProcessServiceImpl();
+	}
 
+	@Bean
+	public EdmsProcessServiceImpl edmsedddetails() {
+		return new EdmsProcessServiceImpl();
+	}
+	
+	@Bean
+	public EdmsProcessServiceImpl edmsFtoDetails() {
+		return new EdmsProcessServiceImpl();
+	}
+	
+	
 	public static class SourcePoolConfig {
 
 		private Boolean testOnBorrow;
@@ -128,34 +140,6 @@ public class TrackerConfiguration {
 		}
 	}
 
-	public static class QueryKeyConfig {
-
-		private String referral_ConfigFileName;
-		private String wrmRmCreditOps_ConfigFileName;
-		private String dataSourceNames_ConfigFileName;
-
-		public void setReferral_ConfigFileName(String referral_ConfigFileName) {
-			this.referral_ConfigFileName = referral_ConfigFileName;
-		}
-
-		public void setWrmRmCreditOps_ConfigFileName(String wrmRmCreditOps_ConfigFileName) {
-			this.wrmRmCreditOps_ConfigFileName = wrmRmCreditOps_ConfigFileName;
-		}
-
-		public void setDataSourceNames_ConfigFileName(String dataSourceNames_ConfigFileName) {
-			this.dataSourceNames_ConfigFileName = dataSourceNames_ConfigFileName;
-		}
-
-		@Override
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			sb.append("---------------- Query Key Config Values ------------------ ").append("\n");
-			sb.append(ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE));
-			return sb.toString();
-		}
-
-	}
-
 	public static class RegexConfig {
 
 		private String promptKey;
@@ -211,18 +195,6 @@ public class TrackerConfiguration {
 
 	public Integer getFileNameLength() {
 		return getExportFileConfig().fileNameLength;
-	}
-
-	public String getReferral_ConfigFileName() {
-		return getQueryKeyConfig().referral_ConfigFileName;
-	}
-
-	public String getWrmRmCreditOps_ConfigFileName() {
-		return getQueryKeyConfig().wrmRmCreditOps_ConfigFileName;
-	}
-
-	public String getDataSourceNames_ConfigFileName() {
-		return getQueryKeyConfig().dataSourceNames_ConfigFileName;
 	}
 
 	public String getPromptKey() {

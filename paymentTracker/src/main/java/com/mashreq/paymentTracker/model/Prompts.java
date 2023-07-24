@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 import org.hibernate.annotations.DynamicUpdate;
@@ -13,6 +14,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +23,16 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @DynamicUpdate
 @Table(name = "conf_prompt")
-public class Prompts {
+@NamedQueries({
+		@NamedQuery(name = "prompt.findAll", query = "SELECT e FROM Prompts e"), 
+	@NamedQuery(name = "prompt.findPromptsByReportId", query = "select prompts from Prompts prompts join Report report on prompts.report = report.id where report.id = :reportId"),
+	@NamedQuery(name = "prompt.findPromptOrderByReportId", query = "select max(prompts.promptOrder)  from Prompts prompts join Report report on prompts.report = report.id where report.id =:reportId") })
+public class Prompts implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -54,7 +66,6 @@ public class Prompts {
 		super();
 	}
 
-	
 	public Prompts(Long id, @NotNull(message = "Prompt Key should not be empty") String promptKey,
 			@NotNull(message = "Display name should not be empty") String displayName,
 			@NotNull(message = "Prompt Required should not be empty") String promptRequired,
@@ -69,7 +80,6 @@ public class Prompts {
 		this.entity = entity;
 		this.report = report;
 	}
-
 
 	public Long getId() {
 		return id;
@@ -102,7 +112,6 @@ public class Prompts {
 	public void setPromptRequired(String promptRequired) {
 		this.promptRequired = promptRequired;
 	}
-
 
 	public DataEntity getEntity() {
 		return entity;

@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,22 +23,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.mashreq.paymentTracker.configuration.TrackerConfiguration;
+import com.mashreq.paymentTracker.configuration.PaymentTrackerConfiguration;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
+import com.mashreq.paymentTracker.dao.ComponentsCountryDAO;
 import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.FederatedReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
+import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.ReportQueryInfoDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
 import com.mashreq.paymentTracker.model.DataSource;
-import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportQueryInfoService;
 import com.mashreq.paymentTracker.utility.CheckType;
+import com.mashreq.paymentTracker.utility.SourceConnectionUtil;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Component
@@ -48,22 +48,20 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 	private static final Logger logger = LoggerFactory.getLogger(QueryExecutorServiceImpl.class);
 
 	@Autowired
-	private TrackerConfiguration trackerConfig;
+	private PaymentTrackerConfiguration trackerConfig;
 
 	@Autowired
 	ReportQueryInfoService reportQueryInfoService;
 
 	@Autowired
-	ComponentsCountryRepository componentsCountryRepository;
-	
+	ComponentsCountryDAO componentsCountryDAO;
+
 	private static final Logger log = LoggerFactory.getLogger(QueryExecutorServiceImpl.class);
- 	private static final String FILENAME = "QueryExecutorServiceImpl";
- 
- 	
+
 	@Override
-	public List<FederatedReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
+	public List<ReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
 			FederatedReportComponentDetailContext context) {
-		List<FederatedReportOutput> outputList = new ArrayList<FederatedReportOutput>();
+		List<ReportOutput> outputList = new ArrayList<ReportOutput>();
 		Long queryExecutionTime = 0L;
 		ReportQueryInfoDTO reportQueryInfo = null;
 		Date startTime = null;
@@ -76,12 +74,14 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 		PreparedStatement prepStat = null;
 		String promptValuemap = "Prompt Values";
 		String queryKey = componentDetail.getQueryKey();
-		// Long dataSourceId = componentDetail.getReportComponent().getDataSourceId();
+		//Long dataSourceId = componentDetail.getReportComponent().getDataSourceId();
 		String queryString = replacePrompts(context.getQueryString(), context);
 		try {
-			ComponentsCountry componentsCountry = processComponentCountry(componentDetail.getReportComponentId()); 
-			DataSource dataSource = componentsCountry.getDataSourceConfig();
-			startTime = new Date();
+			/*
+			 * ComponentsCountry componentsCountry =
+			 * processComponentCountry(componentDetail.getReportComponentId()); DataSource
+			 * dataSource = componentsCountry.getDataSourceConfig();
+			 */startTime = new Date();
 			reportQueryInfo = new ReportQueryInfoDTO();
 			reportQueryInfo.setExecutionId(context.getExecutionId());
 			reportQueryInfo.setDataSourceName("Flex");
@@ -90,9 +90,9 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 			reportQueryInfo.setStartTime(startTime);
 
 			reportQueryInfoService.insertReportQueryInfo(reportQueryInfo);
-			
+
 			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
-			//connection = SourceConnectionUtil.getConnection(dataSource.getDataSourceName());
+			//connection = SourceConnectionUtil.getConnection(dataSource.getName());
 			connection = DriverManager.getConnection(MashreqFederatedReportConstants.FLEX_DATABASE_URL,
 					MashreqFederatedReportConstants.DATABASE_USERNAME,
 					MashreqFederatedReportConstants.DATABASE_PASSWORD);
@@ -106,7 +106,7 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 				ResultSetMetaData metaData = rs.getMetaData();
 				int columnCount = metaData.getColumnCount();
 				while (rs.next()) {
-					FederatedReportOutput componentData = new FederatedReportOutput();
+					ReportOutput componentData = new ReportOutput();
 					List<Object> rowData = new ArrayList<Object>();
 					for (int index = 1; index <= columnCount; index++) {
 						Object colValue = rs.getObject(index);
@@ -250,29 +250,27 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 		}
 
 	}
-	
+
 	private ComponentsCountry processComponentCountry(Long reportComponentId) {
-		Optional<ComponentsCountry> componentsCountryOptional = componentsCountryRepository.findBycomponentsId(reportComponentId);
-	if (null != reportComponentId) {
-		if (componentsCountryOptional.isEmpty()) {
-			throw new ResourceNotFoundException(
-					ApplicationConstants.COMPONENT_COUNTRY_DOES_NOT_EXISTS + reportComponentId);
-		} else {
-			ComponentsCountry componentsCountry = componentsCountryOptional.get();
+		ComponentsCountry componentsCountry = componentsCountryDAO.findBycomponentsId(reportComponentId);
+		if (null != reportComponentId) {
+			if (null == componentsCountry) {
+				throw new ResourceNotFoundException(
+						ApplicationConstants.COMPONENT_COUNTRY_DOES_NOT_EXISTS + reportComponentId);
+			} else {
+				// Check if the corresponding DataSoure is Active or not
+				if (CheckType.NO.getValue().equalsIgnoreCase(componentsCountry.getDataSourceConfig().getActive())) {
+					log.error(componentsCountry.getDataSourceConfig().getName()
+							+ " : Source System Connection is not Activie");
+					return null;
+				}
+				if (componentsCountry.getDataSourceConfig().getSchemaName()
+						.equalsIgnoreCase(MashreqFederatedReportConstants.DS_SWIFT)) {
 
-			// Check if the corresponding DataSoure is Active or not
-			if (CheckType.NO.getValue().equalsIgnoreCase(componentsCountry.getDataSourceConfig().getActive())) {
-				log.error(componentsCountry.getDataSourceConfig().getName()
-						+ " : Source System Connection is not Activie");
-				return null;
-			}
-			if (componentsCountry.getDataSourceConfig().getSchemaName()
-					.equalsIgnoreCase(MashreqFederatedReportConstants.DS_SWIFT)) {
-
-				return componentsCountry;
+					return componentsCountry;
+				}
 			}
 		}
+		return null;
 	}
-	return null;
-}
 }

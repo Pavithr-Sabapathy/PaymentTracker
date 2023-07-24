@@ -13,106 +13,107 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dao.ModuleDAO;
 import com.mashreq.paymentTracker.dto.ModuleDTO;
+import com.mashreq.paymentTracker.dto.ModuleResponseDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ApplicationModule;
-import com.mashreq.paymentTracker.repository.ModuleRepository;
 import com.mashreq.paymentTracker.serviceImpl.ModuleServiceImpl;
 import com.mashreq.paymentTracker.serviceImpl.ReportConfigurationServiceImpl;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class ModuleServiceTest {
 	@InjectMocks
 	ModuleServiceImpl mockModuleService;
-	
+
 	@Mock
-    private ModelMapper modelMapper;
-	
+	private ModelMapper modelMapper;
+
 	@Mock
-	private ModuleRepository mockModuleRepository;
-	
+	private ModuleDAO mockModuleRepository;
+
 	@InjectMocks
 	ReportConfigurationServiceImpl mockReportServiceImpl;
-	
+
 	@Test
 	public void testFetchModule() {
-		//set
+		// set
 		ApplicationModule moduleMockObject = new ApplicationModule();
 		moduleMockObject.setModuleName("module1");
 		moduleMockObject.setDisplayName("sampleModule");
 		moduleMockObject.setModuleDescription("ModuleDesc");
 		moduleMockObject.setActive("active");
 		moduleMockObject.setValid("valid");
-		
+
 		List<ApplicationModule> metricsMockList = Arrays.asList(moduleMockObject);
-		
+
 		when(mockModuleRepository.findAll()).thenReturn(metricsMockList);
 
 		// test
-		List<ApplicationModule> metricsMockResponse = mockModuleService.fetchAllModule();
+		List<ModuleResponseDTO> metricsMockResponse = mockModuleService.fetchAllModule();
 
 		assertEquals(1, metricsMockResponse.size());
-		//verify
+		// verify
 		verify(mockModuleRepository, times(1)).findAll();
 	}
-		
+
 	@Test
 	public void testSaveModule() {
-		//set
+		// set
 		ModuleDTO moduleDTO = new ModuleDTO();
 		moduleDTO.setName("module1");
 		moduleDTO.setDisplayName("sampleModule");
 		moduleDTO.setModuleDescription("ModuleDesc");
 		moduleDTO.setActive("Y");
 		moduleDTO.setValid("Y");
-		
+
 		ApplicationModule moduleMockObject = new ApplicationModule();
 		moduleMockObject.setModuleName("module1");
 		moduleMockObject.setDisplayName("sampleModule");
 		moduleMockObject.setModuleDescription("ModuleDesc");
 		moduleMockObject.setActive("active");
 		moduleMockObject.setValid("valid");
-		
+
 		when(modelMapper.map(moduleDTO, ApplicationModule.class)).thenReturn(moduleMockObject);
-		//method call
+		// method call
 		mockModuleService.saveModule(moduleDTO);
-		
-		
-		//verify
-		 ArgumentCaptor<ApplicationModule> argumentCaptor = ArgumentCaptor.forClass(ApplicationModule.class);
-	        verify(mockModuleRepository).save(argumentCaptor.capture());
-	        ApplicationModule savedModule = argumentCaptor.getValue();
-	        assertEquals(moduleDTO.getName(), savedModule.getModuleName());
-	        assertEquals("sampleModule", savedModule.getDisplayName());
-	        assertEquals("ModuleDesc", savedModule.getModuleDescription());
-	        assertEquals("active", savedModule.getActive());
-	        assertEquals("valid", savedModule.getValid());
+
+		// verify
+		ArgumentCaptor<ApplicationModule> argumentCaptor = ArgumentCaptor.forClass(ApplicationModule.class);
+		verify(mockModuleRepository).save(argumentCaptor.capture());
+		ApplicationModule savedModule = argumentCaptor.getValue();
+		assertEquals(moduleDTO.getName(), savedModule.getModuleName());
+		assertEquals("sampleModule", savedModule.getDisplayName());
+		assertEquals("ModuleDesc", savedModule.getModuleDescription());
+		assertEquals("active", savedModule.getActive());
+		assertEquals("valid", savedModule.getValid());
 	}
+
 	@Test
-	public void testDeleteById(){
+	public void testDeleteById() {
 		long moduleId = 1L;
 
-		when(mockModuleRepository.existsById(moduleId)).thenReturn(true);
 		doNothing().when(mockModuleRepository).deleteById(moduleId);
 
-		mockModuleService.deleteModule(moduleId);;
+		mockModuleService.deleteModule(moduleId);
+		;
 
-		verify(mockModuleRepository).existsById(1L);
 		verify(mockModuleRepository).deleteById(1L);
 	}
+
 	@Test
 	void testdeleteModuleByIdNotExists() throws ResourceNotFoundException {
 		long moduleId = 1L;
 
-		when(mockModuleRepository.existsById(moduleId)).thenReturn(false);
 		mockModuleRepository.deleteById(moduleId);
 
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
@@ -121,5 +122,5 @@ public class ModuleServiceTest {
 		assertNotNull(thrown);
 		assertTrue(thrown.getMessage().contains(ApplicationConstants.MODULE_DOES_NOT_EXISTS));
 	}
-	
+
 }

@@ -11,12 +11,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @DynamicUpdate
 @Table(name = "conf_linked_report_info")
+@NamedQueries({
+		@NamedQuery(name = "linkedReport.findAllByReportId", query = "Select linkedReport from LinkedReportInfo linkedReport join Report report on linkedReport.report = report.id where report.id =: reportId"),
+		@NamedQuery(name = "linkedReport.findById", query = "Select linkedReport from LinkedReportInfo linkedReport where id = :linkedReportId"),
+		@NamedQuery(name = "linkedReport.findByModuleId", query = "select linkedReport from LinkedReportInfo linkedReport join ApplicationModule module on linkedReport.module = module.id where module.id =: moduleId") })
 public class LinkedReportInfo implements Serializable {
 	private static final long serialVersionUID = -1145019047768806678L;
 
@@ -165,6 +171,5 @@ public class LinkedReportInfo implements Serializable {
 				+ ", active=" + active + ", componentId=" + componentId + ", componentDetailId=" + componentDetailId
 				+ ", module=" + module + "]";
 	}
-
 
 }

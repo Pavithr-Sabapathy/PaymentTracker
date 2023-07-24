@@ -8,7 +8,7 @@ public class ModuleDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@NotNull(message = "Module Name should not be empty")
+	@NotNull(message = "Name should not be empty")
 	private String name;
 
 	@NotNull(message = "Display Name should not be empty")

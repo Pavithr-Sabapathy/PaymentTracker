@@ -1,19 +1,36 @@
 package com.mashreq.paymentTracker.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
 @DynamicUpdate
 @Table(name = "conf_module")
-public class ApplicationModule {
+@NamedQueries({ @NamedQuery(name = "ApplicationModule.findAll", query = "FROM ApplicationModule"),
+	@NamedQuery(name = "module.findByModuleName", query = "FROM ApplicationModule where moduleName =: moduleName") })
+
+public class ApplicationModule implements Serializable {
+
+	private static final long serialVersionUID = -7351391859719950954L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -43,6 +60,10 @@ public class ApplicationModule {
 	
 	@Column(name = "warning")
 	private String warning;
+	
+	@OneToMany(mappedBy = "moduleId", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
+	List<Report> reportList = new ArrayList<Report>();
 	
 	public Long getId() {
 		return id;

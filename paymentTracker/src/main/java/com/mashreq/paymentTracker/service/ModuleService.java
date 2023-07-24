@@ -3,20 +3,20 @@ package com.mashreq.paymentTracker.service;
 import java.util.List;
 
 import com.mashreq.paymentTracker.dto.ModuleDTO;
-import com.mashreq.paymentTracker.model.ApplicationModule;
+import com.mashreq.paymentTracker.dto.ModuleResponseDTO;
 
 import jakarta.validation.Valid;
 
 public interface ModuleService{
 
-	List<ApplicationModule> fetchAllModule();
+	List<ModuleResponseDTO> fetchAllModule();
 
-	ApplicationModule saveModule(@Valid ModuleDTO moduleRequest);
+	ModuleResponseDTO saveModule(@Valid ModuleDTO moduleRequest);
 
 	void deleteModule(long moduleId);
 
-	ApplicationModule fetchModuleByName(String moduleName);
+	List<ModuleResponseDTO> fetchModuleByName(String moduleName);
 
-	ApplicationModule updateModule(@Valid ModuleDTO moduleRequest, Long moduleId);
+	ModuleResponseDTO updateModule(@Valid ModuleDTO moduleRequest, Long moduleId);
 	
 }

@@ -7,19 +7,19 @@ public class LinkMappingResponseDTO implements Serializable {
 	private static final long serialVersionUID = -6409248749358802554L;
 	private long id;
 	private String mappingType;
-	private long mappedEnitytId;
+	private long mappedEntityId;
 	private String mappedEntity;
 	private long linkReportPromptId;
 	
 	public LinkMappingResponseDTO() {
 		super();
 	}
-	public LinkMappingResponseDTO(long id, String mappingType, long mappedEnitytId, String mappedEntity,
+	public LinkMappingResponseDTO(long id, String mappingType, long mappedEntityId, String mappedEntity,
 			long linkReportPromptId) {
 		super();
 		this.id = id;
 		this.mappingType = mappingType;
-		this.mappedEnitytId = mappedEnitytId;
+		this.mappedEntityId = mappedEntityId;
 		this.mappedEntity = mappedEntity;
 		this.linkReportPromptId = linkReportPromptId;
 	}
@@ -35,11 +35,11 @@ public class LinkMappingResponseDTO implements Serializable {
 	public void setMappingType(String mappingType) {
 		this.mappingType = mappingType;
 	}
-	public long getMappedEnitytId() {
-		return mappedEnitytId;
+	public long getMappedEntityId() {
+		return mappedEntityId;
 	}
-	public void setMappedEnitytId(long mappedEnitytId) {
-		this.mappedEnitytId = mappedEnitytId;
+	public void setMappedEntityId(long mappedEntityId) {
+		this.mappedEntityId = mappedEntityId;
 	}
 	public String getMappedEntity() {
 		return mappedEntity;
@@ -55,8 +55,8 @@ public class LinkMappingResponseDTO implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "LinkMappingResponseDTO [id=" + id + ", mappingType=" + mappingType + ", mappedEnitytId="
-				+ mappedEnitytId + ", mappedEntity=" + mappedEntity + ", linkReportPromptId=" + linkReportPromptId
+		return "LinkMappingResponseDTO [id=" + id + ", mappingType=" + mappingType + ", mappedEntityId="
+				+ mappedEntityId + ", mappedEntity=" + mappedEntity + ", linkReportPromptId=" + linkReportPromptId
 				+ "]";
 	}
 
