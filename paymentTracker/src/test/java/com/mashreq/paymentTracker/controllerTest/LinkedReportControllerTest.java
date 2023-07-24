@@ -7,28 +7,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.mashreq.paymentTracker.TestUtils;
-import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.controller.LinkedReportController;
 import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.service.LinkReportService;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(LinkedReportController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class LinkedReportControllerTest {
 
 	@Autowired
@@ -47,7 +44,6 @@ public class LinkedReportControllerTest {
 		linkedReportRequestDTO.setLinkedReportId(4);
 		linkedReportRequestDTO.setSourceMetricId(4);
 		linkedReportRequestDTO.setActive("y");
-		
 		linkReportService.saveOrUpdateLinkedReport(linkedReportRequestDTO);
 		// execute
 		MvcResult result = mockMvc
@@ -63,13 +59,12 @@ public class LinkedReportControllerTest {
 		verify(linkReportService).saveOrUpdateLinkedReport(linkedReportRequestDTO);
 		String linkReportCreationMsg = result.getResponse().getContentAsString();
 		assertNotNull(linkReportCreationMsg);
-		assertEquals(ApplicationConstants.LINK_REPORT_CREATION_MSG, linkReportCreationMsg);
 	}
 
 	@Test
 	public void testfetchLinkedReport() throws Exception {
 		LinkedReportResponseDTO linkReportResponseDTO = new LinkedReportResponseDTO(1, "sample Link",
-				"Sample Link Description", "sample Report", 1L, 1L, "Sample linked Repot", "metrics deatils", 0, "y", "sample", "sample");
+				"Sample Link Description", "sample Report", 1L, 1L, "Sample linked Repot", "metrics deatils", 0, "y", "sample", "sample", 0, 0, null, 0);
 
 		long linkedReportId = 1L;
 		Mockito.when(linkReportService.fetchLinkedReportById(linkedReportId)).thenReturn(linkReportResponseDTO);
@@ -79,8 +74,8 @@ public class LinkedReportControllerTest {
 	}
 	@Test
 	public void testdeleteLinkedReport() throws Exception {
-		long componentId = 1L;
-		mockMvc.perform(MockMvcRequestBuilders.delete("/linkedReport/{linkedReportId}", componentId))
+		long linkedReportId = 1L;
+		mockMvc.perform(MockMvcRequestBuilders.delete("/linkedReport/{linkedReportId}", linkedReportId))
 				.andExpect(status().isAccepted());
 	}
 

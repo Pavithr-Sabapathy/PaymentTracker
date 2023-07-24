@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,12 +39,10 @@ import com.mashreq.paymentTracker.dto.ReportExecuteResponseMetaDTO;
 import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
-import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.model.ReportInstance;
 import com.mashreq.paymentTracker.repository.ReportDataRepository;
 import com.mashreq.paymentTracker.repository.ReportExecutionRepoistory;
 import com.mashreq.paymentTracker.repository.ReportInstanceRepository;
-import com.mashreq.paymentTracker.service.FlexFederatedReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
 import com.mashreq.paymentTracker.serviceImpl.ReportHandlerServiceImpl;
@@ -54,8 +51,6 @@ import com.mashreq.paymentTracker.serviceImpl.ReportHandlerServiceImpl;
 @ExtendWith(SpringExtension.class)
 class ReportHandlerServiceTest {
 
-	@MockBean
-	private FlexFederatedReportService flexFederatedReportService;
 
 	@MockBean
 	private ReportConfigurationService reportConfigurationService;

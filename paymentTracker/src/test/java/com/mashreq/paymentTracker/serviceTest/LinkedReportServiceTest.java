@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,15 +15,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
+import com.mashreq.paymentTracker.dao.LinkedReportDAO;
+import com.mashreq.paymentTracker.dao.MetricsDAO;
+import com.mashreq.paymentTracker.dao.ReportDAO;
 import com.mashreq.paymentTracker.dto.LinkedReportRequestDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.model.LinkedReportInfo;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.LinkedReportRepository;
-import com.mashreq.paymentTracker.repository.MetricsRepository;
-import com.mashreq.paymentTracker.repository.ReportConfigurationRepository;
 import com.mashreq.paymentTracker.serviceImpl.LinkedReportServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,16 +34,16 @@ public class LinkedReportServiceTest {
 	LinkedReportServiceImpl linkedReportServiceImpl;
 
 	@Mock
-    ModelMapper modelMapper;
-	
-	@Mock
-	private ReportConfigurationRepository reportConfigurationRepo;
+	ModelMapper modelMapper;
+
+	@MockBean
+	ReportDAO mockReportDAO;
 
 	@Mock
-	MetricsRepository mockMetricsRepository;
+	MetricsDAO mockMetricsDAO;
 
 	@Mock
-	LinkedReportRepository mockLinkedReportRepo;
+	LinkedReportDAO mockLinkedReportDAO;
 
 	@Test
 	public void testSaveOrUpdateLinkedReport() {
@@ -55,9 +55,9 @@ public class LinkedReportServiceTest {
 		linkedReportRequestDTO.setReportId(1L);
 		linkedReportRequestDTO.setSourceMetricId(1L);
 		linkedReportRequestDTO.setActive("Y");
-		
+
 		LinkedReportInfo linkedReportModel = modelMapper.map(linkedReportRequestDTO, LinkedReportInfo.class);
-		when(mockLinkedReportRepo.save(linkedReportModel)).thenReturn(linkedReportModel);
+		when(mockLinkedReportDAO.save(linkedReportModel)).thenReturn(linkedReportModel);
 		linkedReportServiceImpl.saveOrUpdateLinkedReport(linkedReportRequestDTO);
 	}
 
@@ -92,26 +92,25 @@ public class LinkedReportServiceTest {
 		 * linkedReportInfo.setReport(1L); linkedReportInfo.setLinkedReportId(1L);
 		 */
 		linkedReportInfo.setActive("y");
-		
-		Mockito.when(mockLinkedReportRepo.findById(linkedReportId)).thenReturn(Optional.of(linkedReportInfo));
-		Mockito.when(mockMetricsRepository.findById(sourceId)).thenReturn(Optional.of(metricsMockObject));
-		Mockito.when(reportConfigurationRepo.findById(reportId)).thenReturn(Optional.of(mockReportsResponse));
+
+		Mockito.when(mockLinkedReportDAO.findById(linkedReportId)).thenReturn(linkedReportInfo);
+		Mockito.when(mockMetricsDAO.getMetricsById(sourceId)).thenReturn(metricsMockObject);
+		Mockito.when(mockReportDAO.getReportById(reportId)).thenReturn(mockReportsResponse);
 
 		LinkedReportResponseDTO linkedReportResponseDTO = linkedReportServiceImpl.fetchLinkedReportById(linkedReportId);
 		assertEquals(linkedReportResponseDTO.getLinkDescription(), "Referene Detail Report");
-		verify(mockLinkedReportRepo, times(1)).findById(linkedReportId);
+		verify(mockLinkedReportDAO, times(1)).findById(linkedReportId);
 	}
+
 	@Test
 	public void testdeletelinkedReportById() {
 		long linkedReportId = 1L;
 
-		when(mockLinkedReportRepo.existsById(linkedReportId)).thenReturn(true);
-		doNothing().when(mockLinkedReportRepo).deleteById(linkedReportId);
+		doNothing().when(mockLinkedReportDAO).deleteById(linkedReportId);
 
 		linkedReportServiceImpl.deletelinkedReportById(linkedReportId);
 
-		verify(mockLinkedReportRepo).existsById(1L);
-		verify(mockLinkedReportRepo).deleteById(1L);
+		verify(mockLinkedReportDAO).deleteById(1L);
 	}
 
 }

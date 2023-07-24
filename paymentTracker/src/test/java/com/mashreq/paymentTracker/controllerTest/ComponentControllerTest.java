@@ -5,27 +5,33 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
-import com.mashreq.paymentTracker.controller.ComponentsController;
+import com.mashreq.paymentTracker.dto.ComponentDTO;
 import com.mashreq.paymentTracker.dto.ComponentDetailsRequestDTO;
 import com.mashreq.paymentTracker.dto.ComponentsRequestDTO;
 import com.mashreq.paymentTracker.service.ComponentsService;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(ComponentsController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class ComponentControllerTest {
 
 	@Autowired
@@ -36,7 +42,8 @@ public class ComponentControllerTest {
 
 	@Test
 	public void testSaveComponents() throws Exception {
-		ComponentsRequestDTO componentRequestDTO = new ComponentsRequestDTO(0L, "sample_Tracker", "Sample Tracker", "Y", 1,5);
+		ComponentsRequestDTO componentRequestDTO = new ComponentsRequestDTO(0L, "sample_Tracker", "Sample Tracker", "Y",
+				1, 5);
 
 		componentService.saveComponents(componentRequestDTO);
 		// execute
@@ -49,17 +56,17 @@ public class ComponentControllerTest {
 		int status = result.getResponse().getStatus();
 		assertEquals(HttpStatus.CREATED.value(), status, "Incorrect Response Status");
 
-		// verify that service method 
+		// verify that service method
 		verify(componentService).saveComponents(componentRequestDTO);
 		String componetCreationMsg = result.getResponse().getContentAsString();
 		assertNotNull(componetCreationMsg);
 		assertEquals(ApplicationConstants.COMPONENT_CREATION_MSG, componetCreationMsg);
 	}
-   
 
 	@Test
 	public void testSaveComponentsDetails() throws Exception {
-		ComponentDetailsRequestDTO mockcomponentDetailsDTO = new ComponentDetailsRequestDTO("rsMesg", "sampleEquery",1);
+		ComponentDetailsRequestDTO mockcomponentDetailsDTO = new ComponentDetailsRequestDTO("rsMesg", "sampleEquery",
+				1);
 
 		componentService.saveComponentsDetails(mockcomponentDetailsDTO);
 		// execute
@@ -95,4 +102,25 @@ public class ComponentControllerTest {
 				.andExpect(status().isAccepted());
 
 	}
+
+	@Test
+	public void testFetchComponentsByReportId() throws Exception {
+		List<ComponentDTO> componentDTO = new ArrayList<ComponentDTO>();
+		// Create a sample report
+		long reportId = 1L;
+		Mockito.when(componentService.fetchComponentsByReportId(reportId)).thenReturn(componentDTO);
+		TypeReference<List<ComponentDTO>> mapType = new TypeReference<List<ComponentDTO>>() {
+		};
+		// Send a GET request to the endpoint with the "Test Report" name in the URL
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/Components/report/{reportId}", reportId))
+				.andExpect(MockMvcResultMatchers.status().isAccepted()).andReturn();
+
+		// Check
+		String response = result.getResponse().getContentAsString();
+		List<ComponentDTO> componentList = new ObjectMapper().readValue(response, mapType);
+		// verify
+		Mockito.verify(componentService).fetchComponentsByReportId(reportId);
+
+	}
+
 }

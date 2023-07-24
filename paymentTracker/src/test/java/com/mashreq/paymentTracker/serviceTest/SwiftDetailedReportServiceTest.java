@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.mashreq.paymentTracker.dao.ComponentsCountryDAO;
+import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
@@ -29,8 +29,6 @@ import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
-import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
@@ -39,17 +37,17 @@ import com.mashreq.paymentTracker.serviceImpl.SwiftDetailedReportServiceImpl;
 import com.mashreq.paymentTracker.type.CountryType;
 import com.mashreq.paymentTracker.utility.CheckType;
 
-@ContextConfiguration(classes = {SwiftDetailedReportServiceImpl.class})
-@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class SwiftDetailedReportServiceTest {
     @MockBean
     private CannedReportService cannedReportService;
 
     @MockBean
-    private ComponentsCountryRepository componentsCountryRepository;
+    private ComponentsCountryDAO componentsCountryRepository;
 
     @MockBean
-    private ComponentsRepository componentsRepository;
+    private ComponentsDAO componentsRepository;
 
     @MockBean
     private LinkReportService linkReportService;
@@ -77,7 +75,7 @@ class SwiftDetailedReportServiceTest {
         cannedReport.setName("Name");
         cannedReport.setValid(CheckType.NO);
         when(cannedReportService.populateCannedReportInstance(Mockito.<Report>any())).thenReturn(cannedReport);
-        when(componentsRepository.findAllByreportId(anyLong())).thenReturn(Optional.of(new ArrayList<>()));
+        when(componentsRepository.findAllByreportId(anyLong())).thenReturn(null);
         when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(new Report());
 
         ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
@@ -127,7 +125,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         ReportExecuteResponseData actualProcessSwiftDetailReportResult = swiftDetailedReportServiceImpl
-                .processReport(reportInstanceDTO, reportContext);
+                .processReport(null, reportContext);
         assertNull(actualProcessSwiftDetailReportResult.getColumnDefs());
         assertNull(actualProcessSwiftDetailReportResult.getData());
         verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
@@ -149,7 +147,7 @@ class SwiftDetailedReportServiceTest {
         cannedReport.setName("Name");
         cannedReport.setValid(CheckType.NO);
         when(cannedReportService.populateCannedReportInstance(Mockito.<Report>any())).thenReturn(cannedReport);
-        when(componentsRepository.findAllByreportId(anyLong())).thenReturn(Optional.of(new ArrayList<>()));
+        when(componentsRepository.findAllByreportId(anyLong())).thenReturn(null);
         when(reportConfigurationService.fetchReportByName(Mockito.<String>any()))
                 .thenThrow(new ResourceNotFoundException("An error occurred"));
 
@@ -200,7 +198,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         assertThrows(ResourceNotFoundException.class,
-                () -> swiftDetailedReportServiceImpl.processReport(reportInstanceDTO, reportContext));
+                () -> swiftDetailedReportServiceImpl.processReport(null, reportContext));
         verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
     }
  @Test
@@ -220,7 +218,7 @@ class SwiftDetailedReportServiceTest {
 
         ArrayList<Components> componentsList = new ArrayList<>();
         componentsList.add(new Components());
-        Optional<List<Components>> ofResult = Optional.of(componentsList);
+        List<Components> ofResult = new ArrayList<Components>();
         when(componentsRepository.findAllByreportId(anyLong())).thenReturn(ofResult);
         when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(new Report());
 
@@ -271,7 +269,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         ReportExecuteResponseData actualProcessSwiftDetailReportResult = swiftDetailedReportServiceImpl
-                .processReport(reportInstanceDTO, reportContext);
+                .processReport(null, reportContext);
         assertNull(actualProcessSwiftDetailReportResult.getColumnDefs());
         assertNull(actualProcessSwiftDetailReportResult.getData());
         verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
@@ -294,7 +292,7 @@ class SwiftDetailedReportServiceTest {
         cannedReport.setName("Name");
         cannedReport.setValid(CheckType.NO);
         when(cannedReportService.populateCannedReportInstance(Mockito.<Report>any())).thenReturn(cannedReport);
-        when(componentsRepository.findAllByreportId(anyLong())).thenReturn(Optional.empty());
+        when(componentsRepository.findAllByreportId(anyLong())).thenReturn(null);
         when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(new Report());
 
         ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
@@ -344,7 +342,7 @@ class SwiftDetailedReportServiceTest {
         reportContext.setUserId(1L);
         reportContext.setUserName("janedoe");
         assertThrows(ResourceNotFoundException.class,
-                () -> swiftDetailedReportServiceImpl.processReport(reportInstanceDTO, reportContext));
+                () -> swiftDetailedReportServiceImpl.processReport(null, reportContext));
         verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
         verify(componentsRepository).findAllByreportId(anyLong());
         verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());

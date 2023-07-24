@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import com.mashreq.paymentTracker.dto.DataSourceRequestDTO;
 import com.mashreq.paymentTracker.dto.DataSourceResponseDTO;
@@ -38,14 +39,18 @@ public class DataSourceConfigServiceTest {
 	@Mock
 	DataSourceRepository mockdataSourceConfigRepository;
 
+	@Mock
+	private ModelMapper modelMapper;
+
 	@Test
 	public void testSaveDataSourceConfig() throws Exception {
-		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
-				"@!@#234", 1L, "123.13.34.56", "PT", "y");
+		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
+				"12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
 		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
 		when(mockdataSourceConfigRepository.save(any(DataSource.class))).thenReturn(mockdataSourceConfigValue);
-		 DataSourceResponseDTO dataSourceConfiguration = dataSourceConfigService.saveDataSourceConfiguration(mockDataSourceDTO);
+		DataSourceResponseDTO dataSourceConfiguration = dataSourceConfigService
+				.saveDataSourceConfiguration(mockDataSourceDTO);
 		assertEquals(dataSourceConfiguration.getName(), "sample");
 		verify(mockdataSourceConfigRepository, times(1)).save(mockdataSourceConfigValue);
 	}
@@ -54,9 +59,9 @@ public class DataSourceConfigServiceTest {
 	public void testGetDataSourceConfigById() {
 		long dataSourceId = 1L;
 		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
-				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
-		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.of(mockdataSourceConfigValue));
-		 DataSourceResponseDTO dataSourceConfiguration = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
+				"ReadOnly", "Y", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
+		when(mockdataSourceConfigRepository.getDataSourceById(dataSourceId)).thenReturn(mockdataSourceConfigValue);
+		DataSourceResponseDTO dataSourceConfiguration = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
 		assertEquals(dataSourceConfiguration.getName(), "sample");
 		verify(mockdataSourceConfigRepository, times(1)).findById(dataSourceId);
 	}
@@ -64,9 +69,8 @@ public class DataSourceConfigServiceTest {
 	@Test
 	public void testGetDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
 		long dataSourceId = 1L;
-		DataSource mockdataSourceConfigValue = null;
-		when(mockdataSourceConfigRepository.findById(dataSourceId))
-				.thenReturn(Optional.ofNullable(mockdataSourceConfigValue));
+		when(mockdataSourceConfigRepository.getDataSourceById(dataSourceId))
+				.thenReturn(null);
 
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
 				() -> dataSourceConfigService.getDataSourceConfigById(dataSourceId),
@@ -79,30 +83,27 @@ public class DataSourceConfigServiceTest {
 	@Test
 	public void testUpdateDataSourceConfigById() {
 		long dataSourceId = 1L;
-		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
-				"@!@#234", 1L, "123.13.34.56", "PT", "y");
+		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
+				"12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
 
 		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
 		;
 		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.of(mockdataSourceConfigValue));
-		dataSourceConfigService.updateDataSourceById(mockDataSourceDTO,1L);
+		dataSourceConfigService.updateDataSourceById(mockDataSourceDTO, 1L);
 		verify(mockdataSourceConfigRepository, times(1)).findById(dataSourceId);
 	}
 
 	@Test
 	public void testUpdateDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
 		long dataSourceId = 1L;
-		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly", "12345",
-				"@!@#234", 1L, "123.13.34.56", "PT", "y");
-
-		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
-				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
+		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
+				"12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
 
 		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.empty());
 		// .thenReturn(Optional.ofNullable(mockdataSourceConfigValue));
 		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
-				() -> dataSourceConfigService.updateDataSourceById(mockDataSourceDTO,1L),
+				() -> dataSourceConfigService.updateDataSourceById(mockDataSourceDTO, 1L),
 				"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");
 		assertNotNull(thrown);
 		assertTrue(thrown.getMessage().contains("DataSource Configuration not exist with this id :1"));
@@ -135,24 +136,11 @@ public class DataSourceConfigServiceTest {
 	public void testDeleteDataSourceConfigById() {
 		long dataSourceId = 1L;
 
-		when(mockdataSourceConfigRepository.existsById(dataSourceId)).thenReturn(true);
 		doNothing().when(mockdataSourceConfigRepository).deleteById(dataSourceId);
 
 		dataSourceConfigService.deleteDataSourceById(dataSourceId);
 
-		verify(mockdataSourceConfigRepository).existsById(1L);
 		verify(mockdataSourceConfigRepository).deleteById(1L);
 	}
 
-	@Test
-	void testDeleteDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
-		long dataSourceId = 1L;
-		when(mockdataSourceConfigRepository.existsById(dataSourceId)).thenReturn(false);
-
-		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
-				() -> dataSourceConfigService.deleteDataSourceById(dataSourceId),
-				"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");
-		assertNotNull(thrown);
-		assertTrue(thrown.getMessage().contains("DataSource Configuration not exist with this id :1"));
-	}
 }

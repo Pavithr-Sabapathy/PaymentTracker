@@ -14,16 +14,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.mashreq.paymentTracker.dao.ComponentsCountryDAO;
+import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
@@ -33,8 +33,6 @@ import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
 import com.mashreq.paymentTracker.model.Report;
-import com.mashreq.paymentTracker.repository.ComponentsCountryRepository;
-import com.mashreq.paymentTracker.repository.ComponentsRepository;
 import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
@@ -42,17 +40,18 @@ import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.serviceImpl.FlexFederatedReportServiceImpl;
 import com.mashreq.paymentTracker.type.CountryType;
 
-@ContextConfiguration(classes = { FlexFederatedReportServiceImpl.class })
-@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class FlexFederatedReportServiceTest {
 	@MockBean
 	private CannedReportService cannedReportService;
 
 	@MockBean
-	private ComponentsCountryRepository componentsCountryRepository;
+	private ComponentsCountryDAO componentsCountryDAO;
 
 	@MockBean
-	private ComponentsRepository componentsRepository;
+	private ComponentsDAO componentsDAO;
+
 
 	@Autowired
 	private FlexFederatedReportServiceImpl flexFederatedReportServiceImpl;
@@ -121,27 +120,27 @@ class FlexFederatedReportServiceTest {
         
         ArrayList<Components> componentsList = new ArrayList<>();
         componentsList.add(new Components());
-        Optional<List<Components>> ofResult = Optional.of(componentsList);
+        List<Components> ofResult = new ArrayList<Components>();
 
 
         ArrayList<LinkedReportResponseDTO> linkedReportResponseDTOList = new ArrayList<>();
         linkedReportResponseDTOList.add(new LinkedReportResponseDTO(1L, "Link Name", "Link Description", "Report Name",
-                0, 0, "Linked Report Name", "Source Metric Name", 0, "Active", null, null));
+                0, 0, "Linked Report Name", "Source Metric Name", 0, "Active", null, null, 0, 0, null, 0));
        
         
         when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(new Report());
         when(linkReportService.fetchLinkedReportByReportId(anyLong())).thenReturn(linkedReportResponseDTOList);
-        when(componentsRepository.findAllByreportId(anyLong())).thenReturn(ofResult);   
+        when(componentsDAO.findAllByreportId(anyLong())).thenReturn(ofResult);   
 
      
         ReportExecuteResponseData actualProcessFlexReportResult = flexFederatedReportServiceImpl
-                .processReport(reportInstanceDTO, reportContext);
+                .processReport(null, reportContext);
         
         assertNotNull(actualProcessFlexReportResult);
 
 		assertEquals("Report Name", actualProcessFlexReportResult.getMeta().getReportId());
 		
-        verify(componentsRepository).findAllByreportId(anyLong());
+        verify(componentsDAO).findAllByreportId(anyLong());
         verify(linkReportService).fetchLinkedReportByReportId(anyLong());
         verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
     }
@@ -158,7 +157,7 @@ class FlexFederatedReportServiceTest {
 		ArrayList<Components> componentList = new ArrayList<>();
 		componentList.add(components);
 		assertThrows(ResourceNotFoundException.class, () -> flexFederatedReportServiceImpl
-				.processAdvanceSearchReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
+				.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
 		verify(components).getActive();
 		verify(components).getComponentKey();
 	}
@@ -179,7 +178,7 @@ class FlexFederatedReportServiceTest {
 				new ArrayList<>()));
 		componentList.add(components);
 		assertThrows(ResourceNotFoundException.class, () -> flexFederatedReportServiceImpl
-				.processAdvanceSearchReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
+				.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
 		verify(components).getActive();
 		verify(components).getComponentKey();
 	}
