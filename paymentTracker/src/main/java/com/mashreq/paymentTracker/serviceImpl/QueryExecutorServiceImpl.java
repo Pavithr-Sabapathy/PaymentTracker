@@ -74,12 +74,14 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 		PreparedStatement prepStat = null;
 		String promptValuemap = "Prompt Values";
 		String queryKey = componentDetail.getQueryKey();
-		Long dataSourceId = componentDetail.getReportComponent().getDataSourceId();
+		//Long dataSourceId = componentDetail.getReportComponent().getDataSourceId();
 		String queryString = replacePrompts(context.getQueryString(), context);
 		try {
-			ComponentsCountry componentsCountry = processComponentCountry(componentDetail.getReportComponentId());
-			DataSource dataSource = componentsCountry.getDataSourceConfig();
-			startTime = new Date();
+			/*
+			 * ComponentsCountry componentsCountry =
+			 * processComponentCountry(componentDetail.getReportComponentId()); DataSource
+			 * dataSource = componentsCountry.getDataSourceConfig();
+			 */startTime = new Date();
 			reportQueryInfo = new ReportQueryInfoDTO();
 			reportQueryInfo.setExecutionId(context.getExecutionId());
 			reportQueryInfo.setDataSourceName("Flex");
@@ -90,7 +92,7 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 			reportQueryInfoService.insertReportQueryInfo(reportQueryInfo);
 
 			Class.forName(MashreqFederatedReportConstants.DRIVER_CLASS_NAME);
-			connection = SourceConnectionUtil.getConnection(dataSource.getName());
+			//connection = SourceConnectionUtil.getConnection(dataSource.getName());
 			connection = DriverManager.getConnection(MashreqFederatedReportConstants.FLEX_DATABASE_URL,
 					MashreqFederatedReportConstants.DATABASE_USERNAME,
 					MashreqFederatedReportConstants.DATABASE_PASSWORD);

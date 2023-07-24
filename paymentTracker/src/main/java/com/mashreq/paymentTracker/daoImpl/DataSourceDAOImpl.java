@@ -19,12 +19,6 @@ public class DataSourceDAOImpl extends BaseDAOImpl implements DataSourceDAO {
 	private static final Logger logger = LoggerFactory.getLogger(PromptsDAOImpl.class);
 
 	@Override
-	public DataSource save(DataSource dataSource) {
-		logger.info("DataSourceDAOImpl.save dataSource:" + dataSource.toString());
-		return super.create(dataSource);
-	}
-
-	@Override
 	public DataSource getDataSourceById(long dataSourceId) {
 		logger.info("DataSourceDAOImpl.findById id:" + dataSourceId);
 		return super.findById(DataSource.class, dataSourceId);

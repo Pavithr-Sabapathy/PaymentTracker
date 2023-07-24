@@ -66,7 +66,7 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 	private static final String FILENAME = "EdmsProcessServiceImpl";
 
 	@Override
-	protected FederatedReportDefaultInput populateBaseInputContext(ReportContext reportContext) {
+	public FederatedReportDefaultInput populateBaseInputContext(ReportContext reportContext) {
 		FederatedReportDefaultInput federatedReportDefaultInput = new FederatedReportDefaultInput();
 		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
 		List<ReportPromptsInstanceDTO> instancePromptList = reportInstanceDTO.getPromptsList();
@@ -75,7 +75,7 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 	}
 
 	@Override
-	protected ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
+	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
 		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;

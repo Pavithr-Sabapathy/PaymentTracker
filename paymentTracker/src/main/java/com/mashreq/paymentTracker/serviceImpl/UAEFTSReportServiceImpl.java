@@ -169,7 +169,7 @@ public class UAEFTSReportServiceImpl extends ReportControllerServiceImpl impleme
 	}
 
 	@Override
-	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
+	public ReportInput populateBaseInputContext(ReportContext reportContext) {
 		UAEFTSDetailedReportInput UAEFTSDetailedReportInput = new UAEFTSDetailedReportInput();
 		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
 		List<ReportPromptsInstanceDTO> promptsList = reportInstance.getPromptsList();
