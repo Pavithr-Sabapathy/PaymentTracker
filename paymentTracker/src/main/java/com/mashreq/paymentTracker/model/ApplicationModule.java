@@ -25,7 +25,7 @@ import jakarta.validation.constraints.NotNull;
 @DynamicUpdate
 @Table(name = "conf_module")
 @NamedQueries({ @NamedQuery(name = "ApplicationModule.findAll", query = "FROM ApplicationModule"),
-	@NamedQuery(name = "module.findByModuleName", query = "FROM ApplicationModule where moduleName =: moduleName") })
+		@NamedQuery(name = "module.findByModuleName", query = "FROM ApplicationModule where moduleName =: moduleName") })
 
 public class ApplicationModule implements Serializable {
 
@@ -47,24 +47,27 @@ public class ApplicationModule implements Serializable {
 	@Column(name = "mod_description")
 	private String moduleDescription;
 
-	
 	@NotNull(message = "active should not be empty")
 	@Column(name = "active")
 	private String active;
-	
+
 	@Column(name = "valid")
 	private String valid;
 
 	@Column(name = "error")
 	private String error;
-	
+
 	@Column(name = "warning")
 	private String warning;
-	
+
 	@OneToMany(mappedBy = "moduleId", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	List<Report> reportList = new ArrayList<Report>();
-	
+
+	@OneToMany(mappedBy = "module", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
+	List<LinkedReportInfo> linkedReportList = new ArrayList<LinkedReportInfo>();
+
 	public Long getId() {
 		return id;
 	}
@@ -136,7 +139,6 @@ public class ApplicationModule implements Serializable {
 				+ error + ", warning=" + warning + "]";
 	}
 
-
 	public ApplicationModule(Long id, @NotNull(message = "Module Name should not be empty") String moduleName,
 			@NotNull(message = "Display Name should not be empty") String displayName,
 			@NotNull(message = "Description should not be empty") String moduleDescription,
@@ -157,7 +159,5 @@ public class ApplicationModule implements Serializable {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	
-	
 
 }
