@@ -1,11 +1,15 @@
 package com.mashreq.paymentTracker.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -63,6 +68,9 @@ public class LinkedReportInfo implements Serializable {
 	@JoinColumn(name = "module_id")
 	private ApplicationModule module;
 
+	@OneToMany(mappedBy = "linkReportId", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	List<LinkedReportDetails> metricsList = new ArrayList<LinkedReportDetails>();
+	
 	public LinkedReportInfo() {
 		super();
 		// TODO Auto-generated constructor stub

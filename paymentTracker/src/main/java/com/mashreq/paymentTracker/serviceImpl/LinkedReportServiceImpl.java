@@ -56,14 +56,20 @@ public class LinkedReportServiceImpl implements LinkReportService {
 		LinkedReportResponseDTO linkedReportResponseDTO = new LinkedReportResponseDTO();
 		LinkedReportInfo linkReportResponse = new LinkedReportInfo();
 		LinkedReportInfo linkedReportModel = new LinkedReportInfo();
-		
+
 		if (linkedReportRequestDTO.getId() != 0L) {
 			linkedReportModel.setId(linkedReportRequestDTO.getId());
 		}
 		/** Whether to save or update based on linked report id ***/
 		ApplicationModule moduleObj = moduleDAO.findById(linkedReportRequestDTO.getModuleId());
-		linkedReportModel.setModule(moduleObj);
-
+		if (null == moduleObj) {
+			log.error(FILENAME + "[saveOrUpdateLinkedReport]" + ApplicationConstants.MODULE_DOES_NOT_EXISTS
+					+ linkedReportRequestDTO.getModuleId());
+			throw new ResourceNotFoundException(
+					ApplicationConstants.MODULE_DOES_NOT_EXISTS + linkedReportRequestDTO.getModuleId());
+		} else {
+			linkedReportModel.setModule(moduleObj);
+		}
 		Components componentObj = componentsDAO.findById(linkedReportRequestDTO.getComponentId());
 		linkedReportModel.setComponentId(componentObj);
 
@@ -91,7 +97,7 @@ public class LinkedReportServiceImpl implements LinkReportService {
 			log.info(FILENAME + "[save Report Request]--->" + linkedReportRequestDTO.toString());
 			linkReportResponse = linkedReportDAO.save(linkedReportModel);
 		}
-		
+
 		if (null != linkReportResponse) {
 			linkedReportResponseDTO = populateLinkReport(linkReportResponse);
 		}
