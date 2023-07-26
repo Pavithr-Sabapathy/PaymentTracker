@@ -64,7 +64,7 @@ public class FlexFederatedReportServiceImpl extends ReportControllerServiceImpl 
 	private static final String FILENAME = "FlexFederatedReportServiceImpl";
 
 	@Override
-	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
+	public ReportInput populateBaseInputContext(ReportContext reportContext) {
 		List<ReportPromptsInstanceDTO> reportPromptsList = reportContext.getReportInstance().getPromptsList();
 		FlexDetailedReportInput flexAccountingDetailedFederatedReportInput = new FlexDetailedReportInput();
 		FederatedReportPromptDTO referenceNumPrompt = getMatchedInstancePrompt(reportPromptsList,
@@ -126,22 +126,23 @@ public class FlexFederatedReportServiceImpl extends ReportControllerServiceImpl 
 		FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
 		Optional<ReportPromptsInstanceDTO> promptsOptional = reportPromptsList.stream()
 				.filter(prompts -> prompts.getPrompt().getKey().equalsIgnoreCase(promptKey)).findAny();
-		ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
-		if (null != reportInstancePrompt) {
-			List<String> promptsList = new ArrayList<String>();
-			if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
-				promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
+		if (promptsOptional.isPresent()) {
+			ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
+			if (null != reportInstancePrompt) {
+				List<String> promptsList = new ArrayList<String>();
+				if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
+					promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
+				}
+				if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty())
+					;
+				{
+					promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
+				}
+				String promptValue = promptsList.stream().collect(Collectors.joining(","));
+				federatedReportPromptDTO.setPromptKey(reportInstancePrompt.getPrompt().getKey());
+				federatedReportPromptDTO.setPromptValue(promptValue);
 			}
-			if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty())
-				;
-			{
-				promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
-			}
-			String promptValue = promptsList.stream().collect(Collectors.joining(","));
-			federatedReportPromptDTO.setPromptKey(reportInstancePrompt.getPrompt().getKey());
-			federatedReportPromptDTO.setPromptValue(promptValue);
 		}
-
 		return federatedReportPromptDTO;
 	}
 
@@ -287,12 +288,15 @@ public class FlexFederatedReportServiceImpl extends ReportControllerServiceImpl 
 	}
 
 	private Components getMatchedInstanceComponent(List<Components> componentList, String componentKey) {
+		Components componentObj = new Components();
 		Optional<Components> componentOptional = componentList.stream()
 				.filter(component -> component.getComponentKey().equalsIgnoreCase(componentKey)
 						&& component.getActive().equalsIgnoreCase(MashreqFederatedReportConstants.YES))
 				.findFirst();
-		Components component = componentOptional.get();
-		return component;
+		if (componentOptional.isPresent()) {
+			componentObj = componentOptional.get();
+		}
+		return componentObj;
 	}
 
 }

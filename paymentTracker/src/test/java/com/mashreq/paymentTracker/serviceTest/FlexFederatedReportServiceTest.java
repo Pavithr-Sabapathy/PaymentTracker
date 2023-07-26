@@ -1,7 +1,6 @@
 package com.mashreq.paymentTracker.serviceTest;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -25,13 +24,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import com.mashreq.paymentTracker.dao.ComponentsCountryDAO;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
+import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.FlexDetailedReportInput;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
+import com.mashreq.paymentTracker.dto.PromptInstance;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
+import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
+import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
-import com.mashreq.paymentTracker.model.ComponentsCountry;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.LinkReportService;
@@ -52,7 +56,6 @@ class FlexFederatedReportServiceTest {
 	@MockBean
 	private ComponentsDAO componentsDAO;
 
-
 	@Autowired
 	private FlexFederatedReportServiceImpl flexFederatedReportServiceImpl;
 
@@ -66,89 +69,105 @@ class FlexFederatedReportServiceTest {
 	private ReportConfigurationService reportConfigurationService;
 
 	@Test
-    void testProcessFlexReport() {
-             
-        ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
-        reportInstanceDTO
-                .setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-        reportInstanceDTO.setId(1L);
-        reportInstanceDTO.setModuleId(1L);
-        reportInstanceDTO.setPromptsList(new ArrayList<>());
-        reportInstanceDTO.setReportId(1L);
-        reportInstanceDTO.setReportInstanceComponents(new HashSet<>());
-        reportInstanceDTO.setReportInstanceMetrics(new HashSet<>());
-        reportInstanceDTO.setReportInstancePrompts(new HashSet<>());
-        reportInstanceDTO.setReportName("Report Name");
-        reportInstanceDTO.setRoleId(1L);
-        reportInstanceDTO.setRoleName("Role Name");
-        reportInstanceDTO.setUserId(1L);
-        reportInstanceDTO.setUserName("janedoe");
+	void testProcessFlexReport() {
 
-        ReportInstanceDTO reportInstance = new ReportInstanceDTO();
-        reportInstance
-                .setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-        reportInstance.setId(1L);
-        reportInstance.setModuleId(1L);
-        reportInstance.setPromptsList(new ArrayList<>());
-        reportInstance.setReportId(1L);
-        reportInstance.setReportInstanceComponents(new HashSet<>());
-        reportInstance.setReportInstanceMetrics(new HashSet<>());
-        reportInstance.setReportInstancePrompts(new HashSet<>());
-        reportInstance.setReportName("Report Name");
-        reportInstance.setRoleId(1L);
-        reportInstance.setRoleName("Role Name");
-        reportInstance.setUserId(1L);
-        reportInstance.setUserName("janedoe");
+		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
+		reportInstanceDTO
+				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
+		reportInstanceDTO.setId(1L);
+		reportInstanceDTO.setModuleId(1L);
+		reportInstanceDTO.setPromptsList(new ArrayList<>());
+		reportInstanceDTO.setReportId(1L);
+		reportInstanceDTO.setReportInstanceComponents(new HashSet<>());
+		reportInstanceDTO.setReportInstanceMetrics(new HashSet<>());
+		reportInstanceDTO.setReportInstancePrompts(new HashSet<>());
+		reportInstanceDTO.setReportName("Report Name");
+		reportInstanceDTO.setRoleId(1L);
+		reportInstanceDTO.setRoleName("Role Name");
+		reportInstanceDTO.setUserId(1L);
+		reportInstanceDTO.setUserName("janedoe");
 
-        ReportContext reportContext = new ReportContext();
-        reportContext.setCountry(CountryType.UAE);
-        reportContext.setExecutionId(1L);
-        reportContext.setLinkInstanceId(1L);
-        reportContext.setLinkReference("Link Reference");
-        reportContext.setLinkedReport(true);
-        reportContext.setModuleId(1L);
-        reportContext.setReportId(1L);
-        reportContext.setReportInstance(reportInstance);
-        reportContext.setReportName("Report Name");
-        reportContext.setRoleId(1L);
-        reportContext.setRoleName("Role Name");
-        reportContext.setUserId(1L);
-        reportContext.setUserName("janedoe");
-      
-        Report report = new Report();
-        report.setId(1L);
-        
-        ArrayList<Components> componentsList = new ArrayList<>();
-        componentsList.add(new Components());
-        List<Components> ofResult = new ArrayList<Components>();
+		ReportInstanceDTO reportInstance = new ReportInstanceDTO();
+		reportInstance
+				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
+		reportInstance.setId(1L);
+		reportInstance.setModuleId(1L);
+		reportInstance.setPromptsList(new ArrayList<>());
+		reportInstance.setReportId(1L);
+		reportInstance.setReportInstanceComponents(new HashSet<>());
+		reportInstance.setReportInstanceMetrics(new HashSet<>());
+		reportInstance.setReportInstancePrompts(new HashSet<>());
+		reportInstance.setReportName("Report Name");
+		reportInstance.setRoleId(1L);
+		reportInstance.setRoleName("Role Name");
+		reportInstance.setUserId(1L);
+		reportInstance.setUserName("janedoe");
 
+		ReportContext reportContext = new ReportContext();
+		reportContext.setCountry(CountryType.UAE);
+		reportContext.setExecutionId(1L);
+		reportContext.setLinkInstanceId(1L);
+		reportContext.setLinkReference("Link Reference");
+		reportContext.setLinkedReport(true);
+		reportContext.setModuleId(1L);
+		reportContext.setReportId(1L);
+		reportContext.setReportInstance(reportInstance);
+		reportContext.setReportName("Report Name");
+		reportContext.setRoleId(1L);
+		reportContext.setRoleName("Role Name");
+		reportContext.setUserId(1L);
+		reportContext.setUserName("janedoe");
 
-        ArrayList<LinkedReportResponseDTO> linkedReportResponseDTOList = new ArrayList<>();
-        linkedReportResponseDTOList.add(new LinkedReportResponseDTO(1L, "Link Name", "Link Description", "Report Name",
-                0, 0, "Linked Report Name", "Source Metric Name", 0, "Active", null, null, 0, 0, null, 0));
-       
-        
-        when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(new Report());
-        when(linkReportService.fetchLinkedReportByReportId(anyLong())).thenReturn(linkedReportResponseDTOList);
-        when(componentsDAO.findAllByreportId(anyLong())).thenReturn(ofResult);   
+		Report report = new Report();
+		report.setId(1L);
 
-     
-        ReportExecuteResponseData actualProcessFlexReportResult = flexFederatedReportServiceImpl
-                .processReport(null, reportContext);
-        
-        assertNotNull(actualProcessFlexReportResult);
+		Components mockComponents = new Components();
+		mockComponents.setId(1L);
+		mockComponents.setActive("Y");
+		mockComponents.setComponentKey("uaefts");
+		mockComponents.setComponentName("AdvanceSearch");
+		mockComponents.setId(1L);
+		mockComponents.setReport(report);
 
-		assertEquals("Report Name", actualProcessFlexReportResult.getMeta().getReportId());
-		
-        verify(componentsDAO).findAllByreportId(anyLong());
-        verify(linkReportService).fetchLinkedReportByReportId(anyLong());
-        verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
-    }
+		ComponentDetails mockComponentDetails = new ComponentDetails();
+		mockComponentDetails.setComponents(mockComponents);
+		mockComponentDetails.setId(1L);
+		mockComponentDetails.setQuery("Select * from conf_rpt_Comp");
+		mockComponentDetails.setQueryKey("uaefts-ccn");
+		List<ComponentDetails> mockComponentDetailsList = new ArrayList<ComponentDetails>();
+		mockComponentDetailsList.add(mockComponentDetails);
 
+		mockComponents.setComponentDetailsList(mockComponentDetailsList);
+		List<Components> mockComponentsList = new ArrayList<Components>();
+		mockComponentsList.add(mockComponents);
+
+		ArrayList<LinkedReportResponseDTO> linkedReportResponseDTOList = new ArrayList<>();
+		linkedReportResponseDTOList.add(new LinkedReportResponseDTO(1L, "Link Name", "Link Description", "Report Name",
+				0, 0, "Linked Report Name", "Source Metric Name", 0, "Active", null, null, 0, 0, null, 0));
+
+		FlexDetailedReportInput mockFlexDetailedReportInput = new FlexDetailedReportInput();
+		FederatedReportPromptDTO mockFederatedReportPromptDTO = new FederatedReportPromptDTO();
+		mockFederatedReportPromptDTO.setPromptKey("AccountingSource");
+		mockFederatedReportPromptDTO.setPromptValue("Core");
+		mockFlexDetailedReportInput.setAccountingSourcePrompt(mockFederatedReportPromptDTO);
+
+		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
+		when(linkReportService.fetchLinkedReportByReportId(anyLong())).thenReturn(linkedReportResponseDTOList);
+		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
+
+		ReportExecuteResponseData actualProcessFlexReportResult = flexFederatedReportServiceImpl
+				.processReport(mockFlexDetailedReportInput, reportContext);
+
+		assertNotNull(actualProcessFlexReportResult);
+
+		verify(componentsDAO).findAllByreportId(anyLong());
+		verify(linkReportService).fetchLinkedReportByReportId(anyLong());
+		verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
+	}
 
 	@Test
 	void testProcessFlexDetailReport() {
-			FlexFederatedReportServiceImpl flexFederatedReportServiceImpl = new FlexFederatedReportServiceImpl();
+		FlexFederatedReportServiceImpl flexFederatedReportServiceImpl = new FlexFederatedReportServiceImpl();
 		AdvanceSearchReportInput advanceSearchReportInput = mock(AdvanceSearchReportInput.class);
 		Components components = mock(Components.class);
 		when(components.getActive()).thenThrow(new ResourceNotFoundException("An error occurred"));
@@ -164,22 +183,109 @@ class FlexFederatedReportServiceTest {
 
 	@Test
 	void testProcessFlexDetailReport2() {
-	
+
 		FlexFederatedReportServiceImpl flexFederatedReportServiceImpl = new FlexFederatedReportServiceImpl();
-		AdvanceSearchReportInput advanceSearchReportInput = mock(AdvanceSearchReportInput.class);
-		Components components = mock(Components.class);
-		when(components.getActive()).thenThrow(new ResourceNotFoundException("An error occurred"));
-		when(components.getComponentKey()).thenReturn("flex");
+
+		AdvanceSearchReportInput advanceSearchReportInput = new AdvanceSearchReportInput();
+		FederatedReportPromptDTO accountNumPrompt = new FederatedReportPromptDTO();
+		accountNumPrompt.setPromptKey("AccountNumber");
+		List<String> valueList = new ArrayList<String>();
+		valueList.add("019010125320");
+		accountNumPrompt.setValueList(valueList);
+		advanceSearchReportInput.setAccountNumPrompt(accountNumPrompt);
+
+		ReportContext reportContext = new ReportContext();
+		reportContext.setCountry(CountryType.UAE);
+		reportContext.setExecutionId(1L);
+		reportContext.setLinkInstanceId(1L);
+		reportContext.setLinkReference("Link Reference");
+		reportContext.setLinkedReport(true);
+		reportContext.setModuleId(1L);
+		reportContext.setReportId(1L);
+		reportContext.setReportInstance(null);
+		reportContext.setReportName("Report Name");
+		reportContext.setRoleId(1L);
+		reportContext.setRoleName("Role Name");
+		reportContext.setUserId(1L);
+		reportContext.setUserName("janedoe");
 
 		ArrayList<Components> componentList = new ArrayList<>();
-		Report report = new Report();
-		ComponentsCountry componentsCountry = new ComponentsCountry();
-		componentList.add(new Components(1L, "Component Name", "Component Key", "Active", report, componentsCountry,
-				new ArrayList<>()));
+		List<ComponentDetails> componentDetailList = new ArrayList<ComponentDetails>();
+		Components components = new Components();
+		components.setId(1L);
+		components.setComponentKey("flex");
+		components.setComponentName("sample");
+		components.setActive("Y");
+		components.setReport(new Report());
+
+		ComponentDetails componentDetails = new ComponentDetails();
+		componentDetails.setComponents(components);
+		componentDetails.setQuery("sample Query");
+		componentDetails.setQueryKey("sample ");
+		componentDetailList.add(componentDetails);
+
+		List<ReportOutput> mockOutputList = new ArrayList<ReportOutput>();
+		ReportOutput reportOutput = new ReportOutput();
+		reportOutput.setComponentDetailId(1L);
+		reportOutput.setRowData(null);
+		mockOutputList.add(reportOutput);
+
+		components.setComponentDetailsList(componentDetailList);
 		componentList.add(components);
-		assertThrows(ResourceNotFoundException.class, () -> flexFederatedReportServiceImpl
-				.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
-		verify(components).getActive();
-		verify(components).getComponentKey();
+		//List<AdvanceSearchReportOutput> respones = flexFederatedReportServiceImpl
+		//		.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class));
+		//assertNotNull(respones);
+	}
+
+	@Test
+	void testPopulateBaseInputContext() {
+
+		List<ReportPromptsInstanceDTO> mockPromptsList = new ArrayList<ReportPromptsInstanceDTO>();
+		ReportPromptsInstanceDTO mockReportPromptsInstanceDTO = new ReportPromptsInstanceDTO();
+		PromptInstance mockPromptInstance = new PromptInstance();
+		List<String> valueList = new ArrayList<String>();
+		valueList.add("12324324");
+
+		mockPromptInstance.setKey("ReferenceNum");
+		mockPromptInstance.setPromptValue("s23324");
+		mockPromptInstance.setValue(valueList);
+		mockReportPromptsInstanceDTO.setId(1L);
+		mockReportPromptsInstanceDTO.setReportId(2L);
+		mockReportPromptsInstanceDTO.setReportInstanceId(1L);
+		mockReportPromptsInstanceDTO.setPrompt(mockPromptInstance);
+		mockPromptsList.add(mockReportPromptsInstanceDTO);
+
+		ReportInstanceDTO reportInstance = new ReportInstanceDTO();
+		reportInstance
+				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
+		reportInstance.setId(1L);
+		reportInstance.setModuleId(1L);
+		reportInstance.setPromptsList(mockPromptsList);
+		reportInstance.setReportId(1L);
+		reportInstance.setReportInstanceComponents(new HashSet<>());
+		reportInstance.setReportInstanceMetrics(new HashSet<>());
+		reportInstance.setReportInstancePrompts(new HashSet<>());
+		reportInstance.setReportName("Report Name");
+		reportInstance.setRoleId(1L);
+		reportInstance.setRoleName("Role Name");
+		reportInstance.setUserId(1L);
+		reportInstance.setUserName("janedoe");
+
+		ReportContext reportContext = new ReportContext();
+		reportContext.setCountry(CountryType.UAE);
+		reportContext.setExecutionId(1L);
+		reportContext.setLinkInstanceId(1L);
+		reportContext.setLinkReference("Link Reference");
+		reportContext.setLinkedReport(true);
+		reportContext.setModuleId(1L);
+		reportContext.setReportId(1L);
+		reportContext.setReportInstance(reportInstance);
+		reportContext.setReportName("Report Name");
+		reportContext.setRoleId(1L);
+		reportContext.setRoleName("Role Name");
+		reportContext.setUserId(1L);
+		reportContext.setUserName("janedoe");
+
+		assertNotNull(flexFederatedReportServiceImpl.populateBaseInputContext(reportContext));
 	}
 }

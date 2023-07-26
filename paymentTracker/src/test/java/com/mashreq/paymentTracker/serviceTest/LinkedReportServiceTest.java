@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.serviceTest;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -7,7 +8,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -53,17 +57,24 @@ public class LinkedReportServiceTest {
 
 	@Mock
 	ModuleDAO moduleDAO;
-	
+
 	@Mock
 	private ComponentsDAO componentsDAO;
 
 	@Mock
 	private ComponentDetailsDAO componentsDetailsDAO;
-	
-	@Test
-	public void testSaveOrUpdateLinkedReport() {
-		LinkedReportRequestDTO linkedReportRequestDTO = new LinkedReportRequestDTO();
-		linkedReportRequestDTO.setId(1L);
+
+	LinkedReportRequestDTO linkedReportRequestDTO = new LinkedReportRequestDTO();
+	ApplicationModule moduleMockObject = new ApplicationModule();
+	Report mockReportsResponse = new Report();
+	Components mockComponents = new Components();
+	ComponentDetails mockComponentDetails = new ComponentDetails();
+	LinkedReportInfo mocklinkedReportInfo = new LinkedReportInfo();
+	Metrics metricsMockObject = new Metrics();
+
+	@BeforeEach
+	public void setUp() {
+
 		linkedReportRequestDTO.setLinkName("SampleReference");
 		linkedReportRequestDTO.setLinkDescription("Referene Detail Report");
 		linkedReportRequestDTO.setLinkedReportId(1L);
@@ -73,17 +84,14 @@ public class LinkedReportServiceTest {
 		linkedReportRequestDTO.setModuleId(1L);
 		linkedReportRequestDTO.setComponentDetailId(1L);
 		linkedReportRequestDTO.setComponentId(2L);
-		LinkedReportInfo linkedReportModel = modelMapper.map(linkedReportRequestDTO, LinkedReportInfo.class);
-		
-		ApplicationModule moduleMockObject = new ApplicationModule();
+
 		moduleMockObject.setId(1L);
 		moduleMockObject.setModuleName("module1");
 		moduleMockObject.setDisplayName("sampleModule");
 		moduleMockObject.setModuleDescription("ModuleDesc");
 		moduleMockObject.setActive("active");
 		moduleMockObject.setValid("valid");
-		
-		Report mockReportsResponse = new Report();
+
 		mockReportsResponse.setActive("y");
 		mockReportsResponse.setDisplayName("Reference Number");
 		mockReportsResponse.setId(1L);
@@ -100,31 +108,57 @@ public class LinkedReportServiceTest {
 		linkedReportResponse.setReportDescription("Search");
 		linkedReportResponse.setReportName("Refernce_No");
 		linkedReportResponse.setValid("N");
-		
-		Components mockComponents = new Components();
+
 		mockComponents.setActive("active");
 		mockComponents.setComponentKey("test-component");
 		mockComponents.setComponentName("Test Component");
-		
-		ComponentDetails mockComponentDetails = new ComponentDetails();
+
 		mockComponentDetails.setComponents(mockComponents);
 		mockComponentDetails.setId(1L);
 		mockComponentDetails.setQuery("sample Query key");
 		mockComponentDetails.setQueryKey("query");
-		
-		Metrics metricsMockObject = new Metrics();
+
 		metricsMockObject.setDisplay("y");
 		metricsMockObject.setDisplayName("sampleMetrics");
 		metricsMockObject.setEntityId(BigInteger.ZERO);
 		metricsMockObject.setId(1L);
 		metricsMockObject.setMetricsOrder(BigInteger.ONE);
 		metricsMockObject.setReport(mockReportsResponse);
-		
+
+		mocklinkedReportInfo.setId(1L);
+		mocklinkedReportInfo.setLinkName("SampleReference");
+		mocklinkedReportInfo.setLinkDescription("Referene Detail Report");
+		mocklinkedReportInfo.setReport(mockReportsResponse);
+		mocklinkedReportInfo.setLinkedReport(linkedReportResponse);
+		mocklinkedReportInfo.setSourceMetrics(metricsMockObject);
+		mocklinkedReportInfo.setActive("y");
+		mocklinkedReportInfo.setComponentDetailId(mockComponentDetails);
+		mocklinkedReportInfo.setComponentId(mockComponents);
+		mocklinkedReportInfo.setModule(moduleMockObject);
+	}
+
+	@Test
+	public void testUpdateLinkedReport() {
+		linkedReportRequestDTO.setId(1L);
+		LinkedReportInfo linkedReportModel = modelMapper.map(linkedReportRequestDTO, LinkedReportInfo.class);
 		Mockito.when(moduleDAO.findById(linkedReportRequestDTO.getModuleId())).thenReturn(moduleMockObject);
 		Mockito.when(mockReportDAO.getReportById(1L)).thenReturn(mockReportsResponse);
 		Mockito.when(componentsDAO.findById(1L)).thenReturn(mockComponents);
 		Mockito.when(componentsDetailsDAO.findById(1L)).thenReturn(mockComponentDetails);
-		
+
+		when(mockLinkedReportDAO.update(linkedReportModel)).thenReturn(linkedReportModel);
+		linkedReportServiceImpl.saveOrUpdateLinkedReport(linkedReportRequestDTO);
+	}
+
+	@Test
+	public void testSaveLinkedReport() {
+		LinkedReportInfo linkedReportModel = modelMapper.map(linkedReportRequestDTO, LinkedReportInfo.class);
+
+		Mockito.when(moduleDAO.findById(linkedReportRequestDTO.getModuleId())).thenReturn(moduleMockObject);
+		Mockito.when(mockReportDAO.getReportById(1L)).thenReturn(mockReportsResponse);
+		Mockito.when(componentsDAO.findById(1L)).thenReturn(mockComponents);
+		Mockito.when(componentsDetailsDAO.findById(1L)).thenReturn(mockComponentDetails);
+
 		when(mockLinkedReportDAO.save(linkedReportModel)).thenReturn(linkedReportModel);
 		linkedReportServiceImpl.saveOrUpdateLinkedReport(linkedReportRequestDTO);
 	}
@@ -135,60 +169,8 @@ public class LinkedReportServiceTest {
 		long linkedReportId = 1L;
 		long sourceId = 1L;
 		long reportId = 1L;
-		ComponentDetails componentDetails = new ComponentDetails(1L, "Select * from conf_report", "sample Query", null);
 
-		Components components = new Components();
-		components.setActive("active");
-		components.setComponentKey("test-component");
-		components.setComponentName("Test Component");
-
-		Report mockReportsResponse = new Report();
-		mockReportsResponse.setActive("y");
-		mockReportsResponse.setDisplayName("Reference Number");
-		mockReportsResponse.setId(1L);
-		mockReportsResponse.setReportCategory("Reference");
-		mockReportsResponse.setReportDescription("Search");
-		mockReportsResponse.setReportName("Refernce_No");
-		mockReportsResponse.setValid("N");
-
-		Report linkedReportResponse = new Report();
-		linkedReportResponse.setActive("y");
-		linkedReportResponse.setDisplayName("LinkedReportDisplay");
-		linkedReportResponse.setId(1L);
-		linkedReportResponse.setReportCategory("Reference");
-		linkedReportResponse.setReportDescription("Search");
-		linkedReportResponse.setReportName("Refernce_No");
-		linkedReportResponse.setValid("N");
-
-		Metrics metricsMockObject = new Metrics();
-		metricsMockObject.setDisplay("y");
-		metricsMockObject.setDisplayName("sampleMetrics");
-		metricsMockObject.setEntityId(BigInteger.ZERO);
-		metricsMockObject.setId(1L);
-		metricsMockObject.setMetricsOrder(BigInteger.ONE);
-		metricsMockObject.setReport(mockReportsResponse);
-
-		ApplicationModule moduleMockObject = new ApplicationModule();
-		moduleMockObject.setId(1L);
-		moduleMockObject.setModuleName("module1");
-		moduleMockObject.setDisplayName("sampleModule");
-		moduleMockObject.setModuleDescription("ModuleDesc");
-		moduleMockObject.setActive("active");
-		moduleMockObject.setValid("valid");
-		
-		LinkedReportInfo linkedReportInfo = new LinkedReportInfo();
-		linkedReportInfo.setId(1L);
-		linkedReportInfo.setLinkName("SampleReference");
-		linkedReportInfo.setLinkDescription("Referene Detail Report");
-		linkedReportInfo.setReport(mockReportsResponse);
-		linkedReportInfo.setLinkedReport(linkedReportResponse);
-		linkedReportInfo.setSourceMetrics(metricsMockObject);
-		linkedReportInfo.setActive("y");
-		linkedReportInfo.setComponentDetailId(componentDetails);
-		linkedReportInfo.setComponentId(components);
-		linkedReportInfo.setModule(moduleMockObject);
-		
-		Mockito.when(mockLinkedReportDAO.findById(linkedReportId)).thenReturn(linkedReportInfo);
+		Mockito.when(mockLinkedReportDAO.findById(linkedReportId)).thenReturn(mocklinkedReportInfo);
 		Mockito.when(mockMetricsDAO.getMetricsById(sourceId)).thenReturn(metricsMockObject);
 		Mockito.when(mockReportDAO.getReportById(reportId)).thenReturn(mockReportsResponse);
 
@@ -208,4 +190,27 @@ public class LinkedReportServiceTest {
 		verify(mockLinkedReportDAO).deleteById(1L);
 	}
 
+	@Test
+	void testFetchLinkedReportByReportId() {
+		List<LinkedReportInfo> mockList = new ArrayList<LinkedReportInfo>();
+		mockList.add(mocklinkedReportInfo);
+		long reportId = 1;
+		Mockito.when(mockLinkedReportDAO.findAllByReportId(reportId)).thenReturn(mockList);
+		List<LinkedReportResponseDTO> linkedReportResponseDTO = linkedReportServiceImpl
+				.fetchLinkedReportByReportId(reportId);
+		assertNotNull(linkedReportResponseDTO);
+		verify(mockLinkedReportDAO, times(1)).findAllByReportId(reportId);
+	}
+
+	@Test
+	void testFetchLinkedReportByModuleId() {
+		long moduleId = 1;
+		List<LinkedReportInfo> mockList = new ArrayList<LinkedReportInfo>();
+		mockList.add(mocklinkedReportInfo);
+		Mockito.when(mockLinkedReportDAO.findByAllModuleId(moduleId)).thenReturn(mockList);
+		List<LinkedReportResponseDTO> linkedReportResponseDTO = linkedReportServiceImpl
+				.fetchLinkedReportByModuleId(moduleId);
+		assertNotNull(linkedReportResponseDTO);
+		verify(mockLinkedReportDAO, times(1)).findByAllModuleId(moduleId);
+	}
 }
