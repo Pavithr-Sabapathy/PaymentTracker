@@ -35,11 +35,9 @@ import com.mashreq.paymentTracker.dto.ReportQueryInfoDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
-import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportQueryInfoService;
 import com.mashreq.paymentTracker.utility.CheckType;
-import com.mashreq.paymentTracker.utility.SourceConnectionUtil;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Component

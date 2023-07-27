@@ -1,12 +1,13 @@
 package com.mashreq.paymentTracker.controllerTest;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doNothing;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +27,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.mashreq.paymentTracker.TestUtils;
 import com.mashreq.paymentTracker.dto.ModuleDTO;
 import com.mashreq.paymentTracker.dto.ModuleResponseDTO;
-import com.mashreq.paymentTracker.model.ApplicationModule;
 import com.mashreq.paymentTracker.serviceImpl.ModuleServiceImpl;
 
 @SpringBootTest
@@ -34,12 +34,12 @@ import com.mashreq.paymentTracker.serviceImpl.ModuleServiceImpl;
 public class ModuleControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
-	
+
 	@MockBean
 	private ModuleServiceImpl mockModuleService;
-	
+
 	@Test
-	public void testFetchModule() throws Exception{
+	public void testFetchModule() throws Exception {
 		ModuleResponseDTO moduleMockObject = new ModuleResponseDTO();
 		moduleMockObject.setModuleName("module1");
 		moduleMockObject.setDisplayName("sampleModule");
@@ -50,42 +50,73 @@ public class ModuleControllerTest {
 		List<ModuleResponseDTO> mockMetricsResponseDTOList = Arrays.asList(moduleMockObject);
 		Mockito.when(mockModuleService.fetchAllModule()).thenReturn(mockMetricsResponseDTOList);
 
-		mockMvc.perform(get("/module")).andExpect(status().isOk())
-		                                .andExpect(jsonPath("$", Matchers.hasSize(1)))
+		mockMvc.perform(get("/module")).andExpect(status().isOk()).andExpect(jsonPath("$", Matchers.hasSize(1)))
 				.andExpect(jsonPath("$[0].moduleName", Matchers.is("module1")));
 	}
-	
+
+	@Test
+	void testFetchModuleByName() throws Exception {
+		List<ModuleResponseDTO> mockModuleResponseList = new ArrayList<ModuleResponseDTO>();
+		ModuleResponseDTO mockModuleResponseDTO = new ModuleResponseDTO();
+		mockModuleResponseDTO.setModuleName("module1");
+		mockModuleResponseList.add(mockModuleResponseDTO);
+
+		String moduleName = "Payment Tracker";
+		when(mockModuleService.fetchModuleByName(moduleName)).thenReturn(mockModuleResponseList);
+		mockMvc.perform(get("/module/{moduleName}", moduleName)).andExpect(status().isOk());
+
+	}
+
 	@Test
 	public void testSaveModule() throws Exception {
-		
-		ApplicationModule moduleMockObject = new ApplicationModule();
+
 		ModuleDTO moduleDTO = new ModuleDTO();
 		moduleDTO.setName("module1");
 		moduleDTO.setDisplayName("sampleModule");
 		moduleDTO.setModuleDescription("ModuleDesc");
 		moduleDTO.setActive("active");
 		moduleDTO.setValid("valid");
-	        doNothing().when(mockModuleService).saveModule(moduleDTO);;
+		ModuleResponseDTO mockModuleResponseDTO = new ModuleResponseDTO();
+		mockModuleResponseDTO.setModuleName("module1");
+		when(mockModuleService.saveModule(moduleDTO)).thenReturn(mockModuleResponseDTO);
+		MvcResult result = mockMvc
+				.perform(MockMvcRequestBuilders.post("/module").contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON).content(TestUtils.objectToJson(moduleDTO)))
+				.andReturn();
 
-	        MvcResult result =   mockMvc.perform(MockMvcRequestBuilders.post("/module")
-	        		.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
-	        		.content(TestUtils.objectToJson(moduleMockObject))).andReturn();
+		int status = result.getResponse().getStatus();
+		assertEquals(HttpStatus.OK.value(), status);
+		String reportResponse = result.getResponse().getContentAsString();
 
-	        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
-
-	
 	}
+
+	@Test
+	void testUpdateReport() throws Exception {
+		ModuleDTO moduleDTO = new ModuleDTO();
+		moduleDTO.setName("module1");
+		moduleDTO.setDisplayName("sampleModule");
+		moduleDTO.setModuleDescription("ModuleDesc");
+		moduleDTO.setActive("active");
+		moduleDTO.setValid("valid");
+		ModuleResponseDTO mockModuleResponseDTO = new ModuleResponseDTO();
+		mockModuleResponseDTO.setModuleName("module1");
+		when(mockModuleService.updateModule(moduleDTO, 1L)).thenReturn(mockModuleResponseDTO);
+		MvcResult result = mockMvc
+				.perform(MockMvcRequestBuilders.put("/module/{moduleId}", 1).contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON).content(TestUtils.objectToJson(moduleDTO)))
+				.andReturn();
+
+		int status = result.getResponse().getStatus();
+		assertEquals(HttpStatus.OK.value(), status);
+		String reportResponse = result.getResponse().getContentAsString();
+	}
+
 	@Test
 	public void testdeleteModule() throws Exception {
 		long moduleId = 1L;
-		mockMvc.perform(MockMvcRequestBuilders.delete("/module/{moduleId}", moduleId))
-				.andExpect(status().isOk());
+		mockMvc.perform(MockMvcRequestBuilders.delete("/module/{moduleId}", moduleId)).andExpect(status().isOk());
 		verify(mockModuleService).deleteModule(moduleId);
 
-
 	}
-	
+
 }
-	
-
-

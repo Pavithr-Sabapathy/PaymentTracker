@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.dto.DataSourceRequestDTO;
 import com.mashreq.paymentTracker.dto.DataSourceResponseDTO;
-import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.DataSourceConfigService;
 
 import jakarta.validation.Valid;
