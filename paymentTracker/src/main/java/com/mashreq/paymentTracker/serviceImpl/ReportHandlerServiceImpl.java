@@ -3,7 +3,6 @@ package com.mashreq.paymentTracker.serviceImpl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
+import com.mashreq.paymentTracker.dao.ReportDataDAO;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.EntityDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
@@ -40,10 +40,9 @@ import com.mashreq.paymentTracker.model.ReportInstance;
 import com.mashreq.paymentTracker.model.ReportInstancePrompt;
 import com.mashreq.paymentTracker.model.Roles;
 import com.mashreq.paymentTracker.model.Users;
-import com.mashreq.paymentTracker.repository.ReportDataRepository;
-import com.mashreq.paymentTracker.repository.ReportExecutionRepoistory;
 import com.mashreq.paymentTracker.repository.ReportInstanceRepository;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
+import com.mashreq.paymentTracker.service.ReportExecutionService;
 import com.mashreq.paymentTracker.service.ReportHandlerService;
 import com.mashreq.paymentTracker.type.EntityType;
 import com.mashreq.paymentTracker.utility.DateTimeUtil;
@@ -67,11 +66,8 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 	ReportInstanceRepository reportInstanceRepo;
 
 	@Autowired
-	ReportExecutionRepoistory reportExecutionRepo;
-
-	@Autowired
-	ReportDataRepository reportDataRepo;
-
+	ReportExecutionService reportExecutionService;
+	
 	@Override
 	public ReportExecuteResponseData executeReport(String reportName, ReportExecutionRequest reportExecutionRequest) {
 
@@ -111,12 +107,12 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			reportDataDTO.setReportExecutionId(reportContext.getExecutionId());
 			reportDataDTO.setReportData(jsonData);
 			ReportData reportData = populateReportData(reportDataDTO);
-			reportDataRepo.save(reportData);
+			reportExecutionService.saveReportData(reportData);
 
 			Date endTime = new Date();
 			reportExecutionMetaDTO = populateReportExecutionResponseMeta(startTime, endTime, reportName);
 			reportExecuteResponseData.setMeta(reportExecutionMetaDTO);
-			updateReportExecutionTimeByExecutionId(reportExecutionMetaDTO.getExecutionTime(),
+			reportExecutionService.updateReportExecutionTimeByExecutionId(reportExecutionMetaDTO.getExecutionTime(),
 					reportContext.getExecutionId());
 		} catch (InterruptedException e) {
 			if (null != future)
@@ -135,10 +131,6 @@ public class ReportHandlerServiceImpl implements ReportHandlerService {
 			// TODO - Handle Exception throw new Exception("Report Execution Failed");
 		}
 		return reportExecuteResponseData;
-	}
-
-	private void updateReportExecutionTimeByExecutionId(Long executionTime, Long executionId) {
-		reportExecutionRepo.updateExecutionTimeByExecutionId(executionTime, executionId);
 	}
 
 	private ReportExecuteResponseMetaDTO populateReportExecutionResponseMeta(Date startTime, Date endTime,

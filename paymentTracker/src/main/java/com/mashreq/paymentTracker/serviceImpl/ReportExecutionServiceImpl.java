@@ -7,31 +7,39 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mashreq.paymentTracker.dao.ReportDataDAO;
+import com.mashreq.paymentTracker.dao.ReportExecutionDAO;
 import com.mashreq.paymentTracker.dto.ReportExecutionDTO;
 import com.mashreq.paymentTracker.model.ApplicationModule;
 import com.mashreq.paymentTracker.model.Report;
+import com.mashreq.paymentTracker.model.ReportData;
 import com.mashreq.paymentTracker.model.ReportExecution;
 import com.mashreq.paymentTracker.model.ReportInstance;
 import com.mashreq.paymentTracker.model.Roles;
 import com.mashreq.paymentTracker.model.Users;
-import com.mashreq.paymentTracker.repository.ReportExecutionRepoistory;
 import com.mashreq.paymentTracker.service.ReportExecutionService;
 import com.mashreq.paymentTracker.type.ExecutionStatusType;
 
+import jakarta.transaction.Transactional;
+
 @Service
-public class ReportExecutionServiceImpl implements ReportExecutionService{
+@Transactional
+public class ReportExecutionServiceImpl implements ReportExecutionService {
 
 	private static final Logger log = LoggerFactory.getLogger(ReportExecutionServiceImpl.class);
 	private static final String FILENAME = "ReportExecutionServiceImpl";
-	
+
 	@Autowired
-	ReportExecutionRepoistory reportExecutionRepo;
-	
+	ReportExecutionDAO reportExecutionDAO;
+
+	@Autowired
+	ReportDataDAO reportDataDAO;
+
 	@Override
 	public ReportExecution createReportExecution(ReportExecutionDTO reportExecutionDTO) {
-		log.info(FILENAME+ " inserting report excution with values " + reportExecutionDTO.toString());
+		log.info(FILENAME + " inserting report excution with values " + reportExecutionDTO.toString());
 		ReportExecution reportExecution = populateReportExecution(reportExecutionDTO);
-		ReportExecution reportExecutionResponse = reportExecutionRepo.save(reportExecution);
+		ReportExecution reportExecutionResponse = reportExecutionDAO.save(reportExecution);
 		reportExecution.setId(reportExecutionResponse.getId());
 		return reportExecution;
 	}
@@ -90,13 +98,17 @@ public class ReportExecutionServiceImpl implements ReportExecutionService{
 
 	@Override
 	public void updateReportExecutionStatus(Long executionId, ExecutionStatusType status, Date endDate) {
-		reportExecutionRepo.updateStatusById(executionId, status,endDate);
+		reportExecutionDAO.updateStatusById(executionId, status.getValue(), endDate);
 	}
 
 	@Override
 	public void updateReportExecutionTimeByExecutionId(Long executionTime, Long executionId) {
-		// TODO Auto-generated method stub
-		
+		reportExecutionDAO.updateReportExecutionTimeByExecutionId(executionTime, executionId);
 	}
-	
+
+	@Override
+	public void saveReportData(ReportData reportData) {
+		reportDataDAO.save(reportData);
+	}
+
 }

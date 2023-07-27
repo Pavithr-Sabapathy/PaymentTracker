@@ -16,6 +16,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportExecutionDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
+import com.mashreq.paymentTracker.model.ReportExecution;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportExecutionService;
@@ -48,15 +49,16 @@ public class ReportExecutionThread implements Callable<ReportExecuteResponseData
 
 		// Create report execution instance
 		ReportExecutionDTO reportExecutionDTO = populateReportExecution();
-		reportExecutionService.createReportExecution(reportExecutionDTO);
-		reportContext.setExecutionId(reportExecutionDTO.getId());
+		ReportExecution reportExecutionDTOResponse = reportExecutionService.createReportExecution(reportExecutionDTO);
+		reportContext.setExecutionId(reportExecutionDTOResponse.getId());
 		ReportControllerService reportController = (ReportControllerService) context
 				.getBean(reportContext.getReportName());
 		ReportExecuteResponseData reportExecuteResponseData = (ReportExecuteResponseData) reportController
 				.executeReport(reportContext);
 		Date endTime = new Date();
-		reportExecutionService.updateReportExecutionStatus(reportExecutionDTO.getId(), ExecutionStatusType.COMPLETED, endTime);
-		log.info(reportContext.getReportName()+"Data:  "+ reportExecuteResponseData.toString());
+		reportExecutionService.updateReportExecutionStatus(reportExecutionDTOResponse.getId(), ExecutionStatusType.COMPLETED,
+				endTime);
+		log.info(reportContext.getReportName() + "Data:  " + reportExecuteResponseData.toString());
 		return reportExecuteResponseData;
 	}
 
