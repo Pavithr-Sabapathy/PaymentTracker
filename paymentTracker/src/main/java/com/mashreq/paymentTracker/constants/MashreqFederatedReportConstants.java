@@ -68,7 +68,8 @@ public class MashreqFederatedReportConstants {
 
 	
 	
-	public static final String MESSAGE_DETAILS_UAEFTS_COMPONENT_KEY_STRING = ""
+	public static final String MESSAGE_DETAILS_UAEFTS_COMPONENT_KEY = "uaefts" ;
+	public static final String	MESSAGE_DETAILS_SWIFT_COMPONENT_KEY = "swift" ;
 	
 	
 	
