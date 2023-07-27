@@ -53,10 +53,12 @@ public class MashreqFederatedReportConstants {
 	public static final String MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY = "MessageSubFormat";
 	public static final String MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY = "CorrBank";
 	public static final String MESSAGE_DETAILS_MESSAGE_THROUGH_PROMPT_KEY = "MessageThrough";
+	
 
 	public static final String DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RMESG = "RMESG";
 	public static final String DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RINTV = "RINTV";
-
+	public static final String MESSAGE_THROUGH_SWIFT = "SWIFT";  
+	public static final String MESSAGE_THROUGH_UAEFTS = "UAEFTS";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RMESG = "msg-rmesg";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RINTV = "msg-rintv";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RTEXTFIELD = "msg-rtextfield";
@@ -64,6 +66,12 @@ public class MashreqFederatedReportConstants {
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RCORR = "msg-rcorr";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW = "msg-stx-entry-field-view";
 
+	
+	
+	public static final String MESSAGE_DETAILS_UAEFTS_COMPONENT_KEY_STRING = ""
+	
+	
+	
 	public static final String ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY = "FromDate";
 	public static final String ADVANCE_SEARCH_TO_DATE_PROMPT_KEY = "ToDate";
 	public static final String ADVANCE_SEARCH_ACCOUNT_NUMBER_PROMPT_KEY = "AccountNumber";
@@ -88,7 +96,9 @@ public class MashreqFederatedReportConstants {
 	public static final String ADVANCE_SEARCH_UAEFTS_CCN_KEY = "uaefts-ccn";
 
 	public static final String SNAPP_MWLOG_DETAIL_KEY = "mwlog-detail";
+	public static final String MOL_AUTH_DATA_DETAIL_KEY = "auth-data-detail";
 	public static final String SNAPP_MWLOG = "mwlog";
+	public static final String MOL_AUTH_DATA = "authdata";
 	public static final String GPI_ENABLED_IPALA_CODE = "IPLAGPIA";
 
 	public static final String COMPLETED_ACTIVITY_STATUS = "Completed";
@@ -168,6 +178,7 @@ public class MashreqFederatedReportConstants {
 	public static final String PENDING_ACTIVITY_STATUS = "Pending";
 
 	public static final String SOURCE_SYSTEM_SNAPP = "SNAPP";
+	public static final String SOURCE_SYSTEM_MOL = "MOL";
 	public static final String DATE_FORMATS_KEY = "federated-reports.static-values.mashreq.date-formats.format";
 	public static final String VALUE_DATE_FORMAT_KEY = "dd-MMM-yyyy";
 	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "federated-reports.static-values.mashreq.retrieve-till-prompt-default-value";
