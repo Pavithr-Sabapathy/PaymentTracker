@@ -328,18 +328,18 @@ public class SnappReportServiceImpl extends ReportControllerServiceImpl implemen
 
 	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> reportPromptsList,
 			String promptKey) {
+		ReportPromptsInstanceDTO reportInstancePrompt = new ReportPromptsInstanceDTO();
 		FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
 		Optional<ReportPromptsInstanceDTO> promptsOptional = reportPromptsList.stream()
 				.filter(prompts -> prompts.getPrompt().getKey().equalsIgnoreCase(promptKey)).findAny();
-		ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
+		if (promptsOptional.isPresent())
+			reportInstancePrompt = promptsOptional.get();
 		if (null != reportInstancePrompt) {
 			List<String> promptsList = new ArrayList<String>();
 			if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
 				promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
 			}
-			if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty())
-				;
-			{
+			if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty()) {
 				promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
 			}
 			String promptValue = promptsList.stream().collect(Collectors.joining(","));

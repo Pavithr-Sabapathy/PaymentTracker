@@ -71,8 +71,8 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 		return advanceSearchReportOutputList;
 	}
 
-	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(
-			List<ReportOutput> federatedReportOutputList, AdvanceSearchReportInput advanceSearchReportInput) {
+	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(List<ReportOutput> federatedReportOutputList,
+			AdvanceSearchReportInput advanceSearchReportInput) {
 
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 
@@ -125,12 +125,14 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 	}
 
 	private Components getMatchedInstanceComponent(List<Components> componentList, String componentKey) {
+		Components componentObj = new Components();
 		Optional<Components> componentOptional = componentList.stream()
 				.filter(component -> component.getComponentKey().equalsIgnoreCase(componentKey)
 						&& component.getActive().equalsIgnoreCase(MashreqFederatedReportConstants.YES))
 				.findFirst();
-		Components component = componentOptional.get();
-		return component;
+		if (componentOptional.isPresent())
+			componentObj = componentOptional.get();
+		return componentObj;
 
 	}
 
