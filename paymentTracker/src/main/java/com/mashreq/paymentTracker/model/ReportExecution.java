@@ -10,12 +10,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "ops_rpt_exec")
-public class ReportExecution implements Serializable{
+@NamedQueries({
+		@NamedQuery(name = "ReportExecution.updateStatusById", query = "update ReportExecution set executionStatus=:status , endDate=:endDate  where id=:executionId"),
+		@NamedQuery(name = "ReportExecution.updateExecutionTimeByExecutionId", query = "update ReportExecution set executionTime=:executionTime  where id=:executionId") })
+
+public class ReportExecution implements Serializable {
 
 	/**
 	 * 
@@ -174,6 +180,5 @@ public class ReportExecution implements Serializable{
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-
 
 }

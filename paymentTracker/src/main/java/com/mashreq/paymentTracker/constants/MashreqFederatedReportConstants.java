@@ -41,7 +41,7 @@ public class MashreqFederatedReportConstants {
 	public static final String FLEX_DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=Flex;encrypt=true;trustServerCertificate=true";
 	public static final String SWIFT_DATABASE_URL = "jdbc:sqlserver://localhost:1433;databaseName=Swift;encrypt=true;trustServerCertificate=true";
 	public static final String DATABASE_USERNAME = "TestLogin";
-	public static final String DATABASE_PASSWORD = "Sample";
+	public static final String DATABASE_PASSWORD = "sample@12345";
 
 	/** Swift detail prompts constants **/
 	public static final String AID_PROMPT_KEY = "aid";

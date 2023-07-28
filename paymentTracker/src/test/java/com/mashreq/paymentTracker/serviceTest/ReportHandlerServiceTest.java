@@ -29,6 +29,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mashreq.paymentTracker.dao.ReportDataDAO;
+import com.mashreq.paymentTracker.dao.ReportExecutionDAO;
 import com.mashreq.paymentTracker.dto.APIResponse;
 import com.mashreq.paymentTracker.dto.PromptsProcessingRequest;
 import com.mashreq.paymentTracker.dto.ReportContext;
@@ -40,8 +42,6 @@ import com.mashreq.paymentTracker.dto.ReportExecutionRequest;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.model.ReportInstance;
-import com.mashreq.paymentTracker.repository.ReportDataRepository;
-import com.mashreq.paymentTracker.repository.ReportExecutionRepoistory;
 import com.mashreq.paymentTracker.repository.ReportInstanceRepository;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
@@ -56,10 +56,10 @@ class ReportHandlerServiceTest {
 	private ReportConfigurationService reportConfigurationService;
 
 	@MockBean
-	private ReportDataRepository reportDataRepository;
+	private ReportDataDAO reportDataRepository;
 
 	@MockBean
-	private ReportExecutionRepoistory reportExecutionRepoistory;
+	private ReportExecutionDAO reportExecutionRepoistory;
 
 	@Autowired
 	private ReportHandlerServiceImpl reportHandlerServiceImpl;
