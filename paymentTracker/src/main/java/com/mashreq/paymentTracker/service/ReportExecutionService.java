@@ -3,6 +3,7 @@ package com.mashreq.paymentTracker.service;
 import java.util.Date;
 
 import com.mashreq.paymentTracker.dto.ReportExecutionDTO;
+import com.mashreq.paymentTracker.model.ReportData;
 import com.mashreq.paymentTracker.model.ReportExecution;
 import com.mashreq.paymentTracker.type.ExecutionStatusType;
 
@@ -14,4 +15,5 @@ public interface ReportExecutionService {
 
 	public void updateReportExecutionTimeByExecutionId(Long executionTime, Long executionId);
 
+	public void saveReportData(ReportData reportData);
 }

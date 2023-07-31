@@ -133,9 +133,7 @@ public class FlexFederatedReportServiceImpl extends ReportControllerServiceImpl 
 				if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
 					promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
 				}
-				if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty())
-					;
-				{
+				if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty()) {
 					promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
 				}
 				String promptValue = promptsList.stream().collect(Collectors.joining(","));

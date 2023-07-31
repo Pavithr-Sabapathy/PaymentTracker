@@ -2,12 +2,23 @@ package com.mashreq.paymentTracker.dto;
 
 import java.io.Serializable;
 
-public class MessageDetailsFederatedReportInput implements Serializable {
+import com.mashreq.paymentTracker.service.ReportInput;
+
+public class MessageDetailsFederatedReportInput implements Serializable ,ReportInput{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 7204088691118757836L;
+	public ReportComponentDTO getComponent() {
+		return component;
+	}
+
+	public void setComponent(ReportComponentDTO instanceComponent) {
+		this.component = instanceComponent;
+	}
+
+	private ReportComponentDTO component;
 	private FederatedReportPromptDTO referenceNumPrompt;
 	private FederatedReportPromptDTO messageTypePrompt;
 	private FederatedReportPromptDTO messageThroughPrompt;

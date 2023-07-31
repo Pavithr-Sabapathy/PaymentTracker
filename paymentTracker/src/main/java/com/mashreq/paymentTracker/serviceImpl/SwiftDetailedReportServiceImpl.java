@@ -725,18 +725,17 @@ public class SwiftDetailedReportServiceImpl extends ReportControllerServiceImpl 
 	}
 
 	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> list, String promptKey) {
+		ReportPromptsInstanceDTO reportInstancePrompt = new ReportPromptsInstanceDTO();
+		List<String> promptsList = new ArrayList<String>();
 		FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
 		Optional<ReportPromptsInstanceDTO> promptsOptional = list.stream()
 				.filter(prompts -> prompts.getPrompt().getKey().equalsIgnoreCase(promptKey)).findAny();
-		ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
-		if (null != reportInstancePrompt) {
-			List<String> promptsList = new ArrayList<String>();
+		if (promptsOptional.isPresent()) {
+			reportInstancePrompt = promptsOptional.get();
 			if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
 				promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
 			}
-			if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty())
-				;
-			{
+			if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty()) {
 				promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
 			}
 			String promptValue = promptsList.stream().collect(Collectors.joining(","));

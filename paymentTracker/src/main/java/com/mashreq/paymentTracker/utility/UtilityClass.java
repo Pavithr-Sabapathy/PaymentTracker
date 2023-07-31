@@ -9,9 +9,13 @@ import java.lang.reflect.Modifier;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.jdom.Element;
+
+
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
@@ -24,6 +28,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
+
 import org.springframework.stereotype.Component;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
@@ -312,6 +317,31 @@ public class UtilityClass {
 		}
 		return colDate;
 	}
+	  @SuppressWarnings ("unchecked")
+	   public static Element findElement (String elem, Element current) {
+		
+	      Element data = null;
+	      List<Element> alElements = new ArrayList<Element>();
+	      findElements(elem, current, alElements);
+	      if (!alElements.isEmpty()) {
+	         data = alElements.get(0);
+	      }
+	      return data;
+	   }
+	  
+	   @SuppressWarnings ("unchecked")
+	   public static void findElements (String elem, Element current, List<Element> alElements) {
+	      List<Element> children = current.getChildren();
+	      Iterator<Element> it = children.iterator();
+	      while (it.hasNext()) {
+	         Element child = (Element) it.next();
+	         findElements(elem, child, alElements);
+	      }
+
+	      if (current.getName().equalsIgnoreCase(elem)) {
+	         alElements.add(current);
+	      }
+	   }
 	
 	
 }
