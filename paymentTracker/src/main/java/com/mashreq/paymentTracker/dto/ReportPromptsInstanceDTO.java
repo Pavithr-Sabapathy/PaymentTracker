@@ -9,7 +9,7 @@ public class ReportPromptsInstanceDTO implements Serializable {
 	private Long reportId;
 	private Long reportInstanceId;
 	private PromptInstance prompt;
-
+	
 	public Long getId() {
 		return id;
 	}

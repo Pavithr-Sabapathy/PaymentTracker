@@ -26,7 +26,7 @@ import org.xml.sax.InputSource;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
@@ -35,7 +35,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.dto.SnappDetailedReportInput;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -73,7 +73,7 @@ public class SnappReportServiceImpl extends ReportControllerServiceImpl implemen
 	ReportOutputExecutor reportOutputExecutor;
 
 	@Override
-	public ReportInput populateBaseInputContext(ReportContext reportContext) {
+	public SnappDetailedReportInput populateBaseInputContext(ReportContext reportContext) {
 		SnappDetailedReportInput snappDetailedReportInput = new SnappDetailedReportInput();
 		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
 		List<ReportPromptsInstanceDTO> promptsList = reportInstance.getPromptsList();
@@ -88,8 +88,8 @@ public class SnappReportServiceImpl extends ReportControllerServiceImpl implemen
 	@Override
 	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
-		List<ReportOutput> outputList = new ArrayList<ReportOutput>();
-		List<ReportOutput> snappReportOutputList = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> outputList = new ArrayList<ReportDefaultOutput>();
+		List<ReportDefaultOutput> snappReportOutputList = new ArrayList<ReportDefaultOutput>();
 		Report report = new Report();
 		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
 		if (null != reportInstanceDTO) {
@@ -105,7 +105,7 @@ public class SnappReportServiceImpl extends ReportControllerServiceImpl implemen
 			snappDetailedReportInput.setComponent(reportComponent);
 			Set<ReportComponentDetailDTO> reportComponentDetailsList = reportComponent.getReportComponentDetails();
 			for (ReportComponentDetailDTO reportComponetDetail : reportComponentDetailsList) {
-				FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+				ReportComponentDetailContext context = new ReportComponentDetailContext();
 				List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 				context.setQueryId(reportComponetDetail.getId());
 				context.setQueryKey(reportComponetDetail.getQueryKey());
@@ -124,7 +124,7 @@ public class SnappReportServiceImpl extends ReportControllerServiceImpl implemen
 					rowData.add(paymentInvestigationReportOutput.getBeneficaryAccount());
 					rowData.add(paymentInvestigationReportOutput.getCurrency());
 					rowData.add(paymentInvestigationReportOutput.getAmount());
-					ReportOutput defaultOutput = new ReportOutput();
+					ReportDefaultOutput defaultOutput = new ReportDefaultOutput();
 					defaultOutput.setComponentDetailId(paymentInvestigationReportOutput.getComponentDetailId());
 					defaultOutput.setRowData(rowData);
 					outputList.add(defaultOutput);
@@ -143,11 +143,11 @@ public class SnappReportServiceImpl extends ReportControllerServiceImpl implemen
 	}
 
 	private PaymentInvestigationReportOutput populateReportOutputForSingleRecord(
-			List<ReportOutput> snappReportOutputList, String componentDetailKey) {
+			List<ReportDefaultOutput> snappReportOutputList, String componentDetailKey) {
 
 		PaymentInvestigationReportOutput reportOutput = new PaymentInvestigationReportOutput();
 		if (!snappReportOutputList.isEmpty()) {
-			ReportOutput defaultOutput = snappReportOutputList.get(0);
+			ReportDefaultOutput defaultOutput = snappReportOutputList.get(0);
 			List<Object> requestRow = defaultOutput.getRowData();
 			reportOutput.setComponentDetailId(defaultOutput.getComponentDetailId());
 			if (MashreqFederatedReportConstants.SNAPP_MWLOG.equalsIgnoreCase(componentDetailKey)) {

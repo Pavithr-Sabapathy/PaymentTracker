@@ -9,8 +9,12 @@ import org.springframework.stereotype.Component;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
+import com.mashreq.paymentTracker.dto.ReportContext;
+import com.mashreq.paymentTracker.dto.ReportInstanceComponentDTO;
+import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsReportOutput;
 import com.mashreq.paymentTracker.dto.CannedReportMetric;
 import com.mashreq.paymentTracker.dto.CannedReportPrompt;
+import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Metrics;
@@ -98,5 +102,13 @@ public class CannedReportServiceImpl implements CannedReportService{
 			cannedReportPromptSet.add(cannedReportPrompts);
 		});
 		return cannedReportPromptSet;
+	}
+
+	@Override
+	public List<SWIFTMessageDetailsReportOutput> processMessageDetailsReport(
+			MessageDetailsFederatedReportInput reportInputContext,
+			List<ReportInstanceComponentDTO> reportInstanceComponentDTO, ReportContext reportContext) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

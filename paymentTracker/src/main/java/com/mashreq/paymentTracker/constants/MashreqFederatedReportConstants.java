@@ -53,11 +53,10 @@ public class MashreqFederatedReportConstants {
 	public static final String MESSAGE_DETAILS_MESSAGE_SUB_FORMAT_PROMPT_KEY = "MessageSubFormat";
 	public static final String MESSAGE_DETAILS_CORR_BANK_PROMPT_KEY = "CorrBank";
 	public static final String MESSAGE_DETAILS_MESSAGE_THROUGH_PROMPT_KEY = "MessageThrough";
-	
 
 	public static final String DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RMESG = "RMESG";
 	public static final String DETAILS_MESSAGE_TYPE_PROMPT_VALUE_RINTV = "RINTV";
-	public static final String MESSAGE_THROUGH_SWIFT = "SWIFT";  
+	public static final String MESSAGE_THROUGH_SWIFT = "SWIFT";
 	public static final String MESSAGE_THROUGH_UAEFTS = "UAEFTS";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RMESG = "msg-rmesg";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RINTV = "msg-rintv";
@@ -66,14 +65,16 @@ public class MashreqFederatedReportConstants {
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_RCORR = "msg-rcorr";
 	public static final String MESSAGE_DETAILS_SWIFT_MSG_STX_ENTRY_FIELD_VIEW = "msg-stx-entry-field-view";
 
-	
-	
-	public static final String MESSAGE_DETAILS_UAEFTS_COMPONENT_KEY = "uaefts" ;
-	public static final String	MESSAGE_DETAILS_SWIFT_COMPONENT_KEY = "swift" ;
+	public static final String MESSAGE_DETAILS_UAEFTS_COMPONENT_KEY = "uaefts";
+	public static final String MESSAGE_DETAILS_SWIFT_COMPONENT_KEY = "swift";
 	public static final String PROCESSING_SYSTEM_MESSAGE = "Processing System : ";
-	
-	
-	
+
+	public static final String SWIFT_RMESG = "rmesg";
+	public static final String SWIFT_TRN_REF_MESG = "rmesg-trn-ref-only";
+	public static final String SWIFT_RTEXTFIELD = "rtextfield";
+	public static final String SWIFTINTVDETECTION = "rintv-detection";
+	public static final String SWIFTINTV = "rintv";
+
 	public static final String ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY = "FromDate";
 	public static final String ADVANCE_SEARCH_TO_DATE_PROMPT_KEY = "ToDate";
 	public static final String ADVANCE_SEARCH_ACCOUNT_NUMBER_PROMPT_KEY = "AccountNumber";
@@ -90,6 +91,8 @@ public class MashreqFederatedReportConstants {
 	public static final String ADVANCE_SEARCH_REPORT_TRANSACTION_STATUS_PROMPT_DEFAULT_VALUE = "All";
 	public static final String MESSAGE_INPUT_SUB_FORMAT = "INPUT";
 	public static final String MESSAGE_OUTPUT_SUB_FORMAT = "OUTPUT";
+	public static final String MESSAGE_INPUT_SUB_FORMAT_INITIAL = "I";
+	public static final String MESSAGE_OUTPUT_SUB_FORMAT_INITIAL = "O";
 
 	public static final String ADVANCE_SEARCH_FLEX_COMPONENT_KEY = "flex";
 	public static final String ADVANCE_SEARCH_EDMS_COMPONENT_KEY = "edms";
@@ -119,7 +122,6 @@ public class MashreqFederatedReportConstants {
 	public static final String COMMA = ",";
 	public static final String THREE_HASH_NOTATION = "###";
 	public static final String BREAK_TAG = "<br/>";
-	public static final String PAYMENT_STATUS_CODE = "79";
 	public static final String GPI_ENABLED_TRCH_CODE = "TRCKCHZ";
 
 	public static final String FIELD_DESCRIPTION = "Field Description";
@@ -172,6 +174,7 @@ public class MashreqFederatedReportConstants {
 	public static final String DS_FLEX = "Flex";
 	public static final String DS_SWIFT = "SWIFT";
 	public static final String YES = "Y";
+	public static final String NO = "N";
 
 	public static final String EDMS_EDD_DETAILED_REP_COMP = "EDMSEDD DR";
 	public static final String BPM_EDD_DETAILED_REP_COMP = "BPMEDD DR";
@@ -183,6 +186,34 @@ public class MashreqFederatedReportConstants {
 	public static final String SOURCE_SYSTEM_MOL = "MOL";
 	public static final String DATE_FORMATS_KEY = "federated-reports.static-values.mashreq.date-formats.format";
 	public static final String VALUE_DATE_FORMAT_KEY = "dd-MMM-yyyy";
-	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "federated-reports.static-values.mashreq.retrieve-till-prompt-default-value";
+	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "60";
+
+	public static final String COMPONENT_FLEX_KEY = "flex";
+	public static final String COMPONENT_SWIFT_KEY = "swift";
+	public static final String COMPONENT_UAEFTS_KEY = "uaefts";
+	public static final String COMPONENT_MATRIX_PAYMENT_KEY = "matrix-payment";
+	public static final String COMPONENT_MATRIX_PORTAL_KEY = "matrix-portal";
+	public static final String COMPONENT_EMDS_KEY = "edms";
+	public static final String COMPONENT_SNAPP_KEY = "snapp";
+
+	public static final String PAYMENT_TRACKER_REFERENCE_NUM_PROMPT_KEY = "ReferenceNum";
+	public static final String PAYMENT_TRACKER_COUNTRY_CODE_PROMPT_KEY = "CountryCode";
+	public static final String PAYMENT_TRACKER_RETRIEVE_TILL_PROMPT_KEY = "RetrieveTill";
+	public static final String EDMS_REF_PREFIX = "CPC-00";
+	public static final String EDMS_REF_SUFFIX = "-FTO";
+
+	public static final String CUSTOMER_REPORTING_ROLE = "MASHREQ_CUSTOMER_ROLE";
+	public static final String CUSTOMER_MATRIX_REPORTING_ROLE = "MASHREQ_MATRIX_CUSTOMER_ROLE";
+
+	public static final String FLEX_SOURCE_SYSTEM = "FLEXCUBE";
+	public static final String SWIFT_SOURCE_SYSTEM = "SWIFT";
 	
+	public static final String DEBIT_ACCOUNT_SWIFT_CODE = "50";
+	public static final String BENEFICARY_ACCOUNT_SWIFT_CODE = "59";
+	public static final String PAYMENT_STATUS_CODE = "79";
+	public static final String RINTV_MESG_REJECTED_LOCALLY = null;
+	public static final String RAPPE_NETWORK_DELIVERY_REJECTED_LOCALLY = null;
+	public static final String RINTV_MPFN_MPC = null;
+	public static final String RINTV_MPFN_MPM = null;
+	public static final String RINTV_MPFN_NONE = null;
 }

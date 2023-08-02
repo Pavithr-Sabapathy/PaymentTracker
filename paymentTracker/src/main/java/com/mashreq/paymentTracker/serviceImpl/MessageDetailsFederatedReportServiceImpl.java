@@ -1,31 +1,35 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
-import com.mashreq.paymentTracker.dto.FederatedReportQueryData;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
-import com.mashreq.paymentTracker.dto.ReportComponentDTO;
-import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
+
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.FederatedReportQueryData;
+import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
+import com.mashreq.paymentTracker.dto.ReportComponentDTO;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
-import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsFederatedReportOutput;
+import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsReportOutput;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
@@ -34,10 +38,8 @@ import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
-import com.mashreq.paymentTracker.service.SwiftDetailedReportService;
+import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.utility.CheckType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service("messageDeatails")
 public class MessageDetailsFederatedReportServiceImpl extends ReportControllerServiceImpl
@@ -188,7 +190,7 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 				MashreqFederatedReportConstants.PROCESSING_SYSTEM_MESSAGE);
 		if (instanceComponent != null) {
 			reportInputContext.setComponent(instanceComponent);
-			List<SWIFTMessageDetailsFederatedReportOutput> reportComponentData = cannedReportService
+			List<SWIFTMessageDetailsReportOutput> reportComponentData = cannedReportService
 					.processMessageDetailsReport(reportInputContext, reportInstanceComponentDTO, reportContext);
 			if (!reportComponentData.isEmpty()) {
 				populateSWIFTDataToObjectForm(reportComponentData, federatedReportQueryData);
@@ -211,12 +213,12 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 		return matchedComponent;
 	}
 
-	private void populateSWIFTDataToObjectForm(List<SWIFTMessageDetailsFederatedReportOutput> componentOutput,
+	private void populateSWIFTDataToObjectForm(List<SWIFTMessageDetailsReportOutput> componentOutput,
 			FederatedReportQueryData federatedReportQueryData) {
-		List<ReportOutput> data = new ArrayList<ReportOutput>();
-		for (SWIFTMessageDetailsFederatedReportOutput componentOut : componentOutput) {
-			SWIFTMessageDetailsFederatedReportOutput output = componentOut;
-			ReportOutput defaultOutput = createFederatedDefaultOutput(output);
+		List<ReportDefaultOutput> data = new ArrayList<ReportDefaultOutput>();
+		for (SWIFTMessageDetailsReportOutput componentOut : componentOutput) {
+			SWIFTMessageDetailsReportOutput output = componentOut;
+			ReportDefaultOutput defaultOutput = createFederatedDefaultOutput(output);
 			List<Object> rowData = new ArrayList<Object>();
 			rowData.add(output.getKey());
 			rowData.add(output.getValue());
@@ -227,8 +229,8 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 
 	}
 
-	private ReportOutput createFederatedDefaultOutput(SWIFTMessageDetailsFederatedReportOutput baseOutput) {
-		ReportOutput output = new ReportOutput();
+	private ReportDefaultOutput createFederatedDefaultOutput(SWIFTMessageDetailsReportOutput baseOutput) {
+		ReportDefaultOutput output = new ReportDefaultOutput();
 		output.setComponentDetailId(baseOutput.getComponentDetailId());
 		return output;
 	}
@@ -241,7 +243,7 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 				MashreqFederatedReportConstants.PROCESSING_SYSTEM_MESSAGE);
 		if (instanceComponent != null) {
 			reportInputContext.setComponent(instanceComponent);
-			List<SWIFTMessageDetailsFederatedReportOutput> reportComponentData = cannedReportService
+			List<SWIFTMessageDetailsReportOutput> reportComponentData = cannedReportService
 					.processMessageDetailsReport(reportInputContext, reportInstanceComponentDTO, reportContext);
 			if (!reportComponentData.isEmpty()) {
 				populateSWIFTDataToObjectForm(reportComponentData, federatedReportQueryData);

@@ -19,7 +19,7 @@ import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.CannedReport;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportDefaultInput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
@@ -29,7 +29,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
@@ -77,7 +77,7 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 	@Override
 	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
-		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> flexReportExecuteResponse = new ArrayList<ReportDefaultOutput>();
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
 		Boolean dataFoundFromBPM = false;
 		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
@@ -95,7 +95,7 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 					FederatedReportDefaultInput federatedReportDefaultInput = (FederatedReportDefaultInput) reportInput;
 					federatedReportDefaultInput.setComponent(reportComponent);
 					try {
-						List<ReportOutput> output = processReport(federatedReportDefaultInput, reportContext);
+						List<ReportDefaultOutput> output = processReport(federatedReportDefaultInput, reportContext);
 						if (!flexReportExecuteResponse.isEmpty()) {
 							if (isEDDDetailReport(component)) {
 								dataFoundFromBPM = MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
@@ -105,7 +105,7 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 								} else {
 									if (MashreqFederatedReportConstants.BPM_EDD_DETAILED_REP_COMP
 											.equalsIgnoreCase(component.getComponentName())) {
-										flexReportExecuteResponse = new ArrayList<ReportOutput>();
+										flexReportExecuteResponse = new ArrayList<ReportDefaultOutput>();
 										flexReportExecuteResponse.addAll(output);
 									}
 								}
@@ -129,7 +129,7 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 
 	public List<AdvanceSearchReportOutput> processEdmsReport(AdvanceSearchReportInput advanceSearchReportInput,
 			List<Components> componentList, ReportContext reportContext) {
-		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> flexReportExecuteResponse = new ArrayList<ReportDefaultOutput>();
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		Components component = getMatchedInstanceComponent(componentList,
 				MashreqFederatedReportConstants.ADVANCE_SEARCH_EDMS_COMPONENT_KEY);
@@ -142,7 +142,7 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 																									// gonna be single
 																									// set
 				if (null != componentDetail) {
-					FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+					ReportComponentDetailContext context = new ReportComponentDetailContext();
 					List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 					promptsList = populatePromptsForAdvanceSearch(advanceSearchReportInput);
 					context.setQueryId(componentDetail.getId());
@@ -163,12 +163,12 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 		return advanceSearchReportOutputList;
 	}
 
-	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(List<ReportOutput> ReportOutputList,
+	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(List<ReportDefaultOutput> ReportOutputList,
 			AdvanceSearchReportInput advanceSearchReportInput) {
 
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		if (!ReportOutputList.isEmpty()) {
-			for (ReportOutput ReportOutput : ReportOutputList) {
+			for (ReportDefaultOutput ReportOutput : ReportOutputList) {
 				AdvanceSearchReportOutput output = new AdvanceSearchReportOutput();
 				List<Object> rowData = ReportOutput.getRowData();
 				output.setTransactionReference(UtilityClass.getStringRepresentation(rowData.get(0)));
@@ -258,14 +258,14 @@ public class EdmsProcessServiceImpl extends ReportControllerServiceImpl implemen
 		}
 	}
 
-	private List<ReportOutput> processReport(FederatedReportDefaultInput federatedReportDefaultInput,
+	private List<ReportDefaultOutput> processReport(FederatedReportDefaultInput federatedReportDefaultInput,
 			ReportContext reportContext) {
-		List<ReportOutput> flexReportExecuteResponseList = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> flexReportExecuteResponseList = new ArrayList<ReportDefaultOutput>();
 		ReportComponentDTO component = federatedReportDefaultInput.getComponent();
 		Set<ReportComponentDetailDTO> componentDetailList = component.getReportComponentDetails();
 		if (!componentDetailList.isEmpty()) {
 			for (ReportComponentDetailDTO componentDetail : componentDetailList) {
-				FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+				ReportComponentDetailContext context = new ReportComponentDetailContext();
 				context.setQueryId(componentDetail.getId());
 				context.setQueryKey(componentDetail.getQueryKey());
 				context.setQueryString(componentDetail.getQuery());

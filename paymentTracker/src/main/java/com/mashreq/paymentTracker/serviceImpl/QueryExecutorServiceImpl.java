@@ -27,15 +27,14 @@ import com.mashreq.paymentTracker.configuration.PaymentTrackerConfiguration;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsCountryDAO;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportQueryInfoDTO;
 import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
-import com.mashreq.paymentTracker.model.DataSource;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportQueryInfoService;
 import com.mashreq.paymentTracker.utility.CheckType;
@@ -58,9 +57,9 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 	private static final Logger log = LoggerFactory.getLogger(QueryExecutorServiceImpl.class);
 
 	@Override
-	public List<ReportOutput> executeQuery(ReportComponentDetailDTO componentDetail,
-			FederatedReportComponentDetailContext context) {
-		List<ReportOutput> outputList = new ArrayList<ReportOutput>();
+	public List<ReportDefaultOutput> executeQuery(ReportComponentDetailDTO componentDetail,
+			ReportComponentDetailContext context) {
+		List<ReportDefaultOutput> outputList = new ArrayList<ReportDefaultOutput>();
 		Long queryExecutionTime = 0L;
 		ReportQueryInfoDTO reportQueryInfo = null;
 		Date startTime = null;
@@ -106,7 +105,7 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 				ResultSetMetaData metaData = rs.getMetaData();
 				int columnCount = metaData.getColumnCount();
 				while (rs.next()) {
-					ReportOutput componentData = new ReportOutput();
+					ReportDefaultOutput componentData = new ReportDefaultOutput();
 					List<Object> rowData = new ArrayList<Object>();
 					for (int index = 1; index <= columnCount; index++) {
 						Object colValue = rs.getObject(index);
@@ -144,7 +143,7 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 		return outputList;
 	}
 
-	private String replacePrompts(String queryString, FederatedReportComponentDetailContext context) {
+	private String replacePrompts(String queryString, ReportComponentDetailContext context) {
 		String updatedSQL = queryString;
 
 		LinkedHashMap<String, List<String>> promptKeyValueMap = new LinkedHashMap<>();

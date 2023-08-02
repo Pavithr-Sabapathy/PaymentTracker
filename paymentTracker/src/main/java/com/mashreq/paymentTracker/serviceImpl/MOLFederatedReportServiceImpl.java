@@ -25,7 +25,7 @@ import org.xml.sax.InputSource;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.MOLDetailedFederatedReportInput;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
@@ -35,7 +35,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
@@ -92,8 +92,8 @@ public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl i
 	@Override
 	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
-		List<ReportOutput> molReportExecuteResponseList = new ArrayList<ReportOutput>();
-		List<ReportOutput> outputList = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> molReportExecuteResponseList = new ArrayList<ReportDefaultOutput>();
+		List<ReportDefaultOutput> outputList = new ArrayList<ReportDefaultOutput>();
 		Report report = new Report();
 		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
 		if (null != reportInstanceDTO) {
@@ -109,7 +109,7 @@ public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl i
 			molDetailedFederatedReportInput.setComponent(reportComponent);
 			Set<ReportComponentDetailDTO> reportComponentDetailsList = reportComponent.getReportComponentDetails();
 			for (ReportComponentDetailDTO reportComponetDetail : reportComponentDetailsList) {
-				FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+				ReportComponentDetailContext context = new ReportComponentDetailContext();
 				List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 				context.setQueryId(reportComponetDetail.getId());
 				context.setQueryKey(reportComponetDetail.getQueryKey());
@@ -133,7 +133,7 @@ public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl i
 					rowData.add(paymentInvestigationReportOutput.getBeneficaryAccount());
 					rowData.add(paymentInvestigationReportOutput.getCurrency());
 					rowData.add(paymentInvestigationReportOutput.getAmount());
-					ReportOutput defaultOutput = new ReportOutput();
+					ReportDefaultOutput defaultOutput = new ReportDefaultOutput();
 					defaultOutput.setComponentDetailId(paymentInvestigationReportOutput.getComponentDetailId());
 					defaultOutput.setRowData(rowData);
 					outputList.add(defaultOutput);
@@ -151,11 +151,11 @@ public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl i
 		return responseData;
 	}
 
-	private PaymentInvestigationReportOutput populateReportOutputForSingleRecord(List<ReportOutput> molReportOutputList,
+	private PaymentInvestigationReportOutput populateReportOutputForSingleRecord(List<ReportDefaultOutput> molReportOutputList,
 			String componentDetailKey) throws SQLException {
 		PaymentInvestigationReportOutput reportOutput = new PaymentInvestigationReportOutput();
 		if (!molReportOutputList.isEmpty()) {
-			ReportOutput defaultReportOutput = molReportOutputList.get(0);
+			ReportDefaultOutput defaultReportOutput = molReportOutputList.get(0);
 			List<Object> requestRow = defaultReportOutput.getRowData();
 			reportOutput.setComponentDetailId(defaultReportOutput.getComponentDetailId());
 			if (MashreqFederatedReportConstants.MOL_AUTH_DATA.equalsIgnoreCase(componentDetailKey)) {

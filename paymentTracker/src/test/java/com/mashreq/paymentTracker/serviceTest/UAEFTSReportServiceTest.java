@@ -24,7 +24,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
@@ -32,7 +32,7 @@ import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.dto.UAEFTSDetailedReportInput;
 import com.mashreq.paymentTracker.model.ComponentDetails;
@@ -125,8 +125,8 @@ public class UAEFTSReportServiceTest {
 		mockFederatedReportPromptDTO.setPromptValue("uaefts-ccn");
 		UAEFTSDetailedReportInput.setMesgTypePrompt(mockFederatedReportPromptDTO);
 		
-		List<ReportOutput> mockUAEFTSReportOutputList = new ArrayList<ReportOutput>();
-		ReportOutput reportOutput = new ReportOutput();
+		List<ReportDefaultOutput> mockUAEFTSReportOutputList = new ArrayList<ReportDefaultOutput>();
+		ReportDefaultOutput reportOutput = new ReportDefaultOutput();
 		reportOutput.setComponentDetailId(1L);
 		reportOutput.setRowData(null);
 
@@ -210,7 +210,7 @@ public class UAEFTSReportServiceTest {
 		when(linkReportService.fetchLinkedReportByReportId(anyLong())).thenReturn(linkedReportResponseDTOList);
 		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
 		when(queryExecutorService.executeQuery(any(ReportComponentDetailDTO.class),
-				any(FederatedReportComponentDetailContext.class))).thenReturn(mockUAEFTSReportOutputList);
+				any(ReportComponentDetailContext.class))).thenReturn(mockUAEFTSReportOutputList);
 		ReportExecuteResponseData actualProcessFlexReportResult = UAEFTSReportServiceImpl
 				.processReport(UAEFTSDetailedReportInput, reportContext);
 

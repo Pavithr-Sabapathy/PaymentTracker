@@ -23,7 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportDefaultInput;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
@@ -31,7 +31,7 @@ import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
@@ -135,8 +135,8 @@ public class EdmsProcessServiceTest {
 	@Test
 	void testProcessReport() {
 
-		List<ReportOutput> mockOutputList = new ArrayList<ReportOutput>();
-		ReportOutput reportOutput = new ReportOutput();
+		List<ReportDefaultOutput> mockOutputList = new ArrayList<ReportDefaultOutput>();
+		ReportDefaultOutput reportOutput = new ReportDefaultOutput();
 		reportOutput.setComponentDetailId(1L);
 		reportOutput.setRowData(null);
 		mockOutputList.add(reportOutput);
@@ -220,7 +220,7 @@ public class EdmsProcessServiceTest {
 		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
 		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
 		when(queryExecutorService.executeQuery(any(ReportComponentDetailDTO.class),
-				any(FederatedReportComponentDetailContext.class))).thenReturn(mockOutputList);
+				any(ReportComponentDetailContext.class))).thenReturn(mockOutputList);
 		ReportExecuteResponseData actualProcessFlexReportResult = edmsProcessServiceImpl
 				.processReport(mockFederatedReportDefaultInput, reportContext);
 		assertNotNull(actualProcessFlexReportResult);
@@ -266,8 +266,8 @@ public class EdmsProcessServiceTest {
 		mockComponents.setComponentDetailsList(mockComponentDetailsList);
 		List<Components> mockComponentsList = new ArrayList<Components>();
 		mockComponentsList.add(mockComponents);
-		List<ReportOutput> reportOutputList = new ArrayList<ReportOutput>();
-		ReportOutput mockReportOutput = new ReportOutput();
+		List<ReportDefaultOutput> reportOutputList = new ArrayList<ReportDefaultOutput>();
+		ReportDefaultOutput mockReportOutput = new ReportDefaultOutput();
 		mockReportOutput.setComponentDetailId(1L);
 		reportOutputList.add(mockReportOutput);
 		/*

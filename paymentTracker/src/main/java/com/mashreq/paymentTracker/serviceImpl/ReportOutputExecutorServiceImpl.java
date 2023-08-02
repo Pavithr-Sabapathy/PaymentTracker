@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Metrics;
 import com.mashreq.paymentTracker.model.Report;
@@ -56,7 +56,7 @@ public class ReportOutputExecutorServiceImpl implements ReportOutputExecutor{
 		return reportExecuteResponseCloumnDefList;
 	}
 
-	public List<Map<String, Object>> populateRowData(List<ReportOutput> flexReportExecuteResponseList, Report report) {
+	public List<Map<String, Object>> populateRowData(List<ReportDefaultOutput> flexReportExecuteResponseList, Report report) {
 		List<Map<String, Object>> rowDataList = new ArrayList<Map<String, Object>>();
 		List<Metrics> reportMetricsList = report.getMetricsList();
 		List<String> metricsDisplayNameList = reportMetricsList.stream().map(Metrics::getDisplayName)

@@ -31,7 +31,7 @@ import com.mashreq.paymentTracker.dto.PromptInstance;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
@@ -41,7 +41,7 @@ import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
-import com.mashreq.paymentTracker.serviceImpl.FlexFederatedReportServiceImpl;
+import com.mashreq.paymentTracker.serviceImpl.FlexDetailedReportServiceImpl;
 import com.mashreq.paymentTracker.type.CountryType;
 
 @SpringBootTest
@@ -57,7 +57,7 @@ class FlexFederatedReportServiceTest {
 	private ComponentsDAO componentsDAO;
 
 	@Autowired
-	private FlexFederatedReportServiceImpl flexFederatedReportServiceImpl;
+	private FlexDetailedReportServiceImpl flexFederatedReportServiceImpl;
 
 	@MockBean
 	private LinkReportService linkReportService;
@@ -167,7 +167,7 @@ class FlexFederatedReportServiceTest {
 
 	@Test
 	void testProcessFlexDetailReport() {
-		FlexFederatedReportServiceImpl flexFederatedReportServiceImpl = new FlexFederatedReportServiceImpl();
+		FlexDetailedReportServiceImpl flexFederatedReportServiceImpl = new FlexDetailedReportServiceImpl();
 		AdvanceSearchReportInput advanceSearchReportInput = mock(AdvanceSearchReportInput.class);
 		Components components = mock(Components.class);
 		when(components.getActive()).thenThrow(new ResourceNotFoundException("An error occurred"));
@@ -184,7 +184,7 @@ class FlexFederatedReportServiceTest {
 	@Test
 	void testProcessFlexDetailReport2() {
 
-		FlexFederatedReportServiceImpl flexFederatedReportServiceImpl = new FlexFederatedReportServiceImpl();
+		FlexDetailedReportServiceImpl flexFederatedReportServiceImpl = new FlexDetailedReportServiceImpl();
 
 		AdvanceSearchReportInput advanceSearchReportInput = new AdvanceSearchReportInput();
 		FederatedReportPromptDTO accountNumPrompt = new FederatedReportPromptDTO();
@@ -224,8 +224,8 @@ class FlexFederatedReportServiceTest {
 		componentDetails.setQueryKey("sample ");
 		componentDetailList.add(componentDetails);
 
-		List<ReportOutput> mockOutputList = new ArrayList<ReportOutput>();
-		ReportOutput reportOutput = new ReportOutput();
+		List<ReportDefaultOutput> mockOutputList = new ArrayList<ReportDefaultOutput>();
+		ReportDefaultOutput reportOutput = new ReportDefaultOutput();
 		reportOutput.setComponentDetailId(1L);
 		reportOutput.setRowData(null);
 		mockOutputList.add(reportOutput);

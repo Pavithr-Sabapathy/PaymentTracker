@@ -20,14 +20,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.dto.MOLDetailedFederatedReportInput;
 import com.mashreq.paymentTracker.model.ComponentDetails;
@@ -136,8 +136,8 @@ public class MOLFederatedReportServiceTest {
 	
 	@Test
 	void testProcessReport() {
-		List<ReportOutput> molReportOutputList = new ArrayList<ReportOutput>();
-		ReportOutput reportOut = new ReportOutput();
+		List<ReportDefaultOutput> molReportOutputList = new ArrayList<ReportDefaultOutput>();
+		ReportDefaultOutput reportOut = new ReportDefaultOutput();
 		reportOut.setComponentDetailId(1L);
 		reportOut.setRowData(null);
 		MOLDetailedFederatedReportInput snappDetailedReportInput = new MOLDetailedFederatedReportInput();
@@ -207,7 +207,7 @@ public class MOLFederatedReportServiceTest {
 		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
 		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
 		when(queryExecutorService.executeQuery(any(ReportComponentDetailDTO.class),
-				any(FederatedReportComponentDetailContext.class))).thenReturn(molReportOutputList);
+				any(ReportComponentDetailContext.class))).thenReturn(molReportOutputList);
 		ReportExecuteResponseData response = molFederatedReportServiceImpl.processReport(snappDetailedReportInput,
 				reportContext);
 		verify(componentsDAO).findAllByreportId(anyLong());

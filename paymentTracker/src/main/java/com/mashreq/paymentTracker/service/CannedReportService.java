@@ -8,7 +8,7 @@ import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportInstanceComponentDTO;
-import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsFederatedReportOutput;
+import com.mashreq.paymentTracker.dto.SWIFTMessageDetailsReportOutput;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
 
@@ -17,7 +17,7 @@ public interface CannedReportService {
 
 	public Set<ReportComponentDTO> populateCannedReportComponent(List<Components> componentList);
 
-	public List<SWIFTMessageDetailsFederatedReportOutput> processMessageDetailsReport(
+	public List<SWIFTMessageDetailsReportOutput> processMessageDetailsReport(
 			MessageDetailsFederatedReportInput reportInputContext,
 			List<ReportInstanceComponentDTO> reportInstanceComponentDTO, ReportContext reportContext);
 }

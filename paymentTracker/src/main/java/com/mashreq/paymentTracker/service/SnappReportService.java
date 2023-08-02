@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 
 public interface SnappReportService {
 
-	List<ReportOutput> processSnappDetailedReport(ReportInstanceDTO reportInstanceDTO,
+	List<ReportDefaultOutput> processSnappDetailedReport(ReportInstanceDTO reportInstanceDTO,
 			ReportContext reportContext);
 
 }

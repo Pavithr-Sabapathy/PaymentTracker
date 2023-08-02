@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
@@ -38,7 +38,7 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 	@Override
 	public List<AdvanceSearchReportOutput> processMatrixPaymentReport(AdvanceSearchReportInput advanceSearchReportInput,
 			List<Components> componentList, ReportContext reportContext) {
-		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> flexReportExecuteResponse = new ArrayList<ReportDefaultOutput>();
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		Components component = getMatchedInstanceComponent(componentList,
 				MashreqFederatedReportConstants.ADVANCE_SEARCH_FLEX_COMPONENT_KEY);
@@ -51,7 +51,7 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 																									// gonna be single
 																									// set
 				if (null != componentDetail) {
-					FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+					ReportComponentDetailContext context = new ReportComponentDetailContext();
 					List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 					promptsList = populatePromptsForAdvanceSearch(advanceSearchReportInput);
 					context.setQueryId(componentDetail.getId());
@@ -71,14 +71,14 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 		return advanceSearchReportOutputList;
 	}
 
-	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(List<ReportOutput> federatedReportOutputList,
+	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(List<ReportDefaultOutput> federatedReportOutputList,
 			AdvanceSearchReportInput advanceSearchReportInput) {
 
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 
 		if (!federatedReportOutputList.isEmpty()) {
 
-			for (ReportOutput federatedReportOutput : federatedReportOutputList) {
+			for (ReportDefaultOutput federatedReportOutput : federatedReportOutputList) {
 
 				AdvanceSearchReportOutput output = new AdvanceSearchReportOutput();
 				List<Object> rowData = federatedReportOutput.getRowData();

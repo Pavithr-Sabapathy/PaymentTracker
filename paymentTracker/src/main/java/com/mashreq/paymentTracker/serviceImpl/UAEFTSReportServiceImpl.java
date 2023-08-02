@@ -18,7 +18,7 @@ import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
@@ -26,7 +26,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.dto.UAEFTSDetailedReportInput;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
@@ -62,7 +62,7 @@ public class UAEFTSReportServiceImpl extends ReportControllerServiceImpl impleme
 
 	public List<AdvanceSearchReportOutput> processAdvanceSearchReport(AdvanceSearchReportInput advanceSearchReportInput,
 			List<Components> componentList, ReportContext reportContext) {
-		List<ReportOutput> flexReportExecuteResponse = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> flexReportExecuteResponse = new ArrayList<ReportDefaultOutput>();
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		Components component = getMatchedInstanceComponent(componentList,
 				MashreqFederatedReportConstants.ADVANCE_SEARCH_UAEFTS_COMPONENT_KEY);
@@ -77,7 +77,7 @@ public class UAEFTSReportServiceImpl extends ReportControllerServiceImpl impleme
 						.findAny().orElse(null);
 
 				if (null != componentDetail) {
-					FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+					ReportComponentDetailContext context = new ReportComponentDetailContext();
 					List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 					FederatedReportPromptDTO referenceNumsPrompt = new FederatedReportPromptDTO();
 					referenceNumsPrompt.setPromptKey(MashreqFederatedReportConstants.REFERENCENUMPROMPTS);
@@ -106,13 +106,13 @@ public class UAEFTSReportServiceImpl extends ReportControllerServiceImpl impleme
 		return advanceSearchReportOutputList;
 	}
 
-	private AdvanceSearchReportOutput populateDataForAdvanceSearch(List<ReportOutput> flexReportExecuteResponse,
+	private AdvanceSearchReportOutput populateDataForAdvanceSearch(List<ReportDefaultOutput> flexReportExecuteResponse,
 			AdvanceSearchReportInput advanceSearchReportInput) {
 		AdvanceSearchReportOutput advanceSearchFederatedReportOutput = new AdvanceSearchReportOutput();
 		Map<String, AdvanceSearchReportOutput> flexMatrixBasedUaeftsTransactions = advanceSearchReportInput
 				.getFlexMatrixBasedUaeftsTransactions();
 		if (!flexReportExecuteResponse.isEmpty()) {
-			for (ReportOutput federatedReportOutput : flexReportExecuteResponse) {
+			for (ReportDefaultOutput federatedReportOutput : flexReportExecuteResponse) {
 				List<Object> rowData = federatedReportOutput.getRowData();
 				String referenceNum = UtilityClass.getStringRepresentation(rowData.get(0));
 				String ftsStatus = UtilityClass.getStringRepresentation(rowData.get(2));
@@ -191,7 +191,7 @@ public class UAEFTSReportServiceImpl extends ReportControllerServiceImpl impleme
 	@Override
 	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData reportExecuteResponseData = new ReportExecuteResponseData();
-		List<ReportOutput> UAEFTSReportOutputList = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> UAEFTSReportOutputList = new ArrayList<ReportDefaultOutput>();
 		ReportComponentDetailDTO matchedComponentDetail = new ReportComponentDetailDTO();
 		Report report = new Report();
 		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
@@ -214,7 +214,7 @@ public class UAEFTSReportServiceImpl extends ReportControllerServiceImpl impleme
 						.findFirst().orElse(null);
 			}
 			if (null != matchedComponentDetail) {
-				FederatedReportComponentDetailContext context = new FederatedReportComponentDetailContext();
+				ReportComponentDetailContext context = new ReportComponentDetailContext();
 				List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
 				context.setQueryId(matchedComponentDetail.getId());
 				context.setQueryKey(matchedComponentDetail.getQueryKey());

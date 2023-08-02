@@ -39,7 +39,7 @@ import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 import com.mashreq.paymentTracker.service.UAEFTSReportService;
 import com.mashreq.paymentTracker.serviceImpl.AdvanceSearchReportServiceImpl;
-import com.mashreq.paymentTracker.serviceImpl.FlexFederatedReportServiceImpl;
+import com.mashreq.paymentTracker.serviceImpl.FlexDetailedReportServiceImpl;
 import com.mashreq.paymentTracker.type.CountryType;
 import com.mashreq.paymentTracker.utility.CheckType;
 
@@ -68,7 +68,7 @@ class AdvanceSearchReportTest {
 	AdvanceSearchReportServiceImpl advanceSearchReportServiceImpl;
 
 	@MockBean
-	FlexFederatedReportServiceImpl flexReportServiceImpl;
+	FlexDetailedReportServiceImpl flexReportServiceImpl;
 
 	@Test
 	void testPopulateBaseInput() {

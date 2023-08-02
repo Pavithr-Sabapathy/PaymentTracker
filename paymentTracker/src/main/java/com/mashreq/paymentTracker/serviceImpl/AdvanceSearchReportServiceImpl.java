@@ -22,7 +22,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Components;
@@ -133,7 +133,7 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 					advanceSearchReportInput, activeComponentList, reportContext);
 			advanceSearchReportOutputList = rearrangeAndFillReportData(advanceSearchReportOutputList,
 					advanceSearchReportInput);
-			List<ReportOutput> federatedReportOutputList = populateDataToObjectForm(advanceSearchReportOutputList,
+			List<ReportDefaultOutput> federatedReportOutputList = populateDataToObjectForm(advanceSearchReportOutputList,
 					report);
 			if (!federatedReportOutputList.isEmpty()) {
 				List<Map<String, Object>> rowDataMapList = reportOutputExecutor
@@ -147,11 +147,11 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 		return responseData;
 	}
 
-	private List<ReportOutput> populateDataToObjectForm(List<AdvanceSearchReportOutput> advanceSearchReportOutputList,
+	private List<ReportDefaultOutput> populateDataToObjectForm(List<AdvanceSearchReportOutput> advanceSearchReportOutputList,
 			Report report) {
-		List<ReportOutput> data = new ArrayList<ReportOutput>();
+		List<ReportDefaultOutput> data = new ArrayList<ReportDefaultOutput>();
 		for (AdvanceSearchReportOutput output : advanceSearchReportOutputList) {
-			ReportOutput defaultOutput = new ReportOutput();
+			ReportDefaultOutput defaultOutput = new ReportDefaultOutput();
 			List<Object> rowData = new ArrayList<Object>();
 			rowData.add(output.getTransactionReference());
 			rowData.add(output.getBeneficiaryDetails());
@@ -227,7 +227,7 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 			// run all three parallely
 
 			Thread flexProcessor = new Thread() {
-				FlexFederatedReportServiceImpl flexReportServiceImpl = new FlexFederatedReportServiceImpl();
+				FlexDetailedReportServiceImpl flexReportServiceImpl = new FlexDetailedReportServiceImpl();
 
 				public void run() {
 					List<AdvanceSearchReportOutput> advanceSearchFlexReportOutList = flexReportServiceImpl

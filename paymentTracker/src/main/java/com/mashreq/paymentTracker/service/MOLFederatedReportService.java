@@ -5,10 +5,10 @@ import java.util.List;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 
 public interface MOLFederatedReportService {
-	List<ReportOutput> processMOLDetailedReport(ReportInstanceDTO reportInstanceDTO,
+	List<ReportDefaultOutput> processMOLDetailedReport(ReportInstanceDTO reportInstanceDTO,
 			ReportContext reportContext);
 
 }

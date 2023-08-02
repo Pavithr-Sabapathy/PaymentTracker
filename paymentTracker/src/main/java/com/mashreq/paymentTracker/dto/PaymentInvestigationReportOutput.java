@@ -1,13 +1,11 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 
 import com.mashreq.paymentTracker.utility.SWIFTDetailedReportType;
 
-public class PaymentInvestigationReportOutput implements Serializable {
+public class PaymentInvestigationReportOutput extends ReportBaseOutput {
 
-	private static final long serialVersionUID = -6094495048465841244L;
 	private Timestamp landingTime;
 	private String activity;
 	private Timestamp completionTime;

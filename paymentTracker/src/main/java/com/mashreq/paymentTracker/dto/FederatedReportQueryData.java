@@ -6,7 +6,7 @@ public class FederatedReportQueryData {
 	
 	   private Long cannedReportInstanceId;
 	   private Long                               queryExecutionTime;
-	   private List<ReportOutput> queryData = new ArrayList<ReportOutput>();
+	   private List<ReportDefaultOutput> queryData = new ArrayList<ReportDefaultOutput>();
 	   private List<Integer>                      filteredMetricIndexes;
 	   
 	   
@@ -22,10 +22,10 @@ public class FederatedReportQueryData {
 	public void setQueryExecutionTime(Long queryExecutionTime) {
 		this.queryExecutionTime = queryExecutionTime;
 	}
-	public List<ReportOutput> getQueryData() {
+	public List<ReportDefaultOutput> getQueryData() {
 		return queryData;
 	}
-	public void setQueryData(List<ReportOutput> queryData) {
+	public void setQueryData(List<ReportDefaultOutput> queryData) {
 		this.queryData = queryData;
 	}
 	public List<Integer> getFilteredMetricIndexes() {

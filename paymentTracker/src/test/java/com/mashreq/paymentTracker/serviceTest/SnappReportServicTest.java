@@ -20,14 +20,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportOutput;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.dto.SnappDetailedReportInput;
 import com.mashreq.paymentTracker.model.ComponentDetails;
@@ -137,8 +137,8 @@ public class SnappReportServicTest {
 
 	@Test
 	void TestProcessReport() {
-		List<ReportOutput> snappReportOutputList = new ArrayList<ReportOutput>();
-		ReportOutput reportOut = new ReportOutput();
+		List<ReportDefaultOutput> snappReportOutputList = new ArrayList<ReportDefaultOutput>();
+		ReportDefaultOutput reportOut = new ReportDefaultOutput();
 		reportOut.setComponentDetailId(1L);
 		reportOut.setRowData(null);
 		SnappDetailedReportInput snappDetailedReportInput = new SnappDetailedReportInput();
@@ -208,7 +208,7 @@ public class SnappReportServicTest {
 		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
 		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
 		when(queryExecutorService.executeQuery(any(ReportComponentDetailDTO.class),
-				any(FederatedReportComponentDetailContext.class))).thenReturn(snappReportOutputList);
+				any(ReportComponentDetailContext.class))).thenReturn(snappReportOutputList);
 		ReportExecuteResponseData response = SnappReportServiceImpl.processReport(snappDetailedReportInput,
 				reportContext);
 		verify(componentsDAO).findAllByreportId(anyLong());
