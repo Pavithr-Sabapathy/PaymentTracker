@@ -22,7 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
-import com.mashreq.paymentTracker.dto.FederatedReportComponentDetailContext;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
