@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.GatewayDataContext;
+import com.mashreq.paymentTracker.dto.GatewayDataMessageContext;
 import com.mashreq.paymentTracker.dto.MessageDetailsFederatedReportInput;
 import com.mashreq.paymentTracker.dto.MessageField;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
@@ -37,6 +39,7 @@ import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.type.MessageType;
 import com.mashreq.paymentTracker.type.PromptValueType;
+import com.mashreq.paymentTracker.utility.SWIFTDetailedReportType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Service
@@ -75,7 +78,365 @@ public class SwiftReportConnector extends ReportConnector {
 			}
 			processComponentDetail(component, componentDetailList, piReportInput, rmesgQuery, swiftContextList,
 					reportContext);
+			if (!swiftContextList.isEmpty()) {
+				processComponentDetail(component, componentDetailList, piReportInput,
+						MashreqFederatedReportConstants.SWIFT_RTEXTFIELD, swiftContextList, reportContext);
+			}
+			// populate the detection id for all messages {incoming, outgoing / incoming
+			// enquiries}
+			if (!swiftContextList.isEmpty()) {
+				processComponentDetail(component, componentDetailList, piReportInput,
+						MashreqFederatedReportConstants.SWIFTINTVDETECTION, swiftContextList, reportContext);
+			}
+			if (!swiftContextList.isEmpty()) {
+				processComponentDetail(component, componentDetailList, piReportInput,
+						MashreqFederatedReportConstants.SWIFTINTV, swiftContextList, reportContext);
+				processSwiftContextList(swiftContextList, piReportInput, reportContext);
+			}
 		}
+	}
+
+	private void processSwiftContextList(List<SWIFTReportContext> swiftContextList,
+			PaymentInvestigationReportInput piReportInput, ReportContext reportContext) {
+
+		GatewayDataContext gatewayDataContext = piReportInput.getGatewayDataContext();
+		processIncomingMessage(swiftContextList, gatewayDataContext);
+		processOutgoingMessage(swiftContextList, gatewayDataContext, piReportInput, reportContext);
+		processIncomingMessage(swiftContextList, gatewayDataContext);
+		processOutgoingEnquiries(swiftContextList, gatewayDataContext);
+		processIncomingTrchStatusMessage(swiftContextList, gatewayDataContext);
+		processOutgoingTrchStatusMessage(swiftContextList, gatewayDataContext);
+		processIncomingIpalaStatusMessage(swiftContextList, gatewayDataContext);
+		processOutgoingIpalaStatusMessage(swiftContextList, gatewayDataContext);
+
+		if ((gatewayDataContext.getIncomingMessage() != null) || (gatewayDataContext.getOutgoingMessage() != null)) {
+			gatewayDataContext.setSwiftDataFound(true);
+		}
+
+	}
+
+	private void processOutgoingMessage(List<SWIFTReportContext> swiftContextList,
+			GatewayDataContext gatewayDataContext, PaymentInvestigationReportInput piReportInput,
+			ReportContext reportContext) {
+		// TODO Auto-generated method stub
+
+		List<SWIFTReportContext> outgoingMessages = getMatchingTypeRecords(swiftContextList, MessageType.OUTGOING);
+		if (!outgoingMessages.isEmpty()) {
+			SWIFTReportContext swiftReportContext = outgoingMessages.get(0);
+			PaymentInvestigationReportOutput nackRecord = null;
+			PaymentInvestigationReportOutput rMessageRecord = swiftReportContext.getrMessageRecord();
+			rMessageRecord.setActivity(MashreqFederatedReportConstants.GATEWAY_PAYMENT_SCREENING_ACTIVITY + " : "
+					+ swiftReportContext.getMesgType());
+			rMessageRecord.setDetailedReportType(SWIFTDetailedReportType.RMESG);
+			PaymentInvestigationReportOutput rIntvRecord = swiftReportContext.getRintvRecord();
+			if (rIntvRecord != null) {
+				rIntvRecord.setActivity(MashreqFederatedReportConstants.GATEWAY_PAYMENT_OUTWARD_NETWORK_ACTIVITY + " : "
+						+ swiftReportContext.getMesgType());
+				rIntvRecord.setDetailedReportType(SWIFTDetailedReportType.RINTV);
+				rIntvRecord.setComponentDetailId(rMessageRecord.getComponentDetailId());
+				// try to find the network nack row. If message status is ack, check for nack
+				// case
+				if (rIntvRecord.getActivityStatus().equalsIgnoreCase(MashreqFederatedReportConstants.RINTV_MESG_ACK)) {
+					// if record found in wdnackresult
+					ReportComponentDTO component = piReportInput.getComponent();
+					String swiftwdNackResult = MashreqFederatedReportConstants.Swift_NACK_RESULT;
+					// set the component details to gateway context
+					ReportComponentDetailDTO componentDetail = getMatchedInstanceComponentDetail(
+							component.getReportComponentDetails(), swiftwdNackResult);
+					Timestamp nackResultQuery = processWdNackResultQuery(component, componentDetail, piReportInput,
+							swiftwdNackResult, reportContext, swiftReportContext);
+					if (nackResultQuery != null) {
+						nackRecord = clonePaymentInvestigationReportOutput(rIntvRecord);
+						rIntvRecord.setActivityStatus(MashreqFederatedReportConstants.RINTV_MESG_NACK);
+						rIntvRecord.setCompletionTime(nackResultQuery);
+						nackRecord.setActivityStatus(MashreqFederatedReportConstants.RINTV_MESG_ACK);
+						nackRecord.setActivity(MashreqFederatedReportConstants.NACK_ACTIVITY);
+						nackRecord.setLandingTime(new Timestamp(rIntvRecord.getCompletionTime().getTime()));
+					}
+				}
+			}
+			GatewayDataMessageContext messageContext = new GatewayDataMessageContext();
+			messageContext.setMessageRef(swiftReportContext.getReferenceNum());
+			messageContext.setMessageType(swiftReportContext.getMesgType());
+			messageContext.setMessageSubFormat(swiftReportContext.getMesgFormat());
+			messageContext.setDetectionId(swiftReportContext.getDetectionId());
+			messageContext.setNetworkRecord(rIntvRecord);
+			messageContext.setNetworkNackRecord(nackRecord);
+			messageContext.setScreeningRecord(rMessageRecord);
+			gatewayDataContext.setOutgoingMessage(messageContext);
+		}
+
+	}
+
+	private Timestamp processWdNackResultQuery(ReportComponentDTO component, ReportComponentDetailDTO componentDetail,
+			PaymentInvestigationReportInput piReportInput, String swiftwdNackResult, ReportContext reportContext,
+			SWIFTReportContext swiftReportContext) {
+
+		Timestamp nackTime = null;
+
+		List<FederatedReportPromptDTO> promptInfoList = new ArrayList<FederatedReportPromptDTO>();
+		FederatedReportPromptDTO referenceNumPrompt = piReportInput.getReferenceNumPrompt();
+		ReportComponentDetailContext context = new ReportComponentDetailContext();
+		referenceNumPrompt.setPromptValue(piReportInput.getUserReferenceNum());
+		promptInfoList.add(referenceNumPrompt);
+		promptInfoList.add(piReportInput.getCountryCodePrompt());
+		promptInfoList.add(piReportInput.getTimeInDaysPrompt());
+		context.setQueryString(componentDetail.getQuery());
+		context.setPrompts(promptInfoList);
+		context.setExecutionId(reportContext.getExecutionId());
+		updatePrompts(swiftReportContext, context);
+		List<ReportDefaultOutput> reportOutputList = queryExecutorService.executeQuery(componentDetail, context);
+
+		for (ReportDefaultOutput defaultOutput : reportOutputList) {
+			List<Object> rowData = defaultOutput.getRowData();
+			nackTime = UtilityClass.getTimeStampRepresentation(rowData.get(0));
+		}
+		return nackTime;
+
+	}
+
+	private void processOutgoingIpalaStatusMessage(List<SWIFTReportContext> swiftContextList,
+			GatewayDataContext gatewayDataContext) {
+
+		List<SWIFTReportContext> outgoingEnquiries = getMatchingTypeRecords(swiftContextList,
+				MessageType.OUTGOING_ENQUIRY);
+		if (!outgoingEnquiries.isEmpty()) {
+			List<SWIFTReportContext> gpiIpalaMessages = new ArrayList<SWIFTReportContext>();
+			for (SWIFTReportContext enquiry : outgoingEnquiries) {
+				if (isGpiIpalaEnabledMessage(enquiry)) {
+					gpiIpalaMessages.add(enquiry);
+				}
+			}
+			List<GatewayDataMessageContext> ipalaMessages = processGPIIpalaMessages(gatewayDataContext,
+					gpiIpalaMessages);
+			if (!ipalaMessages.isEmpty()) {
+				gatewayDataContext.setOutgoingIpalaStatusMessages(ipalaMessages);
+			}
+		}
+
+	}
+
+	private List<GatewayDataMessageContext> processGPIIpalaMessages(GatewayDataContext gatewayDataContext,
+			List<SWIFTReportContext> gpiIpalaMessages) {
+
+		List<GatewayDataMessageContext> messageContextList = new ArrayList<GatewayDataMessageContext>();
+		if (!gpiIpalaMessages.isEmpty()) {
+			for (SWIFTReportContext swiftReportContext : gpiIpalaMessages) {
+				String activity = MashreqFederatedReportConstants.GPI_EXTERNAL_IPALA_STATUS_ACTIVITY + " : "
+						+ swiftReportContext.getMesgType();
+				swiftReportContext.getrMessageRecord().setActivity(activity);
+				swiftReportContext.getrMessageRecord()
+						.setActivityStatus(MashreqFederatedReportConstants.RINTV_MESG_ACK);
+				swiftReportContext.getrMessageRecord().setDetailedReportType(SWIFTDetailedReportType.RMESG);
+				GatewayDataMessageContext messageContext = new GatewayDataMessageContext();
+				messageContext.setMessageRef(swiftReportContext.getReferenceNum());
+				messageContext.setMessageType(swiftReportContext.getMesgType());
+				messageContext.setMessageSubFormat(swiftReportContext.getMesgFormat());
+				messageContext.setNetworkRecord(swiftReportContext.getrMessageRecord());
+				messageContextList.add(messageContext);
+			}
+		}
+		return messageContextList;
+
+	}
+
+	private boolean isGpiIpalaEnabledMessage(String receiver, String sender) {
+		boolean isGpiIpalaEnabledMessage = false;
+		if ((null != receiver
+				&& receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE))
+				|| ((null != sender
+						&& sender.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_IPALA_CODE)))) {
+			isGpiIpalaEnabledMessage = true;
+		}
+		return isGpiIpalaEnabledMessage;
+	}
+
+	private boolean isGpiEnabledMessage(SWIFTReportContext record) {
+		return (isGpiIpalaEnabledMessage(record) || isGpiTrchEnabledMessage(record));
+	}
+
+	private boolean isGpiTrchEnabledMessage(SWIFTReportContext record) {
+		boolean isGpiTrchEnabledMessage = false;
+		PaymentInvestigationReportOutput rMessageRecord = record.getrMessageRecord();
+		if ((record.getMesgType()
+				.equalsIgnoreCase(MashreqFederatedReportConstants.INCOMING_PAYMENT_STATUS_MESSAGE_TYPE))
+				|| (record.getMesgType()
+						.equalsIgnoreCase(MashreqFederatedReportConstants.OUTGOING_PAYMENT_STATUS_MESSAGE_TYPE))) {
+			isGpiTrchEnabledMessage = isGpiTrchEnabledMessage(rMessageRecord.getReceiver(), record.getSender());
+		}
+		return isGpiTrchEnabledMessage;
+	}
+
+	private boolean isGpiTrchEnabledMessage(String receiver, String sender) {
+		boolean isGpiTrchEnabledMessage = false;
+		if ((null != receiver
+				&& receiver.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_TRCH_CODE))
+				|| ((null != sender
+						&& sender.toUpperCase().startsWith(MashreqFederatedReportConstants.GPI_ENABLED_TRCH_CODE)))) {
+			isGpiTrchEnabledMessage = true;
+		}
+		return isGpiTrchEnabledMessage;
+	}
+
+	private boolean isGpiIpalaEnabledMessage(SWIFTReportContext record) {
+		boolean isGpiIpalaEnabledMessage = false;
+		PaymentInvestigationReportOutput rMessageRecord = record.getrMessageRecord();
+		if ((record.getMesgType()
+				.equalsIgnoreCase(MashreqFederatedReportConstants.INCOMING_PAYMENT_STATUS_MESSAGE_TYPE))
+				|| (record.getMesgType()
+						.equalsIgnoreCase(MashreqFederatedReportConstants.OUTGOING_PAYMENT_STATUS_MESSAGE_TYPE))) {
+			isGpiIpalaEnabledMessage = isGpiIpalaEnabledMessage(rMessageRecord.getReceiver(), record.getSender());
+		}
+		return isGpiIpalaEnabledMessage;
+	}
+
+	private void processOutgoingTrchStatusMessage(List<SWIFTReportContext> swiftContextList,
+			GatewayDataContext gatewayDataContext) {
+
+		List<SWIFTReportContext> outgoingEnquiries = getMatchingTypeRecords(swiftContextList,
+				MessageType.OUTGOING_ENQUIRY);
+		if (!outgoingEnquiries.isEmpty()) {
+			List<SWIFTReportContext> gpiTrchMessages = new ArrayList<SWIFTReportContext>();
+			for (SWIFTReportContext enquiry : outgoingEnquiries) {
+				if (isGpiTrchEnabledMessage(enquiry)) {
+					gpiTrchMessages.add(enquiry);
+				}
+			}
+			List<GatewayDataMessageContext> trchMessages = processGPITrchMessages(gatewayDataContext, gpiTrchMessages);
+			if (!trchMessages.isEmpty()) {
+				gatewayDataContext.setOutgoingTrchStatusMessages(trchMessages);
+			}
+		}
+
+	}
+
+	private List<GatewayDataMessageContext> processGPITrchMessages(GatewayDataContext gatewayDataContext,
+			List<SWIFTReportContext> gpiTrchMessages) {
+
+		List<GatewayDataMessageContext> messageContextList = new ArrayList<GatewayDataMessageContext>();
+		if (!gpiTrchMessages.isEmpty()) {
+			for (SWIFTReportContext swiftReportContext : gpiTrchMessages) {
+				String activity = MashreqFederatedReportConstants.GPI_EXTERNAL_TRCH_STATUS_ACTIVITY + " : "
+						+ swiftReportContext.getMesgType();
+				String senderBank = deriveSenderBank(swiftReportContext);
+				if (null != senderBank) {
+					activity = activity + " " + senderBank;
+				}
+				swiftReportContext.getrMessageRecord().setActivity(activity);
+				swiftReportContext.getrMessageRecord()
+						.setActivityStatus(deriveActivityStatus(swiftReportContext.getPaymentStatus()));
+				swiftReportContext.getrMessageRecord().setDetailedReportType(SWIFTDetailedReportType.RMESG);
+				GatewayDataMessageContext messageContext = new GatewayDataMessageContext();
+				messageContext.setMessageRef(swiftReportContext.getReferenceNum());
+				messageContext.setMessageType(swiftReportContext.getMesgType());
+				messageContext.setMessageSubFormat(swiftReportContext.getMesgFormat());
+				messageContext.setNetworkRecord(swiftReportContext.getrMessageRecord());
+				messageContextList.add(messageContext);
+			}
+		}
+		return messageContextList;
+
+	}
+
+	private String deriveSenderBank(SWIFTReportContext swiftReportContext) {
+		String senderBank = null;
+		String paymentStatus = swiftReportContext.getPaymentStatus();
+		if (null != paymentStatus) {
+			String[] tokens = paymentStatus.split("//");
+			if (tokens.length >= 4) {
+				senderBank = tokens[3];
+			}
+		}
+		if (null != senderBank) {
+			senderBank = "(" + senderBank + ")";
+		}
+		return senderBank;
+	}
+
+	private void processIncomingIpalaStatusMessage(List<SWIFTReportContext> swiftContextList,
+			GatewayDataContext gatewayDataContext) {
+
+		List<SWIFTReportContext> incomingEnquiries = getMatchingTypeRecords(swiftContextList,
+				MessageType.INCOMING_ENQUIRY);
+		if (!incomingEnquiries.isEmpty()) {
+			List<SWIFTReportContext> gpiIpalaMessages = new ArrayList<SWIFTReportContext>();
+			for (SWIFTReportContext enquiry : incomingEnquiries) {
+				if (isGpiIpalaEnabledMessage(enquiry)) {
+					gpiIpalaMessages.add(enquiry);
+				}
+			}
+			List<GatewayDataMessageContext> ipalaMessages = processGPIIpalaMessages(gatewayDataContext,
+					gpiIpalaMessages);
+			if (!ipalaMessages.isEmpty()) {
+				gatewayDataContext.setIncomingIpalaStatusMessages(ipalaMessages);
+			}
+		}
+
+	}
+
+	private void processIncomingTrchStatusMessage(List<SWIFTReportContext> swiftContextList,
+			GatewayDataContext gatewayDataContext) {
+
+		List<SWIFTReportContext> incomingEnquiries = getMatchingTypeRecords(swiftContextList,
+				MessageType.INCOMING_ENQUIRY);
+		if (!incomingEnquiries.isEmpty()) {
+			List<SWIFTReportContext> gpiTrchMessages = new ArrayList<SWIFTReportContext>();
+			for (SWIFTReportContext enquiry : incomingEnquiries) {
+				if (isGpiTrchEnabledMessage(enquiry)) {
+					gpiTrchMessages.add(enquiry);
+				}
+			}
+			List<GatewayDataMessageContext> trchMessages = processGPITrchMessages(gatewayDataContext, gpiTrchMessages);
+			if (trchMessages != null) {
+				gatewayDataContext.setIncomingTrchStatusMessages(trchMessages);
+			}
+		}
+
+	}
+
+	private void processOutgoingEnquiries(List<SWIFTReportContext> swiftContextList,
+			GatewayDataContext gatewayDataContext) {
+
+		List<SWIFTReportContext> outgoingEnquiries = getMatchingTypeRecords(swiftContextList,
+				MessageType.OUTGOING_ENQUIRY);
+		if (!outgoingEnquiries.isEmpty()) {
+			for (SWIFTReportContext enquiry : outgoingEnquiries) {
+				if (!isGpiEnabledMessage(enquiry)) {
+					enquiry.getrMessageRecord()
+							.setActivity(MashreqFederatedReportConstants.GATEWAY_MESSAGE_OUTGOING_ACTIVITY + " : "
+									+ enquiry.getMesgType());
+					enquiry.getrMessageRecord().setDetailedReportType(SWIFTDetailedReportType.RMESG);
+					GatewayDataMessageContext messageContext = new GatewayDataMessageContext(
+							enquiry.getrMessageRecord(), enquiry.getReferenceNum(), enquiry.getMesgType());
+					messageContext.setMessageSubFormat(enquiry.getMesgFormat());
+					gatewayDataContext.addOutgoingEnquiry(enquiry.getReferenceNum(), messageContext);
+				}
+			}
+		}
+
+	}
+
+	private void processIncomingMessage(List<SWIFTReportContext> swiftContextList,
+			GatewayDataContext gatewayDataContext) {
+
+		SWIFTReportContext swiftReportContext = swiftContextList.get(0);
+		PaymentInvestigationReportOutput rMessageRecord = swiftReportContext.getrMessageRecord();
+		rMessageRecord.setActivity(MashreqFederatedReportConstants.GATEWAY_PAYMENT_INWARD_NETWORK_ACTIVITY + " : "
+				+ swiftReportContext.getMesgType());
+		PaymentInvestigationReportOutput screeningRecord = clonePaymentInvestigationReportOutput(rMessageRecord);
+		screeningRecord.setActivity(MashreqFederatedReportConstants.GATEWAY_PAYMENT_SCREENING_ACTIVITY + " : "
+				+ swiftReportContext.getMesgType());
+		screeningRecord.setDetailedReportType(SWIFTDetailedReportType.RINTV);
+		GatewayDataMessageContext messageContext = new GatewayDataMessageContext();
+		messageContext.setMessageRef(swiftReportContext.getReferenceNum());
+		messageContext.setMessageType(swiftReportContext.getMesgType());
+		messageContext.setMessageSubFormat(swiftReportContext.getMesgFormat());
+		rMessageRecord.setDetailedReportType(SWIFTDetailedReportType.RMESG);
+		messageContext.setNetworkRecord(rMessageRecord);
+		messageContext.setScreeningRecord(screeningRecord);
+		messageContext.setDetectionId(swiftReportContext.getDetectionId());
+		gatewayDataContext.setIncomingMessage(messageContext);
+
 	}
 
 	private void processComponentDetail(ReportComponentDTO component, Set<ReportComponentDetailDTO> componentDetailList,
@@ -299,9 +660,7 @@ public class SwiftReportConnector extends ReportConnector {
 	private void processRTextQuery(ReportComponentDTO component, ReportComponentDetailDTO componentDetailObject,
 			PaymentInvestigationReportInput piReportInput, String componentDetailKey, ReportContext reportContext,
 			List<SWIFTReportContext> swiftContextList) {
-		List<SWIFTReportContext> contextList = new ArrayList<SWIFTReportContext>();
 		swiftContextList.stream().forEach(swiftContext -> {
-
 			List<FederatedReportPromptDTO> promptInfoList = new ArrayList<FederatedReportPromptDTO>();
 			FederatedReportPromptDTO referenceNumPrompt = piReportInput.getReferenceNumPrompt();
 			ReportComponentDetailContext context = new ReportComponentDetailContext();

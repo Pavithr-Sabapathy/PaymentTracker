@@ -15,6 +15,43 @@ public class GatewayDataMessageContext implements ReportInput {
 	private String messageType;
 	private String messageSubFormat;
 
+	public GatewayDataMessageContext() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public GatewayDataMessageContext(PaymentInvestigationReportOutput networkRecord,
+			PaymentInvestigationReportOutput networkNackRecord, PaymentInvestigationReportOutput screeningRecord,
+			PaymentInvestigationReportOutput creditConfirmedRecord,
+			List<PaymentInvestigationReportOutput> screeningProcessedRecord, String messageRef, String detectionId,
+			String messageType, String messageSubFormat) {
+		super();
+		this.networkRecord = networkRecord;
+		this.networkNackRecord = networkNackRecord;
+		this.screeningRecord = screeningRecord;
+		this.creditConfirmedRecord = creditConfirmedRecord;
+		this.screeningProcessedRecord = screeningProcessedRecord;
+		this.messageRef = messageRef;
+		this.detectionId = detectionId;
+		this.messageType = messageType;
+		this.messageSubFormat = messageSubFormat;
+	}
+
+	public PaymentInvestigationReportOutput getLatestComplianceRecord() {
+		PaymentInvestigationReportOutput compMessage = null;
+		if (!screeningProcessedRecord.isEmpty()) {
+			compMessage = getScreeningProcessedRecord().get(getScreeningProcessedRecord().size() - 1);
+		}
+		return compMessage;
+	}
+
+	public GatewayDataMessageContext(PaymentInvestigationReportOutput networkRecord, String messageRef,
+			String messageType) {
+		super();
+		this.networkRecord = networkRecord;
+		this.messageRef = messageRef;
+		this.messageType = messageType;
+	}
+
 	public PaymentInvestigationReportOutput getNetworkRecord() {
 		return networkRecord;
 	}

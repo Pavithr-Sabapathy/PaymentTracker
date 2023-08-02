@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.mashreq.paymentTracker.type.CountryType;
 
-public class FederatedReportComponentDetailContext implements Serializable {
+public class ReportComponentDetailContext implements Serializable {
 
 	private static final long serialVersionUID = -6562215658927484795L;
 	private Long queryId;

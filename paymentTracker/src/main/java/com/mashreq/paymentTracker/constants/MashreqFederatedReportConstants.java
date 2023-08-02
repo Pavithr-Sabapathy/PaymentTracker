@@ -216,4 +216,14 @@ public class MashreqFederatedReportConstants {
 	public static final String RINTV_MPFN_MPC = null;
 	public static final String RINTV_MPFN_MPM = null;
 	public static final String RINTV_MPFN_NONE = null;
+	public static final String GATEWAY_PAYMENT_SCREENING_ACTIVITY = null;
+	public static final String GATEWAY_PAYMENT_INWARD_NETWORK_ACTIVITY = null;
+	public static final String GATEWAY_MESSAGE_OUTGOING_ACTIVITY = null;
+	public static final String INCOMING_PAYMENT_STATUS_MESSAGE_TYPE = null;
+	public static final String OUTGOING_PAYMENT_STATUS_MESSAGE_TYPE = null;
+	public static final String GATEWAY_PAYMENT_OUTWARD_NETWORK_ACTIVITY = null;
+	public static final String Swift_NACK_RESULT = "swift-wdnack-result";
+	public static final String GPI_EXTERNAL_TRCH_STATUS_ACTIVITY = null;
+	public static final String GPI_EXTERNAL_IPALA_STATUS_ACTIVITY = null;
+	public static final String NACK_ACTIVITY = null;
 }
