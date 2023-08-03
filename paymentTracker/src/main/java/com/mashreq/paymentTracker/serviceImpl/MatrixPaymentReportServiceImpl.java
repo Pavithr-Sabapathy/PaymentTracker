@@ -1,33 +1,31 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
-import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
-import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
-import com.mashreq.paymentTracker.model.ComponentDetails;
-import com.mashreq.paymentTracker.model.Components;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.service.CannedReportService;
-import com.mashreq.paymentTracker.service.MatrixPaymentReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
-import com.mashreq.paymentTracker.utility.CheckType;
+import com.mashreq.paymentTracker.service.ReportConnector;
+import com.mashreq.paymentTracker.service.ReportInput;
+import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
-@Component
-public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportService {
+@Service
+public class MatrixPaymentReportServiceImpl extends ReportConnector {
 
 	@Autowired
 	QueryExecutorService queryExecutorService;
@@ -36,14 +34,22 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 	CannedReportService cannedReportService;
 
 	@Override
-	public List<AdvanceSearchReportOutput> processMatrixPaymentReport(AdvanceSearchReportInput advanceSearchReportInput,
-			List<Components> componentList, ReportContext reportContext) {
+	public List<? extends ReportOutput> processReportComponent(ReportInput reportInput, ReportContext reportContext) {
+		if (reportInput instanceof AdvanceSearchReportInput) {
+			AdvanceSearchReportInput advanceSearchReportInput = (AdvanceSearchReportInput) reportInput;
+			return processMatrixPaymentReport(advanceSearchReportInput, reportContext);
+		} else if (reportInput instanceof PaymentInvestigationReportInput paymentInvestigationReportInput) {
+
+		}
+		return null;
+	}
+
+	public List<? extends ReportOutput> processMatrixPaymentReport(AdvanceSearchReportInput advanceSearchReportInput,
+			ReportContext reportContext) {
 		List<ReportDefaultOutput> flexReportExecuteResponse = new ArrayList<ReportDefaultOutput>();
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
-		Components component = getMatchedInstanceComponent(componentList,
-				MashreqFederatedReportConstants.ADVANCE_SEARCH_FLEX_COMPONENT_KEY);
-		if (null != component) {
-			ReportComponentDTO reportComponent = populateReportComponent(component);
+		ReportComponentDTO reportComponent = advanceSearchReportInput.getMatrixComponent();
+		if (null != reportComponent) {
 			advanceSearchReportInput.setMatrixComponent(reportComponent);
 			Set<ReportComponentDetailDTO> componentDetailsSet = reportComponent.getReportComponentDetails();
 			if (!componentDetailsSet.isEmpty()) {
@@ -71,8 +77,8 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 		return advanceSearchReportOutputList;
 	}
 
-	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(List<ReportDefaultOutput> federatedReportOutputList,
-			AdvanceSearchReportInput advanceSearchReportInput) {
+	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(
+			List<ReportDefaultOutput> federatedReportOutputList, AdvanceSearchReportInput advanceSearchReportInput) {
 
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
 
@@ -124,38 +130,4 @@ public class MatrixPaymentReportServiceImpl implements MatrixPaymentReportServic
 		return prompts;
 	}
 
-	private Components getMatchedInstanceComponent(List<Components> componentList, String componentKey) {
-		Components componentObj = new Components();
-		Optional<Components> componentOptional = componentList.stream()
-				.filter(component -> component.getComponentKey().equalsIgnoreCase(componentKey)
-						&& component.getActive().equalsIgnoreCase(MashreqFederatedReportConstants.YES))
-				.findFirst();
-		if (componentOptional.isPresent())
-			componentObj = componentOptional.get();
-		return componentObj;
-
-	}
-
-	private ReportComponentDTO populateReportComponent(Components component) {
-		ReportComponentDTO reportComponentDTO = new ReportComponentDTO();
-		reportComponentDTO.setActive(CheckType.getCheckType(component.getActive()));
-		reportComponentDTO.setComponentKey(component.getComponentKey());
-		reportComponentDTO.setComponentName(component.getComponentName());
-		reportComponentDTO.setId(component.getId());
-		reportComponentDTO.setReportComponentDetails(populateComponentDetails(component.getComponentDetailsList()));
-		return reportComponentDTO;
-	}
-
-	private Set<ReportComponentDetailDTO> populateComponentDetails(List<ComponentDetails> componentDetailsList) {
-		Set<ReportComponentDetailDTO> componentDetailDTO = new HashSet<ReportComponentDetailDTO>();
-		componentDetailsList.stream().forEach(componentDetails -> {
-			ReportComponentDetailDTO reportComponentDetailDTO = new ReportComponentDetailDTO();
-			reportComponentDetailDTO.setId(componentDetails.getId());
-			reportComponentDetailDTO.setQuery(componentDetails.getQuery());
-			reportComponentDetailDTO.setQueryKey(componentDetails.getQueryKey());
-			reportComponentDetailDTO.setReportComponentId(componentDetails.getComponents().getId());
-			componentDetailDTO.add(reportComponentDetailDTO);
-		});
-		return componentDetailDTO;
-	}
 }

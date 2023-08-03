@@ -1,14 +1,9 @@
 package com.mashreq.paymentTracker.dto;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class AdvanceSearchReportOutput implements Serializable {
+public class AdvanceSearchReportOutput extends ReportBaseOutput {
 
-	/**
-	* 
-	*/
-	private static final long serialVersionUID = 4557826014736321952L;
 	private String transactionReference;
 	private String beneficiaryDetails;
 	private String valueDate;
