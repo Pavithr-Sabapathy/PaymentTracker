@@ -75,6 +75,22 @@ public class MashreqFederatedReportConstants {
 	public static final String SWIFTINTVDETECTION = "rintv-detection";
 	public static final String SWIFTINTV = "rintv";
 
+	public static final String UAEFTS_AML_FTSMSGS_KEY = "uaefts-aml-ftsmsgs";
+	public static final String UAEFTS_MTQA_KEY = "uaefts-mtqa";
+	public static final String UAEFTS_MANUALMSGS_DETAILS_KEY = "manualmsgs-details";
+	public static final String UAEFTS_MT202_KEY = "uaefts-mt202";
+	public static final String UAEFTS_MT202_INPUTMSGS_DETAILS_KEY = "uaefts-mt202-inputmsgs-details";
+	public static final String UAEFTS_MTINPUTMSGS_DETAILS_KEY = "uaefts-mtinputmsgs-details";
+	public static final String UAEFTS_AML_MTQA_KEY = "uaefts-aml-mtqa";
+	public static final String UAEFTS_FTSMSGS_KEY = "uaefts-ftsmsgs";
+	public static final String UAEFTS_INCOMING_MTFN_KEY = "uaefts-incoming-mtfn";
+	public static final String UAEFTS_AML_MTINPUTMSGS_DETAILS_KEY = "uaefts-aml-mtinputmsgs-details";
+	public static final String UAEFTS_AML_INCOMING_MTFN_KEY = "uaefts-aml-incoming-mtfn";
+	public static final String UAEFTS_INCOMING_CCN_KEY = "uaefts-incoming-ccn";
+	public static final String UAEFTS_FORMAT_ACTION_REPAIR_STATUS = "R";
+
+	public static final String UAEFTS_OUTGOING_MTFN_KEY = "uaefts-outgoing-mtfn";
+
 	public static final String ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY = "FromDate";
 	public static final String ADVANCE_SEARCH_TO_DATE_PROMPT_KEY = "ToDate";
 	public static final String ADVANCE_SEARCH_ACCOUNT_NUMBER_PROMPT_KEY = "AccountNumber";
@@ -207,7 +223,7 @@ public class MashreqFederatedReportConstants {
 
 	public static final String FLEX_SOURCE_SYSTEM = "FLEXCUBE";
 	public static final String SWIFT_SOURCE_SYSTEM = "SWIFT";
-	
+
 	public static final String DEBIT_ACCOUNT_SWIFT_CODE = "50";
 	public static final String BENEFICARY_ACCOUNT_SWIFT_CODE = "59";
 	public static final String PAYMENT_STATUS_CODE = "79";
@@ -219,11 +235,33 @@ public class MashreqFederatedReportConstants {
 	public static final String GATEWAY_PAYMENT_SCREENING_ACTIVITY = null;
 	public static final String GATEWAY_PAYMENT_INWARD_NETWORK_ACTIVITY = null;
 	public static final String GATEWAY_MESSAGE_OUTGOING_ACTIVITY = null;
+	public static final String GATEWAY_MESSAGE_SCREENING_PROCESSED_ACTIVITY = null;
+	public static final String SAFEWATCH_DEFAULT_COMPLETEDBY = null;
 	public static final String INCOMING_PAYMENT_STATUS_MESSAGE_TYPE = null;
 	public static final String OUTGOING_PAYMENT_STATUS_MESSAGE_TYPE = null;
 	public static final String GATEWAY_PAYMENT_OUTWARD_NETWORK_ACTIVITY = null;
+	public static final String GATEWAY_MESSAGE_INCOMING_ACTIVITY = null;
 	public static final String Swift_NACK_RESULT = "swift-wdnack-result";
 	public static final String GPI_EXTERNAL_TRCH_STATUS_ACTIVITY = null;
 	public static final String GPI_EXTERNAL_IPALA_STATUS_ACTIVITY = null;
 	public static final String NACK_ACTIVITY = null;
+
+	public static final String CPC_COMPLIANCE_WORKSTAGE = "CPC Compliance";
+	public static final String HO_COMPLIANCE_WORKSTAGE = "HO Compliance";
+	public static final String HO_COMPLIANCE_CHECKER_WORKSTAGE = "HO Compliance Checker";
+	public static final String CPC_COMPLIANCE_CHECKER_WORKSTAGE = "CPC Checker";
+
+	public static final String COMPLIANCE_DONT_KNOW_STATUS = "Under Review with Compliance";
+	public static final String SOURCE_SYSTEM_UAEFTS = "uaefts";
+
+	public static final String GATEWAY_PAYMENT_SCREENING_PROCESSED_ACTIVITY = "Payment screening processed";
+
+	public static final String UAEFTS_AML_MANUALMSGS_DETAILS_KEY = "uaefts-aml-manualmsgs-details";
+	public static final String UAEFTS_AML_MT202_KEY = "uaefts-aml-mt202";
+	public static final String UAEFTS_AML_MT202_INPUTMSGS_DETAILS_KEY = "uaefts-aml-mt202-inputmsgs-details";
+
+	public static final String CBUNIQUE_FILE_ID_PROMPT_KEY = "cb-unique-file-id";
+	public static final String MSG_ID_PROMPT_KEY = "msg-id";
+
+	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new java.util.ArrayList<String>();
 }

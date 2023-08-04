@@ -17,6 +17,26 @@ public class ReportComponentDetailContext implements Serializable {
 	private CountryType country = CountryType.UAE;
 	private List<FederatedReportPromptDTO> prompts;
 	private LinkedHashMap<String, List<String>> promptKeyValueMap;
+	private boolean                            populateMetadata = false;
+	private List<ReportDefaultOutput> componentDetailData;
+
+	
+	
+	public List<ReportDefaultOutput> getComponentDetailData() {
+		return componentDetailData;
+	}
+
+	public void setComponentDetailData(List<ReportDefaultOutput> componentDetailData) {
+		this.componentDetailData = componentDetailData;
+	}
+
+	public boolean isPopulateMetadata() {
+		return populateMetadata;
+	}
+
+	public void setPopulateMetadata(boolean populateMetadata) {
+		this.populateMetadata = populateMetadata;
+	}
 
 	public Long getQueryId() {
 		return queryId;
