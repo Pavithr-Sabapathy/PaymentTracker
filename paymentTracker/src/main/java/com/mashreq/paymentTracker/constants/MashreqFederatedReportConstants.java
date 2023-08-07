@@ -264,4 +264,9 @@ public class MashreqFederatedReportConstants {
 	public static final String MSG_ID_PROMPT_KEY = "msg-id";
 
 	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new java.util.ArrayList<String>();
+	
+	
+	public static final String MOL_AUTH_DATA_KEY    = "mol-auth-data";
+	
+	  
 }
