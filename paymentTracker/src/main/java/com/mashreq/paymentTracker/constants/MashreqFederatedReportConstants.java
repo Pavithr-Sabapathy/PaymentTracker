@@ -198,8 +198,6 @@ public class MashreqFederatedReportConstants {
 	public static final String NO_REPORTS = "No Report Found";
 	public static final String PENDING_ACTIVITY_STATUS = "Pending";
 
-	public static final String SOURCE_SYSTEM_SNAPP = "SNAPP";
-	public static final String SOURCE_SYSTEM_MOL = "MOL";
 	public static final String DATE_FORMATS_KEY = "federated-reports.static-values.mashreq.date-formats.format";
 	public static final String VALUE_DATE_FORMAT_KEY = "dd-MMM-yyyy";
 	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "60";
@@ -252,7 +250,6 @@ public class MashreqFederatedReportConstants {
 	public static final String CPC_COMPLIANCE_CHECKER_WORKSTAGE = "CPC Checker";
 
 	public static final String COMPLIANCE_DONT_KNOW_STATUS = "Under Review with Compliance";
-	public static final String SOURCE_SYSTEM_UAEFTS = "uaefts";
 
 	public static final String GATEWAY_PAYMENT_SCREENING_PROCESSED_ACTIVITY = "Payment screening processed";
 
@@ -264,9 +261,19 @@ public class MashreqFederatedReportConstants {
 	public static final String MSG_ID_PROMPT_KEY = "msg-id";
 
 	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new java.util.ArrayList<String>();
-	
-	
-	public static final String MOL_AUTH_DATA_KEY    = "mol-auth-data";
-	
-	  
+
+	public static final String MOL_AUTH_DATA_KEY = "mol-auth-data";
+
+	// system source constants
+	public static final String SOURCE_SYSTEM_MATRIX_PORTAL = "MATRIX";
+	public static final String SOURCE_SYSTEM_MATRIX_PAYMENT = "MATRIX";
+	public static final String SOURCE_SYSTEM_FLEX = "FLEXCUBE";
+	public static final String SOURCE_SYSTEM_UAEFTS = "UAEFTS";
+	public static final String SOURCE_SYSTEM_SWIFT = "SWIFT";
+	public static final String SOURCE_SYSTEM_SAFEWATCH = "SAFEWATCH";
+	public static final String SOURCE_SYSTEM_EDMS = "EDMS";
+	public static final String SOURCE_SYSTEM_MOL = "MOL";
+	public static final String SOURCE_SYSTEM_SNAPP = "SNAPP";
+	public static final String SOURCE_SYSTEM_EMAIL = "EMAIL";
+	public static final String SOURCE_SYSTEM_FIRCOSOFT = "FIRCOSOFT";
 }
