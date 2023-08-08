@@ -1,10 +1,5 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
-import java.io.StringReader;
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,23 +7,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jdom.Document;
-import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.xml.sax.InputSource;
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
-import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.MOLDetailedFederatedReportInput;
-import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
@@ -37,6 +24,7 @@ import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
+import com.mashreq.paymentTracker.dto.SnappDetailedReportInput;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
@@ -47,9 +35,9 @@ import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
+import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 import com.mashreq.paymentTracker.utility.CheckType;
-import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Service("molDetails")
 public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
@@ -75,6 +63,9 @@ public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl i
 	@Autowired
 	ReportOutputExecutor reportOutputExecutor;
 
+	@Autowired
+	MOLReportConnector molReportConnector;
+
 	@Override
 	public ReportInput populateBaseInputContext(ReportContext reportContext) {
 		MOLDetailedFederatedReportInput molDetailedFederatedReportInput = new MOLDetailedFederatedReportInput();
@@ -92,10 +83,9 @@ public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl i
 	@Override
 	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
-		List<ReportDefaultOutput> molReportExecuteResponseList = new ArrayList<ReportDefaultOutput>();
-		List<ReportDefaultOutput> outputList = new ArrayList<ReportDefaultOutput>();
 		Report report = new Report();
 		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
+		List<ReportDefaultOutput> snappReportOutputList = new ArrayList<ReportDefaultOutput>();
 		if (null != reportInstanceDTO) {
 			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
 		}
@@ -107,172 +97,26 @@ public class MOLFederatedReportServiceImpl extends ReportControllerServiceImpl i
 			ReportComponentDTO reportComponent = populateReportComponent(componentObj);
 			MOLDetailedFederatedReportInput molDetailedFederatedReportInput = (MOLDetailedFederatedReportInput) reportInput;
 			molDetailedFederatedReportInput.setComponent(reportComponent);
-			Set<ReportComponentDetailDTO> reportComponentDetailsList = reportComponent.getReportComponentDetails();
-			for (ReportComponentDetailDTO reportComponetDetail : reportComponentDetailsList) {
-				ReportComponentDetailContext context = new ReportComponentDetailContext();
-				List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-				context.setQueryId(reportComponetDetail.getId());
-				context.setQueryKey(reportComponetDetail.getQueryKey());
-				context.setQueryString(reportComponetDetail.getQuery());
-				promptsList.add(molDetailedFederatedReportInput.getReferenceNumPrompt());
-				context.setPrompts(promptsList);
-				context.setExecutionId(reportContext.getExecutionId());
-				molReportExecuteResponseList = queryExecutorService.executeQuery(reportComponetDetail, context);
-				if (!molReportExecuteResponseList.isEmpty()) {
-					PaymentInvestigationReportOutput paymentInvestigationReportOutput = new PaymentInvestigationReportOutput();
-					try {
-						paymentInvestigationReportOutput = populateReportOutputForSingleRecord(
-								molReportExecuteResponseList, MashreqFederatedReportConstants.MOL_AUTH_DATA_DETAIL_KEY);
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					List<Object> rowData = new ArrayList<Object>();
-					rowData.add(paymentInvestigationReportOutput.getSourceRefNum());
-					rowData.add(paymentInvestigationReportOutput.getDebitAccount());
-					rowData.add(paymentInvestigationReportOutput.getBeneficaryAccount());
-					rowData.add(paymentInvestigationReportOutput.getCurrency());
-					rowData.add(paymentInvestigationReportOutput.getAmount());
-					ReportDefaultOutput defaultOutput = new ReportDefaultOutput();
-					defaultOutput.setComponentDetailId(paymentInvestigationReportOutput.getComponentDetailId());
-					defaultOutput.setRowData(rowData);
-					outputList.add(defaultOutput);
-				}
-			}
+
+			List<? extends ReportOutput> outputList = molReportConnector.processReportComponent(reportInput,
+					reportContext);
+
 			if (!outputList.isEmpty()) {
-				List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(outputList, report);
+
+				for (ReportOutput reportOutput : outputList) {
+					ReportDefaultOutput output = (ReportDefaultOutput) reportOutput;
+					snappReportOutputList.add(output);
+				}
+				List<Map<String, Object>> rowDataMapList = reportOutputExecutor.populateRowData(snappReportOutputList,
+						report);
 				List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = reportOutputExecutor
 						.populateColumnDef(report);
 				responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
 				responseData.setData(rowDataMapList);
 			}
-			log.info(FILENAME + "[SnappReportServiceImpl processReport Response] -->" + responseData.toString());
+			log.info(FILENAME + "[MOLFederatedReportServiceImpl processReport Response] -->" + responseData.toString());
 		}
 		return responseData;
-	}
-
-	private PaymentInvestigationReportOutput populateReportOutputForSingleRecord(List<ReportDefaultOutput> molReportOutputList,
-			String componentDetailKey) throws SQLException {
-		PaymentInvestigationReportOutput reportOutput = new PaymentInvestigationReportOutput();
-		if (!molReportOutputList.isEmpty()) {
-			ReportDefaultOutput defaultReportOutput = molReportOutputList.get(0);
-			List<Object> requestRow = defaultReportOutput.getRowData();
-			reportOutput.setComponentDetailId(defaultReportOutput.getComponentDetailId());
-			if (MashreqFederatedReportConstants.MOL_AUTH_DATA.equalsIgnoreCase(componentDetailKey)) {
-				Timestamp landingTime = UtilityClass.getTimeStampRepresentation(requestRow.get(0));
-				String Activity = UtilityClass.getStringRepresentation(requestRow.get(1));
-				Timestamp CompletionTime = UtilityClass.getTimeStampRepresentation(requestRow.get(2));
-				String ActivityStatus = UtilityClass.getStringRepresentation(requestRow.get(3));
-				String SourceRefNum = UtilityClass.getStringRepresentation(requestRow.get(4));
-				String DebitAccount = UtilityClass.getStringRepresentation(requestRow.get(5));
-				String Workstage = UtilityClass.getStringRepresentation(requestRow.get(6));
-				String CompletedBy = UtilityClass.getStringRepresentation(requestRow.get(7));
-				SimpleDateFormat sdf = new SimpleDateFormat(MashreqFederatedReportConstants.VALUE_DATE_FORMAT_KEY);
-				String valueDate = sdf.format(new Date(landingTime.getTime()));
-
-				String activityStatus = MashreqFederatedReportConstants.PENDING_ACTIVITY_STATUS;
-				Timestamp completionTime = landingTime;
-
-				String message = UtilityClass.getStringRepresentation(requestRow.get(8));
-				parseXMLMessage(message, reportOutput);
-				String CustomerId = UtilityClass.getStringRepresentation(requestRow.get(9));
-
-			} else if (MashreqFederatedReportConstants.MOL_AUTH_DATA.endsWith(componentDetailKey)) {
-				String DebitAccount = UtilityClass.getStringRepresentation(requestRow.get(0));
-				String message = UtilityClass.getStringRepresentation(requestRow.get(1));
-				parseXMLMessage(message, reportOutput);
-			}
-		}
-
-		return reportOutput;
-	}
-
-	private void parseXMLMessage(String message, PaymentInvestigationReportOutput reportOutput) {
-		// clean message
-		message = message.trim();
-		int lastIndex = message.indexOf("</GenericPaymentRequestDTO>");
-		if (lastIndex != -1) {
-			message = message.substring(0, message.indexOf("</GenericPaymentRequestDTO>") + 27);
-		}
-		Document xml = convertStringToDocument(message);
-		if (xml != null) {
-			Element rootElement = xml.getRootElement();
-			populateAmountAndCurrency(rootElement, reportOutput);
-			populateBeneficaryAndReceiver(rootElement, reportOutput);
-		} else {
-			log.error("Unable to create XML");
-		}
-	}
-
-	private void populateAmountAndCurrency(Element rootElement, PaymentInvestigationReportOutput reportOutput) {
-		Element txnAmount = UtilityClass.findElement("txnamount", rootElement);
-		if (txnAmount != null) {
-			String txnAmountValue = txnAmount.getTextTrim();
-			if (!txnAmountValue.isEmpty()) {
-				reportOutput.setAmount(txnAmountValue);
-			}
-		}
-		Element txnCurrency = UtilityClass.findElement("txncurrency", rootElement);
-		if (txnCurrency != null) {
-			String txnCurrencyValue = txnCurrency.getTextTrim();
-			if (!txnCurrencyValue.isEmpty()) {
-				reportOutput.setCurrency(txnCurrencyValue);
-			}
-		}
-
-	}
-
-	private Document convertStringToDocument(String message) {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder;
-		try {
-			builder = factory.newDocumentBuilder();
-			Document doc = (Document) builder.parse(new InputSource(new StringReader(message)));
-			return doc;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	private void populateBeneficaryAndReceiver(Element rootElement, PaymentInvestigationReportOutput reportOutput) {
-		List<Element> udfElements = new ArrayList<Element>();
-
-		/*
-		 * findElements("udfdto", rootElement, udfElements); if
-		 * (ExecueCoreUtil.isCollectionNotEmpty(udfElements)) { String fldSortCode =
-		 * null; String fldBankSwiftCode = null; String fldBeneBankCity = null; String
-		 * fldiBan = null; String fldBeneName = null; String fldValueDate = null; for
-		 * (Element element : udfElements) { Element udfName = findElement("udfName",
-		 * element); Element udfValue = findElement("udfValue", element); if (udfName !=
-		 * null && udfValue != null) { if
-		 * (udfName.getTextTrim().equalsIgnoreCase("fldsortcode")) { fldSortCode =
-		 * udfValue.getTextTrim(); } else if
-		 * (udfName.getTextTrim().equalsIgnoreCase("fldBankSwiftCode")) {
-		 * fldBankSwiftCode = udfValue.getTextTrim(); } else if
-		 * (udfName.getTextTrim().equalsIgnoreCase("fldBeneBankCity")) { fldBeneBankCity
-		 * = udfValue.getTextTrim(); } else if
-		 * (udfName.getTextTrim().equalsIgnoreCase("fldiBan")) { fldiBan =
-		 * udfValue.getTextTrim(); } else if
-		 * (udfName.getTextTrim().equalsIgnoreCase("fldBeneName")) { fldBeneName =
-		 * udfValue.getTextTrim(); } else if
-		 * (udfName.getTextTrim().equalsIgnoreCase("fldValueDate")) { fldValueDate =
-		 * udfValue.getTextTrim(); } } if (fldSortCode != null && fldBankSwiftCode !=
-		 * null && fldBeneBankCity != null && fldiBan != null && fldBeneName != null &&
-		 * fldValueDate != null) { break; } } if (null!=fldiBan) {
-		 * reportOutput.setBeneficaryAccount(fldiBan); } if (null!=fldValueDate) {
-		 * reportOutput.setValueDate(fldValueDate); } if (null!=fldBeneName)) {
-		 * reportOutput.setBeneficaryDetail(fldBeneName); } List<String> receiverInfo =
-		 * new ArrayList<String>(); if (null!=fldSortCode)) {
-		 * receiverInfo.add(fldSortCode); } if (null!=fldBankSwiftCode) {
-		 * receiverInfo.add(fldBankSwiftCode); } if (null!=fldBeneBankCity) {
-		 * receiverInfo.add(fldBeneBankCity); } if (null!=(receiverInfo) { String
-		 * receiver = receiverInfo.stream().collect(Collectors.joining(","));
-		 * reportOutput.setReceiver(receiver); }
-		 * 
-		 * } } }
-		 */
-
 	}
 
 	private ReportComponentDTO populateReportComponent(Components component) {

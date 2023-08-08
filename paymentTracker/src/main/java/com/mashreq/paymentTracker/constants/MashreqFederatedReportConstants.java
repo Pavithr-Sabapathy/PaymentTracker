@@ -1,11 +1,23 @@
 package com.mashreq.paymentTracker.constants;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MashreqFederatedReportConstants {
+	public static final String CPC_COMPLIANCE_WORKSTAGE = "CPC Compliance";
+	public static final String HO_COMPLIANCE_WORKSTAGE = "HO Compliance";
+	public static final String HO_COMPLIANCE_CHECKER_WORKSTAGE = "HO Compliance Checker";
+	public static final String CPC_COMPLIANCE_CHECKER_WORKSTAGE = "CPC Checker";
+	public static final String SAFEWATCH_DEFAULT_COMPLETEDBY = "System";
 	public static final List<String> INCOMING_PAYMENT_CODES_LIST = new ArrayList<String>();
 	public static final List<String> OUTGOING_PAYMENT_CODES_LIST = new ArrayList<String>();
+	public static final Map<String, List<String>> FIRCOSOFT_COMPLIANCE_WORKSTAGES = new HashMap<String, List<String>>();
+	public static final Map<String, List<String>> SAFEWATCH_COMPLIANCE_WORKSTAGES = new HashMap<String, List<String>>();
+	public static final List<String> SAFEWATCH_STATUS_MODIF_TYPES = new ArrayList<String>();
+	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new ArrayList<String>();
+
 	static {
 		INCOMING_PAYMENT_CODES_LIST.add("O 103");
 		INCOMING_PAYMENT_CODES_LIST.add("O 102");
@@ -18,6 +30,36 @@ public class MashreqFederatedReportConstants {
 		OUTGOING_PAYMENT_CODES_LIST.add("I 202");
 		OUTGOING_PAYMENT_CODES_LIST.add("I 203");
 		OUTGOING_PAYMENT_CODES_LIST.add("I 200");
+
+		List<String> hostages = new ArrayList<String>();
+		hostages.add("HO Compliance Checker");
+		SAFEWATCH_COMPLIANCE_WORKSTAGES.put(HO_COMPLIANCE_WORKSTAGE, hostages);
+		List<String> cpcstages = new ArrayList<String>();
+		cpcstages.add("CPC Checker");
+		SAFEWATCH_COMPLIANCE_WORKSTAGES.put(CPC_COMPLIANCE_WORKSTAGE, cpcstages);
+		List<String> systemStages = new ArrayList<String>();
+		systemStages.add("System");
+		SAFEWATCH_COMPLIANCE_WORKSTAGES.put(SAFEWATCH_DEFAULT_COMPLETEDBY, systemStages);
+
+		List<String> fircosoftHoStages = new ArrayList<String>();
+		fircosoftHoStages.add("HO Compliance");
+		FIRCOSOFT_COMPLIANCE_WORKSTAGES.put(HO_COMPLIANCE_WORKSTAGE, fircosoftHoStages);
+		List<String> fircosoftCpcStages = new ArrayList<String>();
+		fircosoftCpcStages.add("CPC Checker");
+		fircosoftCpcStages.add("CPC Maker");
+		FIRCOSOFT_COMPLIANCE_WORKSTAGES.put(CPC_COMPLIANCE_WORKSTAGE, fircosoftCpcStages);
+		List<String> fircosoftSystemStages = new ArrayList<String>();
+		fircosoftSystemStages.add("System");
+		FIRCOSOFT_COMPLIANCE_WORKSTAGES.put(SAFEWATCH_DEFAULT_COMPLETEDBY, fircosoftSystemStages);
+
+		SAFEWATCH_STATUS_MODIF_TYPES.add("Alert status is changed.");
+		SAFEWATCH_STATUS_MODIF_TYPES.add("Alert status changed.");
+
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Do Not Know.");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Do Not Know");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Don't Know");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Don't Know.");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Dont Know");
 
 	}
 
@@ -33,6 +75,8 @@ public class MashreqFederatedReportConstants {
 	public static final String PROMPT = "P";
 	public static final String ACCOUNTINGSOURCEPROMPTS = "AccountingSource";
 	public static final String REFERENCENUMPROMPTS = "ReferenceNum";
+	public static final String REFERENCE_NUMS_PROMPTS = "ReferenceNums";
+	public static final String PROMPT_SYSTEM_ID = "SystemId";
 	public static final String RELATEDACCOUNTPROMPTS = "RelatedAccount";
 	public static final String MESSAGETYPEPROMPTS = "mesgType";
 	/** Prepared Statement Constants **/
@@ -75,6 +119,22 @@ public class MashreqFederatedReportConstants {
 	public static final String SWIFTINTVDETECTION = "rintv-detection";
 	public static final String SWIFTINTV = "rintv";
 
+	public static final String UAEFTS_AML_FTSMSGS_KEY = "uaefts-aml-ftsmsgs";
+	public static final String UAEFTS_MTQA_KEY = "uaefts-mtqa";
+	public static final String UAEFTS_MANUALMSGS_DETAILS_KEY = "manualmsgs-details";
+	public static final String UAEFTS_MT202_KEY = "uaefts-mt202";
+	public static final String UAEFTS_MT202_INPUTMSGS_DETAILS_KEY = "uaefts-mt202-inputmsgs-details";
+	public static final String UAEFTS_MTINPUTMSGS_DETAILS_KEY = "uaefts-mtinputmsgs-details";
+	public static final String UAEFTS_AML_MTQA_KEY = "uaefts-aml-mtqa";
+	public static final String UAEFTS_FTSMSGS_KEY = "uaefts-ftsmsgs";
+	public static final String UAEFTS_INCOMING_MTFN_KEY = "uaefts-incoming-mtfn";
+	public static final String UAEFTS_AML_MTINPUTMSGS_DETAILS_KEY = "uaefts-aml-mtinputmsgs-details";
+	public static final String UAEFTS_AML_INCOMING_MTFN_KEY = "uaefts-aml-incoming-mtfn";
+	public static final String UAEFTS_INCOMING_CCN_KEY = "uaefts-incoming-ccn";
+	public static final String UAEFTS_FORMAT_ACTION_REPAIR_STATUS = "R";
+
+	public static final String UAEFTS_OUTGOING_MTFN_KEY = "uaefts-outgoing-mtfn";
+
 	public static final String ADVANCE_SEARCH_FROM_DATE_PROMPT_KEY = "FromDate";
 	public static final String ADVANCE_SEARCH_TO_DATE_PROMPT_KEY = "ToDate";
 	public static final String ADVANCE_SEARCH_ACCOUNT_NUMBER_PROMPT_KEY = "AccountNumber";
@@ -107,16 +167,6 @@ public class MashreqFederatedReportConstants {
 	public static final String GPI_ENABLED_IPALA_CODE = "IPLAGPIA";
 
 	public static final String COMPLETED_ACTIVITY_STATUS = "Completed";
-	public static final String RINTV_MESG_LIVE = "Pending";
-	public static final String RINTV_MESG_ACK = "ACK";
-	public static final String RINTV_MESG_NACK = "NACK";
-	public static final String RINTV_MPFN_SI_TO_SWIFT = "_SI_TO_SWIFT";
-	public static final String RINTV_NAME_INSTANCE_COMPLETED = "Instance completed";
-	public static final String RAPPE_NETWORK_DELIVERY_STATUS_ACKED = "DLV_ACKED";
-	public static final String RINTV_NAME_INSTANCE_CREATED = "Instance created";
-	public static final String RINTV_NAME_INSTANCE_ROUTED = "Instance routed";
-	public static final String RINTV_NAME_AUTHORIZATION_NOT_PRESENT = "Authorisation not present";
-	public static final String RAPPE_NETWORK_DELIVERY_STATUS_NACKED = "DLV_NACKED";
 
 	public static final String TILDE = "~";
 	public static final String COMMA = ",";
@@ -182,8 +232,6 @@ public class MashreqFederatedReportConstants {
 	public static final String NO_REPORTS = "No Report Found";
 	public static final String PENDING_ACTIVITY_STATUS = "Pending";
 
-	public static final String SOURCE_SYSTEM_SNAPP = "SNAPP";
-	public static final String SOURCE_SYSTEM_MOL = "MOL";
 	public static final String DATE_FORMATS_KEY = "federated-reports.static-values.mashreq.date-formats.format";
 	public static final String VALUE_DATE_FORMAT_KEY = "dd-MMM-yyyy";
 	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "60";
@@ -195,6 +243,8 @@ public class MashreqFederatedReportConstants {
 	public static final String COMPONENT_MATRIX_PORTAL_KEY = "matrix-portal";
 	public static final String COMPONENT_EMDS_KEY = "edms";
 	public static final String COMPONENT_SNAPP_KEY = "snapp";
+	public static final String COMPONENT_SAFE_WATCH_KEY = "safewatch";
+	public static final String COMPONENT_FIRCOSOFT_KEY = "fircosoft";
 
 	public static final String PAYMENT_TRACKER_REFERENCE_NUM_PROMPT_KEY = "ReferenceNum";
 	public static final String PAYMENT_TRACKER_COUNTRY_CODE_PROMPT_KEY = "CountryCode";
@@ -207,23 +257,79 @@ public class MashreqFederatedReportConstants {
 
 	public static final String FLEX_SOURCE_SYSTEM = "FLEXCUBE";
 	public static final String SWIFT_SOURCE_SYSTEM = "SWIFT";
-	
+
 	public static final String DEBIT_ACCOUNT_SWIFT_CODE = "50";
 	public static final String BENEFICARY_ACCOUNT_SWIFT_CODE = "59";
 	public static final String PAYMENT_STATUS_CODE = "79";
-	public static final String RINTV_MESG_REJECTED_LOCALLY = null;
-	public static final String RAPPE_NETWORK_DELIVERY_REJECTED_LOCALLY = null;
-	public static final String RINTV_MPFN_MPC = null;
-	public static final String RINTV_MPFN_MPM = null;
-	public static final String RINTV_MPFN_NONE = null;
-	public static final String GATEWAY_PAYMENT_SCREENING_ACTIVITY = null;
-	public static final String GATEWAY_PAYMENT_INWARD_NETWORK_ACTIVITY = null;
-	public static final String GATEWAY_MESSAGE_OUTGOING_ACTIVITY = null;
-	public static final String INCOMING_PAYMENT_STATUS_MESSAGE_TYPE = null;
-	public static final String OUTGOING_PAYMENT_STATUS_MESSAGE_TYPE = null;
-	public static final String GATEWAY_PAYMENT_OUTWARD_NETWORK_ACTIVITY = null;
+
+	public static final String RAPPE_NETWORK_DELIVERY_REJECTED_LOCALLY = "DLV_REJECTED_LOCALLY";
+	public static final String RAPPE_NETWORK_DELIVERY_STATUS_ACKED = "DLV_ACKED";
+	public static final String RAPPE_NETWORK_DELIVERY_STATUS_NACKED = "DLV_NACKED";
+	public static final String RINTV_MESG_LIVE = "Pending";
+	public static final String RINTV_MESG_ACK = "ACK";
+	public static final String RINTV_MESG_NACK = "NACK";
+	public static final String RINTV_MESG_REJECTED_LOCALLY = "Rejected Locally";
+	public static final String RINTV_NAME_INSTANCE_COMPLETED = "Instance completed";
+	public static final String RINTV_NAME_INSTANCE_CREATED = "Instance created";
+	public static final String RINTV_NAME_INSTANCE_ROUTED = "Instance routed";
+	public static final String RINTV_NAME_AUTHORIZATION_NOT_PRESENT = "Authorisation not present";
+	public static final String RINTV_MPFN_SI_TO_SWIFT = "_SI_TO_SWIFT";
+	public static final String RINTV_MPFN_MPC = "mpc";
+	public static final String RINTV_MPFN_MPM = "mpm";
+	public static final String RINTV_MPFN_NONE = "NONE";
+
+	public static final String GATEWAY_PAYMENT_OUTWARD_NETWORK_ACTIVITY = "Release payment for network";
+	public static final String GATEWAY_PAYMENT_INWARD_NETWORK_ACTIVITY = "Payment received from network";
+	public static final String GATEWAY_PAYMENT_SCREENING_ACTIVITY = "Release payment for screening";
+	public static final String GATEWAY_PAYMENT_SCREENING_PROCESSED_ACTIVITY = "Payment screening processed";
+
+	public static final String GATEWAY_MESSAGE_INCOMING_ACTIVITY = "Message Received";
+	public static final String GATEWAY_MESSAGE_OUTGOING_ACTIVITY = "Message Sent";
+	public static final String GATEWAY_MESSAGE_SCREENING_PROCESSED_ACTIVITY = "Message screening processed";
+
+	public static final String INCOMING_PAYMENT_STATUS_MESSAGE_TYPE = "O 199";
+	public static final String OUTGOING_PAYMENT_STATUS_MESSAGE_TYPE = "I 199";
 	public static final String Swift_NACK_RESULT = "swift-wdnack-result";
-	public static final String GPI_EXTERNAL_TRCH_STATUS_ACTIVITY = null;
-	public static final String GPI_EXTERNAL_IPALA_STATUS_ACTIVITY = null;
-	public static final String NACK_ACTIVITY = null;
+	public static final String GPI_EXTERNAL_TRCH_STATUS_ACTIVITY = "External GPI Tracker - Status Received";
+	public static final String GPI_EXTERNAL_IPALA_STATUS_ACTIVITY = "External GPI Tracker";
+
+	public static final String NACK_ACTIVITY = "Payment Nack Repaired";
+
+	public static final String COMPLIANCE_DONT_KNOW_STATUS = "Under Review with Compliance";
+
+	public static final String UAEFTS_AML_MANUALMSGS_DETAILS_KEY = "uaefts-aml-manualmsgs-details";
+	public static final String UAEFTS_AML_MT202_KEY = "uaefts-aml-mt202";
+	public static final String UAEFTS_AML_MT202_INPUTMSGS_DETAILS_KEY = "uaefts-aml-mt202-inputmsgs-details";
+
+	public static final String CBUNIQUE_FILE_ID_PROMPT_KEY = "cb-unique-file-id";
+	public static final String MSG_ID_PROMPT_KEY = "msg-id";
+
+	public static final String MOL_AUTH_DATA_KEY = "mol-auth-data";
+
+	// system source constants
+	public static final String SOURCE_SYSTEM_MATRIX_PORTAL = "MATRIX";
+	public static final String SOURCE_SYSTEM_MATRIX_PAYMENT = "MATRIX";
+	public static final String SOURCE_SYSTEM_FLEX = "FLEXCUBE";
+	public static final String SOURCE_SYSTEM_UAEFTS = "UAEFTS";
+	public static final String SOURCE_SYSTEM_SWIFT = "SWIFT";
+	public static final String SOURCE_SYSTEM_SAFEWATCH = "SAFEWATCH";
+	public static final String SOURCE_SYSTEM_EDMS = "EDMS";
+	public static final String SOURCE_SYSTEM_MOL = "MOL";
+	public static final String SOURCE_SYSTEM_SNAPP = "SNAPP";
+	public static final String SOURCE_SYSTEM_EMAIL = "EMAIL";
+	public static final String SOURCE_SYSTEM_FIRCOSOFT = "FIRCOSOFT";
+
+	public static final String SAFE_WATCH_DETECTION = "tdetection";
+	public static final String SAFE_WATCH_ALERT_HISTORY = "talert-history";
+
+	public static final String PROMPT_DETECTION_ID = "DetectionId";
+	public static final String SAFEWATCH_WORKSTAGE_COMPLETEDBY_MODIF_TYPE = "Alert has been assigned.";
+	public static final String SAFEWATCH_DEFAULT_STATUS = "Pending";
+	public static final String SAFEWATCH_DEFAULT_WORKSTAGE = "Compliance Release";
+	public static final String SAFEWATCH_WORKSTAGE_COMPLETEDBY_NEW_MODIF_TYPE = "New";
+	public static final String EXTERNAL_ACTIVITY_STATUS = "External";
+	public static final String NEW_ACTIVITY_STATUS = "New";
+
+	public static final String FIRCOSOFT_FOFA_MESSAGE = "fofa-message";
+	public static final String FIRCOSOFT_HISTORY_ALERT_VIEW = "hits-alert-hist-view";
 }

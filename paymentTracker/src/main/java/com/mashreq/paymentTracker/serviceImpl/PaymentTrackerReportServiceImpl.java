@@ -12,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
+import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
@@ -20,7 +22,11 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
+import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
+import com.mashreq.paymentTracker.model.Components;
+import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.PaymentInvestigationGatewayService;
+import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
 
@@ -28,6 +34,12 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 
 	@Autowired
 	PaymentInvestigationGatewayService paymentInvestigationGatewayService;
+
+	@Autowired
+	ReportConfigurationService reportConfigurationService;
+
+	@Autowired
+	private ComponentsDAO componentsDAO;
 
 	private static final Logger log = LoggerFactory.getLogger(PaymentTrackerReportServiceImpl.class);
 	private static final String FILENAME = "PaymentTrackerReportServiceImpl";
@@ -151,8 +163,20 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 		// time to actual query execution time at the end
 		// start processing components, we need to proceed with next component by
 		// gracefully handle exception of any system here
-		PaymentInvestigationReportInput paymentInvestigationReportInput = (PaymentInvestigationReportInput) reportInput;
-		paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput, reportContext);
-		return null;
+		Report report = new Report();
+		ReportInstanceDTO reportInstanceDTO = reportContext.getReportInstance();
+		if (null != reportInstanceDTO) {
+			report = reportConfigurationService.fetchReportByName(reportInstanceDTO.getReportName());
+		}
+		List<Components> componentList = componentsDAO.findAllByreportId(report.getId());
+		if (componentList.isEmpty()) {
+			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + report.getId());
+		} else {
+			PaymentInvestigationReportInput paymentInvestigationReportInput = (PaymentInvestigationReportInput) reportInput;
+			paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput, componentList,
+					reportContext);
+			return null;
+		}
+
 	}
 }

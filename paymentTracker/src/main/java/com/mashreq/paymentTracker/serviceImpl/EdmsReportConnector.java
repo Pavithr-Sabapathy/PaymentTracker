@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +13,11 @@ import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
-import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
-import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConnector;
 import com.mashreq.paymentTracker.service.ReportInput;
@@ -25,69 +25,61 @@ import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Service
-public class MatrixPaymentReportServiceImpl extends ReportConnector {
+public class EdmsReportConnector extends ReportConnector {
+	
+	private static final Logger log = LoggerFactory.getLogger(EdmsReportConnector.class);
+	private static final String FILENAME = "EdmsReportConnector";
 
 	@Autowired
 	QueryExecutorService queryExecutorService;
 
-	@Autowired
-	CannedReportService cannedReportService;
-
 	@Override
 	public List<? extends ReportOutput> processReportComponent(ReportInput reportInput, ReportContext reportContext) {
-		if (reportInput instanceof AdvanceSearchReportInput) {
-			AdvanceSearchReportInput advanceSearchReportInput = (AdvanceSearchReportInput) reportInput;
-			return processMatrixPaymentReport(advanceSearchReportInput, reportContext);
-		} else if (reportInput instanceof PaymentInvestigationReportInput paymentInvestigationReportInput) {
-
+		if (reportInput instanceof AdvanceSearchReportInput advanceSearchInput) {
+			return processEdmsAdvanceSearchReport(advanceSearchInput, reportContext);
 		}
 		return null;
 	}
 
-	public List<? extends ReportOutput> processMatrixPaymentReport(AdvanceSearchReportInput advanceSearchReportInput,
-			ReportContext reportContext) {
+	private List<? extends ReportOutput> processEdmsAdvanceSearchReport(
+			AdvanceSearchReportInput advanceSearchReportInput, ReportContext reportContext) {
 		List<ReportDefaultOutput> flexReportExecuteResponse = new ArrayList<ReportDefaultOutput>();
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
-		ReportComponentDTO reportComponent = advanceSearchReportInput.getMatrixComponent();
-		if (null != reportComponent) {
-			advanceSearchReportInput.setMatrixComponent(reportComponent);
-			Set<ReportComponentDetailDTO> componentDetailsSet = reportComponent.getReportComponentDetails();
-			if (!componentDetailsSet.isEmpty()) {
-				ReportComponentDetailDTO componentDetail = componentDetailsSet.iterator().next(); // take first as it
-																									// gonna be single
-																									// set
-				if (null != componentDetail) {
-					ReportComponentDetailContext context = new ReportComponentDetailContext();
-					List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
-					promptsList = populatePromptsForAdvanceSearch(advanceSearchReportInput);
-					context.setQueryId(componentDetail.getId());
-					context.setQueryKey(componentDetail.getQueryKey());
-					context.setQueryString(componentDetail.getQuery());
-					context.setExecutionId(reportContext.getExecutionId());
-					context.setPrompts(promptsList);
-					flexReportExecuteResponse = queryExecutorService.executeQuery(componentDetail, context);
-					if (!flexReportExecuteResponse.isEmpty()) {
-						advanceSearchReportOutputList = populateDataForAdvanceSearch(flexReportExecuteResponse,
-								advanceSearchReportInput);
-					}
+		ReportComponentDTO reportComponent = advanceSearchReportInput.getEdmsComponent();
+		Set<ReportComponentDetailDTO> componentDetailsSet = reportComponent.getReportComponentDetails();
+		if (!componentDetailsSet.isEmpty()) {
+			ReportComponentDetailDTO componentDetail = componentDetailsSet.iterator().next(); // take first as it
+																								// gonna be single
+																								// set
+			if (null != componentDetail) {
+				ReportComponentDetailContext context = new ReportComponentDetailContext();
+				List<FederatedReportPromptDTO> promptsList = new ArrayList<FederatedReportPromptDTO>();
+				promptsList = populatePromptsForAdvanceSearch(advanceSearchReportInput);
+				context.setQueryId(componentDetail.getId());
+				context.setQueryKey(componentDetail.getQueryKey());
+				context.setQueryString(componentDetail.getQuery());
+				context.setExecutionId(reportContext.getExecutionId());
+				context.setPrompts(promptsList);
+				flexReportExecuteResponse = queryExecutorService.executeQuery(componentDetail, context);
+				if (!flexReportExecuteResponse.isEmpty()) {
+					advanceSearchReportOutputList = populateDataForAdvanceSearch(flexReportExecuteResponse,
+							advanceSearchReportInput);
 				}
-
 			}
+
 		}
+		log.info(FILENAME + "processEdmsReport [Response] -->" + advanceSearchReportOutputList.toString());
 		return advanceSearchReportOutputList;
 	}
 
-	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(
-			List<ReportDefaultOutput> federatedReportOutputList, AdvanceSearchReportInput advanceSearchReportInput) {
+	private List<AdvanceSearchReportOutput> populateDataForAdvanceSearch(List<ReportDefaultOutput> ReportOutputList,
+			AdvanceSearchReportInput advanceSearchReportInput) {
 
 		List<AdvanceSearchReportOutput> advanceSearchReportOutputList = new ArrayList<AdvanceSearchReportOutput>();
-
-		if (!federatedReportOutputList.isEmpty()) {
-
-			for (ReportDefaultOutput federatedReportOutput : federatedReportOutputList) {
-
+		if (!ReportOutputList.isEmpty()) {
+			for (ReportDefaultOutput ReportOutput : ReportOutputList) {
 				AdvanceSearchReportOutput output = new AdvanceSearchReportOutput();
-				List<Object> rowData = federatedReportOutput.getRowData();
+				List<Object> rowData = ReportOutput.getRowData();
 				output.setTransactionReference(UtilityClass.getStringRepresentation(rowData.get(0)));
 				output.setBeneficiaryDetails(UtilityClass.getStringRepresentation(rowData.get(1)));
 				output.setValueDate(UtilityClass.getStringRepresentation(rowData.get(2)));

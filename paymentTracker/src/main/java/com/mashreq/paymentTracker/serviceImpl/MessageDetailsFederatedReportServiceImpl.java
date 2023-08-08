@@ -54,6 +54,12 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 	@Autowired
 	private ComponentsDAO componentsDAO;
 
+	@Autowired
+	private SwiftReportConnector swiftReportConnector;
+
+	@Autowired
+	private UAEFTSReportConnector uaeftsReportConnector;
+
 	@Override
 	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
 
@@ -190,15 +196,16 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 				MashreqFederatedReportConstants.PROCESSING_SYSTEM_MESSAGE);
 		if (instanceComponent != null) {
 			reportInputContext.setComponent(instanceComponent);
-			List<SWIFTMessageDetailsReportOutput> reportComponentData = cannedReportService
-					.processMessageDetailsReport(reportInputContext, reportInstanceComponentDTO, reportContext);
+			List<ReportDefaultOutput> reportOutput = new ArrayList<ReportDefaultOutput>();
+			List<? extends ReportOutput> reportComponentData = uaeftsReportConnector
+					.processReportComponent(reportInputContext, reportContext);
 			if (!reportComponentData.isEmpty()) {
-				populateSWIFTDataToObjectForm(reportComponentData, federatedReportQueryData);
-//				transformReportData(federatedReportQueryData.getQueryData(), getCannedReportInstanceRetrievalService()
-//						.getCannedReportInstanceMetrics(reportInstanceDTO.getId()));
+				for (ReportOutput componentOut : reportComponentData) {
+					ReportDefaultOutput output = (ReportDefaultOutput) componentOut;
+					reportOutput.add(output);
+				}
 			}
 		}
-
 	}
 
 	private ReportInstanceComponentDTO getMatchedInstanceComponent(
@@ -213,22 +220,6 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 		return matchedComponent;
 	}
 
-	private void populateSWIFTDataToObjectForm(List<SWIFTMessageDetailsReportOutput> componentOutput,
-			FederatedReportQueryData federatedReportQueryData) {
-		List<ReportDefaultOutput> data = new ArrayList<ReportDefaultOutput>();
-		for (SWIFTMessageDetailsReportOutput componentOut : componentOutput) {
-			SWIFTMessageDetailsReportOutput output = componentOut;
-			ReportDefaultOutput defaultOutput = createFederatedDefaultOutput(output);
-			List<Object> rowData = new ArrayList<Object>();
-			rowData.add(output.getKey());
-			rowData.add(output.getValue());
-			defaultOutput.setRowData(rowData);
-			data.add(defaultOutput);
-		}
-		federatedReportQueryData.setQueryData(data);
-
-	}
-
 	private ReportDefaultOutput createFederatedDefaultOutput(SWIFTMessageDetailsReportOutput baseOutput) {
 		ReportDefaultOutput output = new ReportDefaultOutput();
 		output.setComponentDetailId(baseOutput.getComponentDetailId());
@@ -241,15 +232,32 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 
 		ReportInstanceComponentDTO instanceComponent = getMatchedInstanceComponent(reportInstanceComponentDTO,
 				MashreqFederatedReportConstants.PROCESSING_SYSTEM_MESSAGE);
+
 		if (instanceComponent != null) {
 			reportInputContext.setComponent(instanceComponent);
-			List<SWIFTMessageDetailsReportOutput> reportComponentData = cannedReportService
-					.processMessageDetailsReport(reportInputContext, reportInstanceComponentDTO, reportContext);
-			if (!reportComponentData.isEmpty()) {
-				populateSWIFTDataToObjectForm(reportComponentData, federatedReportQueryData);
-//				transformReportData(federatedReportQueryData.getQueryData(), getCannedReportInstanceRetrievalService()
-//						.getCannedReportInstanceMetrics(reportInstanceDTO.getId()));
+			List<? extends ReportOutput> reportOutput = swiftReportConnector.processReportComponent(reportInputContext,
+					reportContext);
+			if (reportOutput != null) {
+				populateSWIFTDataToObjectForm(reportOutput, federatedReportQueryData);
+				// transformReportData(reportDefaultOutput,cannedReportMetric);
 			}
+
 		}
+	}
+
+	private void populateSWIFTDataToObjectForm(List<? extends ReportOutput> reportOutput,
+			FederatedReportQueryData federatedReportQueryData) {
+		List<ReportDefaultOutput> data = new ArrayList<ReportDefaultOutput>();
+		for (ReportOutput componentOut : reportOutput) {
+			SWIFTMessageDetailsReportOutput output = (SWIFTMessageDetailsReportOutput) componentOut;
+			ReportDefaultOutput defaultOutput = createFederatedDefaultOutput(output);
+			List<Object> rowData = new ArrayList<Object>();
+			rowData.add(output.getKey());
+			rowData.add(output.getValue());
+			defaultOutput.setRowData(rowData);
+			data.add(defaultOutput);
+		}
+		federatedReportQueryData.setQueryData(data);
+
 	}
 }

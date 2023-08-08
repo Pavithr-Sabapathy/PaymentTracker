@@ -2,8 +2,10 @@ package com.mashreq.paymentTracker.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -18,22 +20,26 @@ import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.ReportComponentDTO;
+import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
+import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseColumnDefDTO;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
+import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.CannedReportService;
-import com.mashreq.paymentTracker.service.MatrixPaymentReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
+import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
 import com.mashreq.paymentTracker.service.UAEFTSReportService;
+import com.mashreq.paymentTracker.utility.CheckType;
 
 @Service("advanceSearch")
 public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
@@ -51,11 +57,17 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 	private ComponentsDAO componentsDAO;
 
 	@Autowired
-	MatrixPaymentReportService matrixPaymentReportService;
+	MatrixPaymentReportServiceImpl matrixPaymentReportService;
+
+	@Autowired
+	FlexReportConnector flexReportConnector;
 
 	@Autowired
 	ReportOutputExecutor reportOutputExecutor;
-	
+
+	@Autowired
+	EdmsReportConnector edmsReportConnector;
+
 	UAEFTSReportService Uaefts;
 
 	@Override
@@ -133,8 +145,8 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 					advanceSearchReportInput, activeComponentList, reportContext);
 			advanceSearchReportOutputList = rearrangeAndFillReportData(advanceSearchReportOutputList,
 					advanceSearchReportInput);
-			List<ReportDefaultOutput> federatedReportOutputList = populateDataToObjectForm(advanceSearchReportOutputList,
-					report);
+			List<ReportDefaultOutput> federatedReportOutputList = populateDataToObjectForm(
+					advanceSearchReportOutputList, report);
 			if (!federatedReportOutputList.isEmpty()) {
 				List<Map<String, Object>> rowDataMapList = reportOutputExecutor
 						.populateRowData(federatedReportOutputList, report);
@@ -147,8 +159,8 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 		return responseData;
 	}
 
-	private List<ReportDefaultOutput> populateDataToObjectForm(List<AdvanceSearchReportOutput> advanceSearchReportOutputList,
-			Report report) {
+	private List<ReportDefaultOutput> populateDataToObjectForm(
+			List<AdvanceSearchReportOutput> advanceSearchReportOutputList, Report report) {
 		List<ReportDefaultOutput> data = new ArrayList<ReportDefaultOutput>();
 		for (AdvanceSearchReportOutput output : advanceSearchReportOutputList) {
 			ReportDefaultOutput defaultOutput = new ReportDefaultOutput();
@@ -227,33 +239,52 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 			// run all three parallely
 
 			Thread flexProcessor = new Thread() {
-				FlexDetailedReportServiceImpl flexReportServiceImpl = new FlexDetailedReportServiceImpl();
 
 				public void run() {
-					List<AdvanceSearchReportOutput> advanceSearchFlexReportOutList = flexReportServiceImpl
-							.processFlexDetailReport(advanceSearchReportInput, componentList, reportContext);
-					advanceSearchReportFinalOutputList.addAll(advanceSearchFlexReportOutList);
-
+					Components matchedComponentDetail = getMatchedInstanceComponent(componentList,
+							MashreqFederatedReportConstants.ADVANCE_SEARCH_FLEX_COMPONENT_KEY);
+					ReportComponentDTO matchedMatrixComponent = populateReportComponent(matchedComponentDetail);
+					advanceSearchReportInput.setFlexComponent(matchedMatrixComponent);
+					List<? extends ReportOutput> reportOutputList = flexReportConnector
+							.processReportComponent(advanceSearchReportInput, reportContext);
+					reportOutputList.stream().forEach(reportOutput -> {
+						AdvanceSearchReportOutput advanceSearchFlexReportOutput = (AdvanceSearchReportOutput) reportOutput;
+						advanceSearchReportFinalOutputList.add(advanceSearchFlexReportOutput);
+					});
 				}
 
 			};
 
 			Thread matrixProcessor = new Thread() {
 				public void run() {
-					List<AdvanceSearchReportOutput> advanceSearchMatrixReportOutList = matrixPaymentReportService
-							.processMatrixPaymentReport(advanceSearchReportInput, componentList, reportContext);
-					advanceSearchReportFinalOutputList.addAll(advanceSearchMatrixReportOutList);
-
+					Components matchedComponentDetail = getMatchedInstanceComponent(componentList,
+							MashreqFederatedReportConstants.ADVANCE_SEARCH_MATRIX_COMPONENT_KEY);
+					ReportComponentDTO matchedMatrixComponent = populateReportComponent(matchedComponentDetail);
+					advanceSearchReportInput.setMatrixComponent(matchedMatrixComponent);
+					List<? extends ReportOutput> advanceSearchMatrixReportOutList = matrixPaymentReportService
+							.processReportComponent(advanceSearchReportInput, reportContext);
+					for (ReportOutput advanceSearchMatrixReportOut : advanceSearchMatrixReportOutList) {
+						AdvanceSearchReportOutput advanceSearchReportOutputObj = (AdvanceSearchReportOutput) advanceSearchMatrixReportOut;
+						advanceSearchReportFinalOutputList.add(advanceSearchReportOutputObj);
+					}
 				}
 			};
 
 			Thread edmsProcessor = new Thread() {
-				EdmsProcessServiceImpl edmsProcessServiceImpl = new EdmsProcessServiceImpl();
 
 				public void run() {
-					List<AdvanceSearchReportOutput> advanceSearchEdmsReportOutList = edmsProcessServiceImpl
-							.processEdmsReport(advanceSearchReportInput, componentList, reportContext);
-					advanceSearchReportFinalOutputList.addAll(advanceSearchEdmsReportOutList);
+					Components matchedComponentDetail = getMatchedInstanceComponent(componentList,
+							MashreqFederatedReportConstants.ADVANCE_SEARCH_EDMS_COMPONENT_KEY);
+					ReportComponentDTO matchedEDMSComponent = populateReportComponent(matchedComponentDetail);
+					advanceSearchReportInput.setEdmsComponent(matchedEDMSComponent);
+
+					List<? extends ReportOutput> advanceSearchEdmsReportOutList = edmsReportConnector
+							.processReportComponent(advanceSearchReportInput, reportContext);
+					for (ReportOutput advanceSearchMatrixReportOut : advanceSearchEdmsReportOutList) {
+						AdvanceSearchReportOutput advanceSearchReportOutputObj = (AdvanceSearchReportOutput) advanceSearchMatrixReportOut;
+						advanceSearchReportFinalOutputList.add(advanceSearchReportOutputObj);
+					}
+
 				}
 
 			};
@@ -329,4 +360,35 @@ public class AdvanceSearchReportServiceImpl extends ReportControllerServiceImpl 
 		return promptInfo;
 	}
 
+	private Components getMatchedInstanceComponent(List<Components> componentList, String componentKey) {
+		Components componentObj = componentList.stream()
+				.filter(component -> component.getComponentKey().equalsIgnoreCase(componentKey)
+						&& component.getActive().equals(MashreqFederatedReportConstants.YES))
+				.findFirst().orElse(null);
+		return componentObj;
+
+	}
+
+	private ReportComponentDTO populateReportComponent(Components component) {
+		ReportComponentDTO reportComponentDTO = new ReportComponentDTO();
+		reportComponentDTO.setActive(CheckType.getCheckType(component.getActive()));
+		reportComponentDTO.setComponentKey(component.getComponentKey());
+		reportComponentDTO.setComponentName(component.getComponentName());
+		reportComponentDTO.setId(component.getId());
+		reportComponentDTO.setReportComponentDetails(populateComponentDetails(component.getComponentDetailsList()));
+		return reportComponentDTO;
+	}
+
+	private Set<ReportComponentDetailDTO> populateComponentDetails(List<ComponentDetails> componentDetailsList) {
+		Set<ReportComponentDetailDTO> componentDetailDTO = new HashSet<ReportComponentDetailDTO>();
+		componentDetailsList.stream().forEach(componentDetails -> {
+			ReportComponentDetailDTO reportComponentDetailDTO = new ReportComponentDetailDTO();
+			reportComponentDetailDTO.setId(componentDetails.getId());
+			reportComponentDetailDTO.setQuery(componentDetails.getQuery());
+			reportComponentDetailDTO.setQueryKey(componentDetails.getQueryKey());
+			reportComponentDetailDTO.setReportComponentId(componentDetails.getComponents().getId());
+			componentDetailDTO.add(reportComponentDetailDTO);
+		});
+		return componentDetailDTO;
+	}
 }

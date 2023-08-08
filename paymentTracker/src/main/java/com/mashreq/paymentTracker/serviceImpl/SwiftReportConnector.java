@@ -56,14 +56,14 @@ public class SwiftReportConnector extends ReportConnector {
 		if (reportInput instanceof SWIFTDetailedFederatedReportDTO) {
 			SWIFTDetailedFederatedReportDTO SWIFTDetailedFederatedReportDTO = (SWIFTDetailedFederatedReportDTO) reportInput;
 			return processSwiftDetailedReport(SWIFTDetailedFederatedReportDTO, reportContext);
-		} else if (reportInput instanceof PaymentInvestigationReportInput) {
-			processPaymentInvestigationReport(reportInput, reportContext);
+		} else if (reportInput instanceof PaymentInvestigationReportInput piReportInput) {
+			processPaymentInvestigationReport(piReportInput, reportContext);
 		}
 		return null;
 	}
 
-	private void processPaymentInvestigationReport(ReportInput reportInput, ReportContext reportContext) {
-		PaymentInvestigationReportInput piReportInput = (PaymentInvestigationReportInput) reportInput;
+	private void processPaymentInvestigationReport(
+			PaymentInvestigationReportInput piReportInput, ReportContext reportContext) {
 		ReportComponentDTO component = piReportInput.getComponent();
 		Set<ReportComponentDetailDTO> componentDetailList = component.getReportComponentDetails();
 		if (!componentDetailList.isEmpty()) {
@@ -570,42 +570,6 @@ public class SwiftReportConnector extends ReportConnector {
 		if (clonedRecord != null) {
 			swiftContext.setRintvRecord(clonedRecord);
 		}
-
-	}
-
-	private PaymentInvestigationReportOutput clonePaymentInvestigationReportOutput(
-			PaymentInvestigationReportOutput toBeCloned) {
-		// TODO Auto-generated method stub
-		PaymentInvestigationReportOutput piReportOutput = new PaymentInvestigationReportOutput();
-		piReportOutput.setComponentDetailId(toBeCloned.getComponentDetailId());
-		piReportOutput.setActivityStatus(toBeCloned.getActivityStatus());
-		piReportOutput.setAmount(toBeCloned.getAmount());
-		piReportOutput.setBeneficaryAccount(toBeCloned.getBeneficaryAccount());
-		piReportOutput.setBeneficaryDetail(toBeCloned.getBeneficaryDetail());
-		piReportOutput.setCompletedBy(toBeCloned.getCompletedBy());
-		piReportOutput.setCompletionTime(toBeCloned.getCompletionTime());
-		piReportOutput.setCurrency(toBeCloned.getCurrency());
-		piReportOutput.setDebitAccount(toBeCloned.getDebitAccount());
-		piReportOutput.setLandingTime(toBeCloned.getLandingTime());
-		piReportOutput.setReceiver(toBeCloned.getReceiver());
-		piReportOutput.setSource(toBeCloned.getSource());
-		piReportOutput.setSourceRefNum(toBeCloned.getSourceRefNum());
-		piReportOutput.setValueDate(toBeCloned.getValueDate());
-		piReportOutput.setWorkstage(toBeCloned.getWorkstage());
-		piReportOutput.setMesgType(toBeCloned.getMesgType());
-		piReportOutput.setDetectionId(toBeCloned.getDetectionId());
-		piReportOutput.setAccountingSource(toBeCloned.getAccountingSource());
-		if (toBeCloned.getDetailedReportType() != null) {
-			piReportOutput.setDetailedReportType(toBeCloned.getDetailedReportType());
-		}
-		piReportOutput.setAid(toBeCloned.getAid());
-		piReportOutput.setUmidh(toBeCloned.getUmidh());
-		piReportOutput.setUmidl(toBeCloned.getUmidl());
-		piReportOutput.setEmailUrl(toBeCloned.getEmailUrl());
-		piReportOutput.setMessageSubFormat(toBeCloned.getMessageSubFormat());
-		piReportOutput.setGovCheck(toBeCloned.getGovCheck());
-		piReportOutput.setGovCheckReference(toBeCloned.getGovCheckReference());
-		return piReportOutput;
 
 	}
 
