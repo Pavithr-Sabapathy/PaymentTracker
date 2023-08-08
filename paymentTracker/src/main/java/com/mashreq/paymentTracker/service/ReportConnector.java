@@ -2,6 +2,7 @@ package com.mashreq.paymentTracker.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
@@ -28,6 +29,12 @@ public abstract class ReportConnector {
 		context.setPrompts(promptInfoList);
 		context.setExecutionId(reportContext.getExecutionId());
 		return context;
+	}
+
+	public boolean doesExist(String workstage, List<String> matchedWorkStagesList) {
+
+		return matchedWorkStagesList.stream().filter(matchedWorkStage -> Objects.equals(matchedWorkStage, workstage))
+				.count() > 0;
 	}
 
 	public PaymentInvestigationReportOutput clonePaymentInvestigationReportOutput(

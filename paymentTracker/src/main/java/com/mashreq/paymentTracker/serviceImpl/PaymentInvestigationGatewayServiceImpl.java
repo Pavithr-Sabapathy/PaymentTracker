@@ -14,7 +14,6 @@ import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
-import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.service.PaymentInvestigationGatewayService;
@@ -46,15 +45,25 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 		paymentInvestigationReportInput.setGatewayDataContext(gatewayDataContext);
 		try {
 			processComponent(paymentInvestigationReportInput, componentList, reportContext,
-					MashreqFederatedReportConstants.SOURCE_SYSTEM_SWIFT);
+					MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY);
 			// if record found from swift
 			if (gatewayDataContext.isSwiftDataFound()) {
 				try {
 					processComponent(paymentInvestigationReportInput, componentList, reportContext,
-							MashreqFederatedReportConstants.SOURCE_SYSTEM_SAFEWATCH);
+							MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY);
 				} catch (Exception e) {
 
 				}
+			}
+			if (gatewayDataContext.isGatewayDataFound()) {
+				// handle the fircosoft system.right now the condition is if compliance
+				// information is already there, we will not process that message.
+				try {
+					processComponent(paymentInvestigationReportInput, componentList, reportContext,
+							MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY);
+				} catch (Exception exception) {
+				}
+
 			}
 		} catch (Exception exception) {
 
@@ -66,7 +75,6 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 
 		Components matchedComponentsObj = getMatchedComponent(componentList, componentKey);
 		ReportConnector reportConnector = getMatchedReportService(componentKey);
-		ReportExecuteResponseData response;
 		if (matchedComponentsObj != null && reportConnector != null) {
 			ReportComponentDTO matchedComponentsDTO = populateReportComponent(matchedComponentsObj);
 			paymentInvestigationReportInput.setComponent(matchedComponentsDTO);
@@ -74,7 +82,6 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 		} else {
 			log.debug("Component Missing/Matched Connector Missing for key " + componentKey);
 		}
-		// return response;
 	}
 
 	private ReportComponentDTO populateReportComponent(Components component) {

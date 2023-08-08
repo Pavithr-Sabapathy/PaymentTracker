@@ -37,6 +37,7 @@ import com.mashreq.paymentTracker.utility.UtilityClass;
 public class SafeWatchReportConnector extends ReportConnector {
 
 	private static final Logger log = LoggerFactory.getLogger(SwiftReportConnector.class);
+	private static final String FILENAME = "SwiftReportConnector";
 
 	@Autowired
 	QueryExecutorService queryExecutorService;
@@ -130,8 +131,7 @@ public class SafeWatchReportConnector extends ReportConnector {
 
 	public static String getActivity(String mesgType, String activityOrigin) {
 		String activity = MashreqFederatedReportConstants.GATEWAY_PAYMENT_SCREENING_PROCESSED_ACTIVITY;
-		if ((!MashreqFederatedReportConstants.INCOMING_PAYMENT_CODES_LIST.contains(mesgType))
-				&& !(MashreqFederatedReportConstants.OUTGOING_PAYMENT_CODES_LIST.contains(mesgType))) {
+		if ((!MashreqFederatedReportConstants.INCOMING_PAYMENT_CODES_LIST.contains(mesgType)) && !(MashreqFederatedReportConstants.OUTGOING_PAYMENT_CODES_LIST.contains(mesgType))) {
 			activity = MashreqFederatedReportConstants.GATEWAY_MESSAGE_SCREENING_PROCESSED_ACTIVITY;
 		}
 		if (activityOrigin.equalsIgnoreCase(MashreqFederatedReportConstants.SAFEWATCH_DEFAULT_COMPLETEDBY)) {
@@ -293,12 +293,6 @@ public class SafeWatchReportConnector extends ReportConnector {
 		messageTypeOutput.setActivityStatus(status);
 		return messageTypeOutput;
 
-	}
-
-	private boolean doesExist(String workstage, List<String> matchedWorkStagesList) {
-
-		return matchedWorkStagesList.stream().filter(matchedWorkStage -> Objects.equals(matchedWorkStage, workstage))
-				.count() > 0;
 	}
 
 	private List<ReportDefaultOutput> populateCPCAndHOComplianceData(List<ReportDefaultOutput> reportOutput,

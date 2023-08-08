@@ -6,8 +6,18 @@ import java.util.List;
 import java.util.Map;
 
 public class MashreqFederatedReportConstants {
+	public static final String CPC_COMPLIANCE_WORKSTAGE = "CPC Compliance";
+	public static final String HO_COMPLIANCE_WORKSTAGE = "HO Compliance";
+	public static final String HO_COMPLIANCE_CHECKER_WORKSTAGE = "HO Compliance Checker";
+	public static final String CPC_COMPLIANCE_CHECKER_WORKSTAGE = "CPC Checker";
+	public static final String SAFEWATCH_DEFAULT_COMPLETEDBY = "System";
 	public static final List<String> INCOMING_PAYMENT_CODES_LIST = new ArrayList<String>();
 	public static final List<String> OUTGOING_PAYMENT_CODES_LIST = new ArrayList<String>();
+	public static final Map<String, List<String>> FIRCOSOFT_COMPLIANCE_WORKSTAGES = new HashMap<String, List<String>>();
+	public static final Map<String, List<String>> SAFEWATCH_COMPLIANCE_WORKSTAGES = new HashMap<String, List<String>>();
+	public static final List<String> SAFEWATCH_STATUS_MODIF_TYPES = new ArrayList<String>();
+	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new ArrayList<String>();
+
 	static {
 		INCOMING_PAYMENT_CODES_LIST.add("O 103");
 		INCOMING_PAYMENT_CODES_LIST.add("O 102");
@@ -20,6 +30,36 @@ public class MashreqFederatedReportConstants {
 		OUTGOING_PAYMENT_CODES_LIST.add("I 202");
 		OUTGOING_PAYMENT_CODES_LIST.add("I 203");
 		OUTGOING_PAYMENT_CODES_LIST.add("I 200");
+
+		List<String> hostages = new ArrayList<String>();
+		hostages.add("HO Compliance Checker");
+		SAFEWATCH_COMPLIANCE_WORKSTAGES.put(HO_COMPLIANCE_WORKSTAGE, hostages);
+		List<String> cpcstages = new ArrayList<String>();
+		cpcstages.add("CPC Checker");
+		SAFEWATCH_COMPLIANCE_WORKSTAGES.put(CPC_COMPLIANCE_WORKSTAGE, cpcstages);
+		List<String> systemStages = new ArrayList<String>();
+		systemStages.add("System");
+		SAFEWATCH_COMPLIANCE_WORKSTAGES.put(SAFEWATCH_DEFAULT_COMPLETEDBY, systemStages);
+
+		List<String> fircosoftHoStages = new ArrayList<String>();
+		fircosoftHoStages.add("HO Compliance");
+		FIRCOSOFT_COMPLIANCE_WORKSTAGES.put(HO_COMPLIANCE_WORKSTAGE, fircosoftHoStages);
+		List<String> fircosoftCpcStages = new ArrayList<String>();
+		fircosoftCpcStages.add("CPC Checker");
+		fircosoftCpcStages.add("CPC Maker");
+		FIRCOSOFT_COMPLIANCE_WORKSTAGES.put(CPC_COMPLIANCE_WORKSTAGE, fircosoftCpcStages);
+		List<String> fircosoftSystemStages = new ArrayList<String>();
+		fircosoftSystemStages.add("System");
+		FIRCOSOFT_COMPLIANCE_WORKSTAGES.put(SAFEWATCH_DEFAULT_COMPLETEDBY, fircosoftSystemStages);
+
+		SAFEWATCH_STATUS_MODIF_TYPES.add("Alert status is changed.");
+		SAFEWATCH_STATUS_MODIF_TYPES.add("Alert status changed.");
+
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Do Not Know.");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Do Not Know");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Don't Know");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Don't Know.");
+		COMPLIANCE_DONT_KNOW_STATUS_LIST.add("Dont Know");
 
 	}
 
@@ -35,6 +75,8 @@ public class MashreqFederatedReportConstants {
 	public static final String PROMPT = "P";
 	public static final String ACCOUNTINGSOURCEPROMPTS = "AccountingSource";
 	public static final String REFERENCENUMPROMPTS = "ReferenceNum";
+	public static final String REFERENCE_NUMS_PROMPTS = "ReferenceNums";
+	public static final String PROMPT_SYSTEM_ID = "SystemId";
 	public static final String RELATEDACCOUNTPROMPTS = "RelatedAccount";
 	public static final String MESSAGETYPEPROMPTS = "mesgType";
 	/** Prepared Statement Constants **/
@@ -253,11 +295,6 @@ public class MashreqFederatedReportConstants {
 
 	public static final String NACK_ACTIVITY = "Payment Nack Repaired";
 
-	public static final String CPC_COMPLIANCE_WORKSTAGE = "CPC Compliance";
-	public static final String HO_COMPLIANCE_WORKSTAGE = "HO Compliance";
-	public static final String HO_COMPLIANCE_CHECKER_WORKSTAGE = "HO Compliance Checker";
-	public static final String CPC_COMPLIANCE_CHECKER_WORKSTAGE = "CPC Checker";
-
 	public static final String COMPLIANCE_DONT_KNOW_STATUS = "Under Review with Compliance";
 
 	public static final String UAEFTS_AML_MANUALMSGS_DETAILS_KEY = "uaefts-aml-manualmsgs-details";
@@ -266,8 +303,6 @@ public class MashreqFederatedReportConstants {
 
 	public static final String CBUNIQUE_FILE_ID_PROMPT_KEY = "cb-unique-file-id";
 	public static final String MSG_ID_PROMPT_KEY = "msg-id";
-
-	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new java.util.ArrayList<String>();
 
 	public static final String MOL_AUTH_DATA_KEY = "mol-auth-data";
 
@@ -291,10 +326,10 @@ public class MashreqFederatedReportConstants {
 	public static final String SAFEWATCH_WORKSTAGE_COMPLETEDBY_MODIF_TYPE = "Alert has been assigned.";
 	public static final String SAFEWATCH_DEFAULT_STATUS = "Pending";
 	public static final String SAFEWATCH_DEFAULT_WORKSTAGE = "Compliance Release";
-	public static final String SAFEWATCH_DEFAULT_COMPLETEDBY = "System";
-	public static final List<String> SAFEWATCH_STATUS_MODIF_TYPES = new java.util.ArrayList<String>();
 	public static final String SAFEWATCH_WORKSTAGE_COMPLETEDBY_NEW_MODIF_TYPE = "New";
-	public static final Map<String, List<String>> SAFEWATCH_COMPLIANCE_WORKSTAGES = new HashMap<String, List<String>>();
 	public static final String EXTERNAL_ACTIVITY_STATUS = "External";
 	public static final String NEW_ACTIVITY_STATUS = "New";
+
+	public static final String FIRCOSOFT_FOFA_MESSAGE = "fofa-message";
+	public static final String FIRCOSOFT_HISTORY_ALERT_VIEW = "hits-alert-hist-view";
 }
