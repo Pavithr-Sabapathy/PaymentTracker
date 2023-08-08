@@ -38,6 +38,9 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 	@Autowired
 	SafeWatchReportConnector safeWatchReportConnector;
 
+	@Autowired
+	FircosoftReportConnector fircosoftReportConnector;
+
 	@Override
 	public void processGateway(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			List<Components> componentList, ReportContext reportContext) {
@@ -115,6 +118,8 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			reportConnector = swiftReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY)) {
 			reportConnector = safeWatchReportConnector;
+		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY)) {
+			reportConnector = fircosoftReportConnector;
 		}
 		return reportConnector;
 
