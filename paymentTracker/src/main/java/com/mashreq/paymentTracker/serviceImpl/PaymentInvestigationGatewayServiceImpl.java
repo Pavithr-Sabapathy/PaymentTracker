@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
-import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.GatewayDataContext;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
@@ -32,13 +31,13 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 	ReportConfigurationService reportConfigurationService;
 
 	@Autowired
-	private ComponentsDAO componentsDAO;
-
-	@Autowired
 	FlexReportConnector flexReportConnector;
 
 	@Autowired
 	SwiftReportConnector swiftReportConnector;
+
+	@Autowired
+	SafeWatchReportConnector safeWatchReportConnector;
 
 	@Override
 	public void processGateway(PaymentInvestigationReportInput paymentInvestigationReportInput,
@@ -107,8 +106,11 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			reportConnector = flexReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY)) {
 			reportConnector = swiftReportConnector;
+		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY)) {
+			reportConnector = safeWatchReportConnector;
 		}
 		return reportConnector;
+
 	}
 
 	private Components getMatchedComponent(List<Components> componentList, String componentKey) {
