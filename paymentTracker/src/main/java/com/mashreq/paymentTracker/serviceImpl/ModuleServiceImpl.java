@@ -34,6 +34,7 @@ public class ModuleServiceImpl implements ModuleService {
 
 	@Autowired
 	private ModelMapper modelMapper;
+	
 
 	@Override
 	public List<ModuleResponseDTO> fetchAllModule() {
