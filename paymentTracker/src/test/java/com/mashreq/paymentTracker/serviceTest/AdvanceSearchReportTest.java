@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.serviceTest;
 
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -13,12 +14,13 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
@@ -31,6 +33,7 @@ import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
+import com.mashreq.paymentTracker.model.ComponentsCountry;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.MatrixPaymentReportService;
@@ -70,8 +73,11 @@ class AdvanceSearchReportTest {
 	@MockBean
 	FlexDetailedReportServiceImpl flexReportServiceImpl;
 
+	@Mock
+	private ModelMapper modelMapper;
+	
 	@Test
-	void testPopulateBaseInput() {
+	void testPopulateBaseInput() throws Exception {
 		List<ReportPromptsInstanceDTO> promptsList = new ArrayList<ReportPromptsInstanceDTO>();
 		PromptInstance promptsInstance = new PromptInstance();
 		promptsInstance.setKey("AccountNumber");
@@ -185,15 +191,15 @@ class AdvanceSearchReportTest {
 		reportContext.setUserId(1L);
 		reportContext.setUserName("janedoe");
 
-		Report report = new Report();
-		report.setId(1L);
-
+		when(modelMapper.map(reportContext, ReportInstanceDTO.class)).thenReturn(reportInstance);
+		
 		ReportInput response = advanceSearchReportServiceImpl.populateBaseInputContext(reportContext);
 		assertNotNull(response);
-	}
 
+	}
+	
 	@Test
-	void TestProcessReport() {
+	void TestProcessReport() throws Exception {
 		List<AdvanceSearchReportOutput> mockOutputList = new ArrayList<AdvanceSearchReportOutput>();
 		AdvanceSearchReportInput advanceSearchReportInput = new AdvanceSearchReportInput();
 		FederatedReportPromptDTO accountNumPrompt = new FederatedReportPromptDTO();
@@ -222,22 +228,6 @@ class AdvanceSearchReportTest {
 		reportInstanceDTO.setUserId(1L);
 		reportInstanceDTO.setUserName("janedoe");
 
-		ReportInstanceDTO reportInstance = new ReportInstanceDTO();
-		reportInstance
-				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-		reportInstance.setId(1L);
-		reportInstance.setModuleId(1L);
-		reportInstance.setPromptsList(new ArrayList<>());
-		reportInstance.setReportId(1L);
-		reportInstance.setReportInstanceComponents(new HashSet<>());
-		reportInstance.setReportInstanceMetrics(new HashSet<>());
-		reportInstance.setReportInstancePrompts(new HashSet<>());
-		reportInstance.setReportName("Report Name");
-		reportInstance.setRoleId(1L);
-		reportInstance.setRoleName("Role Name");
-		reportInstance.setUserId(1L);
-		reportInstance.setUserName("janedoe");
-
 		ReportContext reportContext = new ReportContext();
 		reportContext.setCountry(CountryType.UAE);
 		reportContext.setExecutionId(1L);
@@ -246,7 +236,7 @@ class AdvanceSearchReportTest {
 		reportContext.setLinkedReport(true);
 		reportContext.setModuleId(1L);
 		reportContext.setReportId(1L);
-		reportContext.setReportInstance(reportInstance);
+		reportContext.setReportInstance(reportInstanceDTO);
 		reportContext.setReportName("Report Name");
 		reportContext.setRoleId(1L);
 		reportContext.setRoleName("Role Name");
@@ -270,8 +260,12 @@ class AdvanceSearchReportTest {
 		mockComponents.setActive("Y");
 		mockComponents.setComponentKey("uaefts");
 		mockComponents.setComponentName("AdvanceSearch");
+		
+		ComponentsCountry componentsCountry =new ComponentsCountry();
+		mockComponents.setComponentsCountry(componentsCountry);
 		mockComponents.setId(1L);
 		mockComponents.setReport(report);
+		
 		ComponentDetails mockComponentDetails = new ComponentDetails();
 		mockComponentDetails.setComponents(mockComponents);
 		mockComponentDetails.setId(1L);
@@ -291,17 +285,16 @@ class AdvanceSearchReportTest {
 		mockAdvanceSearchReportOutput.setInitationSource("FLEX");
 		mockAdvanceSearchReportOutput.setMessageThrough("UAEFTS");
 		mockOutputList.add(mockAdvanceSearchReportOutput);
+		
+		
+		ReportExecuteResponseData reportExcRespData =new ReportExecuteResponseData();
+		
+		when(modelMapper.map(reportExcRespData, ReportContext.class)).thenReturn(reportContext);
 
 		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
 		when(cannedReportService.populateCannedReportInstance(Mockito.<Report>any())).thenReturn(cannedReport);
 		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
-		/*
-		 * when(matrixPaymentReportService.processMatrixPaymentReport(
-		 * advanceSearchReportInput, mockComponentsList,
-		 * reportContext)).thenReturn(mockOutputList);
-		 * when(Uaefts.processAdvanceSearchReport(advanceSearchReportInput,
-		 * mockComponentsList, reportContext)) .thenReturn(mockOutputList);
-		 */
+		
 		ReportExecuteResponseData actualProcessSwiftDetailReportResult = advanceSearchReportServiceImpl
 				.processReport(advanceSearchReportInput, reportContext);
 		assertNotNull(actualProcessSwiftDetailReportResult);
