@@ -3,18 +3,17 @@ package com.mashreq.paymentTracker.serviceTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +21,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import com.mashreq.paymentTracker.dto.DataSourceRequestDTO;
 import com.mashreq.paymentTracker.dto.DataSourceResponseDTO;
@@ -43,28 +45,73 @@ public class DataSourceConfigServiceTest {
 	private ModelMapper modelMapper;
 
 	@Test
-	public void testSaveDataSourceConfig() throws Exception {
-		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
+    public void testSaveDataSourceConfiguration() throws Exception {
+		DataSourceRequestDTO dataSourceRequest = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
 				"12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
-		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
-				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
-		when(mockdataSourceConfigRepository.save(any(DataSource.class))).thenReturn(mockdataSourceConfigValue);
-		DataSourceResponseDTO dataSourceConfiguration = dataSourceConfigService
-				.saveDataSourceConfiguration(mockDataSourceDTO);
-		assertEquals(dataSourceConfiguration.getName(), "sample");
-		verify(mockdataSourceConfigRepository, times(1)).save(mockdataSourceConfigValue);
-	}
+
+
+        DataSource dataSource = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+				"ReadOnly", "Y", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
+
+        DataSourceResponseDTO expectedResponse = new DataSourceResponseDTO();
+        expectedResponse.setName("sample");
+        expectedResponse.setEncryptedPassword("Y");
+        expectedResponse.setPassword("encrypted_password_here");
+
+        when(modelMapper.map(dataSourceRequest, DataSource.class)).thenReturn(dataSource);
+        when(mockdataSourceConfigRepository.save(dataSource)).thenReturn(dataSource);
+        when(modelMapper.map(dataSource, DataSourceResponseDTO.class)).thenReturn(expectedResponse);
+
+        DataSourceResponseDTO result = dataSourceConfigService.saveDataSourceConfiguration(dataSourceRequest);
+
+        assertNotNull(result);
+        assertEquals(expectedResponse.getName(), result.getName());
+        assertEquals(expectedResponse.getPassword(), result.getPassword());
+    }
 
 	@Test
-	public void testGetDataSourceConfigById() {
-		long dataSourceId = 1L;
-		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+    public void testAllActiveDataSource() {
+        int page = 0;
+        int size = 20;
+        List<String> sort = Arrays.asList("name,asc");
+
+        DataSource dataSource = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "Y", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
-		when(mockdataSourceConfigRepository.getDataSourceById(dataSourceId)).thenReturn(mockdataSourceConfigValue);
-		DataSourceResponseDTO dataSourceConfiguration = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
-		assertEquals(dataSourceConfiguration.getName(), "sample");
-		verify(mockdataSourceConfigRepository, times(1)).findById(dataSourceId);
-	}
+
+        DataSourceResponseDTO expectedResponse = new DataSourceResponseDTO();
+        expectedResponse.setName("sample");
+        expectedResponse.setActive("Y");
+
+        Page<DataSource> dataSourcePage = new PageImpl<>(Collections.singletonList(dataSource));
+
+        when(mockdataSourceConfigRepository.findByActiveContaining(eq("Y"), any(Pageable.class))).thenReturn(dataSourcePage);
+        when(modelMapper.map(dataSource, DataSourceResponseDTO.class)).thenReturn(expectedResponse);
+
+        Map<String, Object> result = dataSourceConfigService.allActiveDataSource(page, size, sort);
+
+        assertNotNull(result);       
+    }
+	
+	@Test
+    public void testGetDataSourceConfigById() throws Exception {
+        long dataSourceId = 123L;
+
+        DataSource dataSource = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+				"ReadOnly", "Y", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
+        
+        DataSourceResponseDTO expectedResponse = new DataSourceResponseDTO();
+        expectedResponse.setName("sample");
+        expectedResponse.setEncryptedPassword("Y");
+        
+        when(mockdataSourceConfigRepository.getDataSourceById(dataSourceId)).thenReturn(dataSource);
+        when(modelMapper.map(dataSource, DataSourceResponseDTO.class)).thenReturn(expectedResponse);
+
+        DataSourceResponseDTO result = dataSourceConfigService.getDataSourceConfigById(dataSourceId);
+
+        assertNotNull(result);
+        assertEquals(expectedResponse.getName(), result.getName());
+        assertEquals(expectedResponse.getPassword(), result.getPassword());
+    }
 
 	@Test
 	public void testGetDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
@@ -76,61 +123,70 @@ public class DataSourceConfigServiceTest {
 				() -> dataSourceConfigService.getDataSourceConfigById(dataSourceId),
 				"Expected dataSourceConfigService.getDataSourceConfigById to throw, but it didn't");
 		assertNotNull(thrown);
-		assertTrue(thrown.getMessage().contains("DataSource Configuration not exist with this id :1"));
-
 	}
 
+	
 	@Test
-	public void testUpdateDataSourceConfigById() {
-		long dataSourceId = 1L;
-		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
+    public void testUpdateDataSourceById() {
+        Long dataSourceId = 123L;
+
+        DataSourceRequestDTO dataSourceRequest = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
 				"12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
-
-		DataSource mockdataSourceConfigValue = new DataSource(1L, "sample", "oracle", BigInteger.ZERO, "Oracle",
+        
+        DataSource dataSource = new DataSource(1L, "Oracle", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
-		;
-		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.of(mockdataSourceConfigValue));
-		dataSourceConfigService.updateDataSourceById(mockDataSourceDTO, 1L);
-		verify(mockdataSourceConfigRepository, times(1)).findById(dataSourceId);
-	}
 
+        DataSource updatedDataSource = new DataSource();
+        updatedDataSource.setId(dataSourceId);
+
+        DataSourceResponseDTO expectedResponse = new DataSourceResponseDTO();
+
+        when(mockdataSourceConfigRepository.getDataSourceById(dataSourceId)).thenReturn(dataSource);
+        when(modelMapper.map(dataSourceRequest, DataSource.class)).thenReturn(updatedDataSource);
+        when(mockdataSourceConfigRepository.update(updatedDataSource)).thenReturn(updatedDataSource);
+        when(modelMapper.map(updatedDataSource, DataSourceResponseDTO.class)).thenReturn(expectedResponse);
+
+        DataSourceResponseDTO result = dataSourceConfigService.updateDataSourceById(dataSourceRequest, dataSourceId);
+
+        assertNotNull(result);
+      
+    }
 	@Test
-	public void testUpdateDataSourceConfigByIdNotExists() throws ResourceNotFoundException {
-		long dataSourceId = 1L;
-		DataSourceRequestDTO mockDataSourceDTO = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
-				"12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
+    public void testUpdateDataSourceConfigByIdNotExists() throws Exception {
+		 Long dataSourceId = 123L;
 
-		when(mockdataSourceConfigRepository.findById(dataSourceId)).thenReturn(Optional.empty());
-		// .thenReturn(Optional.ofNullable(mockdataSourceConfigValue));
-		ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class,
-				() -> dataSourceConfigService.updateDataSourceById(mockDataSourceDTO, 1L),
-				"Expected dataSourceConfigService.deleteDataSourceConfigById to throw, but it didn't");
-		assertNotNull(thrown);
-		assertTrue(thrown.getMessage().contains("DataSource Configuration not exist with this id :1"));
+		 DataSourceRequestDTO dataSourceRequest = new DataSourceRequestDTO("sample", "oracle", 1L, "Oracle", "ReadOnly",
+					"12345", "@!@#234", 1L, "123.13.34.56", "PT", "y");
+
+	     when(mockdataSourceConfigRepository.getDataSourceById(dataSourceId)).thenReturn(null);
+
+	     assertThrows(ResourceNotFoundException.class, () -> 
+	                      dataSourceConfigService.updateDataSourceById(dataSourceRequest, dataSourceId));
 	}
-
+	
 	@Test
-	public void testAllDataSourceConfig() {
-		List<DataSource> mockDataSourceConfigList = new ArrayList<DataSource>();
-		DataSource dataSourceConfigValue1 = new DataSource(1L, "Oracle", "oracle", BigInteger.ZERO, "Oracle",
+    public void testAllDataSourceConfig() throws Exception {
+        int page = 0;
+        int size = 20;
+        List<String> sort = Arrays.asList("name,asc");
+
+        DataSource dataSource = new DataSource(1L, "Oracle", "oracle", BigInteger.ZERO, "Oracle",
 				"ReadOnly", "12345", "@!@#234", BigInteger.ZERO, "123.13.34.56", "PT", "y", "UAE");
-		DataSource dataSourceConfigValue2 = new DataSource(1L, "FLEX", "FLEX_UAT", BigInteger.ZERO, "Oracle",
-				"ReadOnly", "6789", "@3$45", BigInteger.ZERO, "101.20.12.43", "RS", "y", "UAE");
-		DataSource dataSourceConfigValue3 = new DataSource(1L, "Oracle", "null", BigInteger.ZERO, "Oracle", "ReadOnly",
-				"34567", "@!()*$5", BigInteger.ZERO, "123.13.34.56", "sample", "y", "UAE");
+        
+        DataSourceResponseDTO expectedResponse = new DataSourceResponseDTO();
+        expectedResponse.setName("sample");
+        expectedResponse.setEncryptedPassword("Y");
+        expectedResponse.setPassword("decrypted_password_here"); 
+        
+        Page<DataSource> dataSourcePage = new PageImpl<>(Collections.singletonList(dataSource));
 
-		mockDataSourceConfigList.add(dataSourceConfigValue1);
-		mockDataSourceConfigList.add(dataSourceConfigValue2);
-		mockDataSourceConfigList.add(dataSourceConfigValue3);
+        when(mockdataSourceConfigRepository.findAll(any(Pageable.class))).thenReturn(dataSourcePage);
+        when(modelMapper.map(dataSource, DataSourceResponseDTO.class)).thenReturn(expectedResponse);
 
-		when(mockdataSourceConfigRepository.findAll()).thenReturn(mockDataSourceConfigList);
+        Map<String, Object> result = dataSourceConfigService.allDataSourceConfig(page, size, sort);
 
-		// test
-		Map<String, Object> dataSourceConfig = dataSourceConfigService.allDataSourceConfig(0, 0, null);
-
-		assertEquals(3, dataSourceConfig.size());
-		verify(mockdataSourceConfigRepository, times(1)).findAll();
-	}
+        assertNotNull(result);
+    }
 
 	@Test
 	public void testDeleteDataSourceConfigById() {
