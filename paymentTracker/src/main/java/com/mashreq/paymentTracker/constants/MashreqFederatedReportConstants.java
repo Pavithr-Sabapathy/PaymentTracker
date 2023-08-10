@@ -300,6 +300,7 @@ public class MashreqFederatedReportConstants {
 	public static final String UAEFTS_AML_MANUALMSGS_DETAILS_KEY = "uaefts-aml-manualmsgs-details";
 	public static final String UAEFTS_AML_MT202_KEY = "uaefts-aml-mt202";
 	public static final String UAEFTS_AML_MT202_INPUTMSGS_DETAILS_KEY = "uaefts-aml-mt202-inputmsgs-details";
+	public static final String UAEFTS_ACTIVITY_LOG_DEFAULT_STATUS = "Pending";
 
 	public static final String CBUNIQUE_FILE_ID_PROMPT_KEY = "cb-unique-file-id";
 	public static final String MSG_ID_PROMPT_KEY = "msg-id";

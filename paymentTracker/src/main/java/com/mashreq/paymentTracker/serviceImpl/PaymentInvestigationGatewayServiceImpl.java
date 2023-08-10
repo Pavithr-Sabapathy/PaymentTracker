@@ -31,6 +31,9 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 
 	@Autowired
 	FlexReportConnector flexReportConnector;
+	
+	@Autowired
+	UAEFTSReportConnector uaeftsReportConnector;
 
 	@Autowired
 	SwiftReportConnector swiftReportConnector;
@@ -49,6 +52,13 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 		try {
 			processComponent(paymentInvestigationReportInput, componentList, reportContext,
 					MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY);
+			if (!gatewayDataContext.isGatewayDataFound()) {
+		         try {
+		        	 processComponent(paymentInvestigationReportInput, componentList, reportContext,
+		 					MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY);
+		         } catch (Exception e) {
+
+					}
 			// if record found from swift
 			if (gatewayDataContext.isSwiftDataFound()) {
 				try {
@@ -68,7 +78,8 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 				}
 
 			}
-		} catch (Exception exception) {
+		}
+			}catch (Exception exception) {
 
 		}
 	}
@@ -116,6 +127,8 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			reportConnector = flexReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY)) {
 			reportConnector = swiftReportConnector;
+		}else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY)) {
+				reportConnector = uaeftsReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY)) {
 			reportConnector = safeWatchReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY)) {
