@@ -17,6 +17,7 @@ public class MashreqFederatedReportConstants {
 	public static final Map<String, List<String>> SAFEWATCH_COMPLIANCE_WORKSTAGES = new HashMap<String, List<String>>();
 	public static final List<String> SAFEWATCH_STATUS_MODIF_TYPES = new ArrayList<String>();
 	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new ArrayList<String>();
+	public static final List<String> FLEX_TRN_CODES_LIST = new ArrayList<String>();
 
 	static {
 		INCOMING_PAYMENT_CODES_LIST.add("O 103");
@@ -30,6 +31,10 @@ public class MashreqFederatedReportConstants {
 		OUTGOING_PAYMENT_CODES_LIST.add("I 202");
 		OUTGOING_PAYMENT_CODES_LIST.add("I 203");
 		OUTGOING_PAYMENT_CODES_LIST.add("I 200");
+
+		FLEX_TRN_CODES_LIST.add("714");
+		FLEX_TRN_CODES_LIST.add("715");
+		FLEX_TRN_CODES_LIST.add("015");
 
 		List<String> hostages = new ArrayList<String>();
 		hostages.add("HO Compliance Checker");
@@ -333,4 +338,24 @@ public class MashreqFederatedReportConstants {
 
 	public static final String FIRCOSOFT_FOFA_MESSAGE = "fofa-message";
 	public static final String FIRCOSOFT_HISTORY_ALERT_VIEW = "hits-alert-hist-view";
+	public static final String FLEX_ACTB_DAILY_LOG_RELATED_ACC_KEY = "actb-daily-log-rel-acc";
+	public static final String FLEX_ACTB_DAILY_LOG_KEY = "actb-daily-log";
+	public static final String FLEX_ACTB_HISTORY_KEY = "actb-history";
+	public static final String FLEX_ACTB_HISTORY_RELATED_ACC_KEY = "actb-history-rel-acc";
+	public static final String FLEX_STTM_CUSTOMER_KEY = "sttm-customer";
+
+	public static final String FLEX_FTTB_CONTRACT_CORE_REF_KEY = "fttb-contract-core-ref";
+	public static final String FLEX_FTTB_CONTRACT_SOURCE_REF_KEY = "fttb-contract-source-ref";
+	public static final String FLEX_CSTB_CONTRACT_EVENT_KEY = "cstb-contract-event";
+	public static final String FLEX_DAILY_MSG_OUT_KEY = "daily-msg-out";
+	public static final String FLEX_DAILY_MSG_IN_CORE_REF_KEY = "daily-msg-in-core-ref";
+	public static final String FLEX_DAILY_MSG_IN_SOURCE_REF_KEY = "daily-msg-in-source-ref";
+	public static final String FLEX_DAILY_MSG_IN_HISTORY_CORE_REF_KEY = "daily-msg-in-hist-core-ref";
+	public static final String FLEX_DAILY_MSG_IN_HISTORY_SOURCE_REF_KEY = "daily-msg-in-hist-source-ref";
+	public static final String DEBIT_FLAG_VALUE = "D";
+	public static final String CREDIT_FLAG_VALUE = "C";
+	public static final String FLEX_INITATIED_STATUS = "INIT";
+	public static final String FLEX_BOOKED_STATUS = "BOOK";
+	public static final String FLEX_LIQUIDATED_STATUS = "LIQD";
+	public static final String FLEX_ACCOUNTING_CREDITED_STATUS = "Customer account credited";
 }

@@ -148,7 +148,7 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 
 	@Override
 	protected ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
-		List<PaymentInvestigationReportOutput> reportOutput = new ArrayList<PaymentInvestigationReportOutput>();
+		List<PaymentInvestigationReportOutput> reportOutputList = new ArrayList<PaymentInvestigationReportOutput>();
 		// process each component based on the rules and once all components are
 		// processed, we need to re-arrange the data once gathered from all components
 		// some of the components might need to hit in parallel and wait for the result
@@ -174,9 +174,17 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 		} else {
 			PaymentInvestigationReportInput paymentInvestigationReportInput = (PaymentInvestigationReportInput) reportInput;
 			paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput, componentList,
-					reportContext);
+					reportContext, reportOutputList);
+			processFlex(paymentInvestigationReportInput, componentList, reportContext, reportOutputList);
 			return null;
 		}
 
+	}
+
+	private void processFlex(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			List<Components> componentList, ReportContext reportContext,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		paymentInvestigationGatewayService.processComponent(paymentInvestigationReportInput, componentList,
+				reportContext, MashreqFederatedReportConstants.COMPONENT_FLEX_KEY, reportOutputList);
 	}
 }

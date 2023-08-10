@@ -1,6 +1,7 @@
 package com.mashreq.paymentTracker.dto;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 import com.mashreq.paymentTracker.utility.SWIFTDetailedReportType;
 
@@ -8,7 +9,7 @@ public class PaymentInvestigationReportOutput extends ReportBaseOutput {
 
 	private Timestamp landingTime;
 	private String activity;
-	private Timestamp completionTime;
+	private Date completionTime;
 	private Long duration = 0L;
 	private String activityStatus;
 	private String source;
@@ -53,10 +54,10 @@ public class PaymentInvestigationReportOutput extends ReportBaseOutput {
 	public void setActivity(String activity) {
 		this.activity = activity;
 	}
-	public Timestamp getCompletionTime() {
+	public Date getCompletionTime() {
 		return completionTime;
 	}
-	public void setCompletionTime(Timestamp completionTime) {
+	public void setCompletionTime(Date completionTime) {
 		this.completionTime = completionTime;
 	}
 	public Long getDuration() {
