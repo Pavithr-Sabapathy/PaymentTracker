@@ -31,7 +31,6 @@ import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.CannedReportService;
-import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
@@ -47,9 +46,6 @@ public class FlexDetailedReportServiceImpl extends ReportControllerServiceImpl i
 
 	@Autowired
 	private ComponentsDAO componentsDAO;
-
-	@Autowired
-	QueryExecutorService queryExecutorService;
 
 	@Autowired
 	CannedReportService cannedReportService;

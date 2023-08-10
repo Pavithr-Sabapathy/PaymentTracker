@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.GatewayDataContext;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
+import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
@@ -31,7 +32,7 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 
 	@Autowired
 	FlexReportConnector flexReportConnector;
-	
+
 	@Autowired
 	UAEFTSReportConnector uaeftsReportConnector;
 
@@ -46,46 +47,48 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 
 	@Override
 	public void processGateway(PaymentInvestigationReportInput paymentInvestigationReportInput,
-			List<Components> componentList, ReportContext reportContext) {
+			List<Components> componentList, ReportContext reportContext,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
 		GatewayDataContext gatewayDataContext = new GatewayDataContext();
 		paymentInvestigationReportInput.setGatewayDataContext(gatewayDataContext);
 		try {
 			processComponent(paymentInvestigationReportInput, componentList, reportContext,
-					MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY);
+					MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY, reportOutputList);
 			if (!gatewayDataContext.isGatewayDataFound()) {
-		         try {
-		        	 processComponent(paymentInvestigationReportInput, componentList, reportContext,
-		 					MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY);
-		         } catch (Exception e) {
-
-					}
-			// if record found from swift
-			if (gatewayDataContext.isSwiftDataFound()) {
 				try {
 					processComponent(paymentInvestigationReportInput, componentList, reportContext,
-							MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY);
+							MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY, reportOutputList);
 				} catch (Exception e) {
 
 				}
-			}
-			if (gatewayDataContext.isGatewayDataFound()) {
-				// handle the fircosoft system.right now the condition is if compliance
-				// information is already there, we will not process that message.
-				try {
-					processComponent(paymentInvestigationReportInput, componentList, reportContext,
-							MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY);
-				} catch (Exception exception) {
-				}
+				// if record found from swift
+				if (gatewayDataContext.isSwiftDataFound()) {
+					try {
+						processComponent(paymentInvestigationReportInput, componentList, reportContext,
+								MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY, reportOutputList);
+					} catch (Exception e) {
 
+					}
+				}
+				if (gatewayDataContext.isGatewayDataFound()) {
+					// handle the fircosoft system.right now the condition is if compliance
+					// information is already there, we will not process that message.
+					try {
+						processComponent(paymentInvestigationReportInput, componentList, reportContext,
+								MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY, reportOutputList);
+					} catch (Exception exception) {
+					}
+
+				}
 			}
-		}
-			}catch (Exception exception) {
+		} catch (Exception exception) {
 
 		}
 	}
 
 	public void processComponent(PaymentInvestigationReportInput paymentInvestigationReportInput,
-			List<Components> componentList, ReportContext reportContext, String componentKey) {
+			List<Components> componentList, ReportContext reportContext, String componentKey,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
 
 		Components matchedComponentsObj = getMatchedComponent(componentList, componentKey);
 		ReportConnector reportConnector = getMatchedReportService(componentKey);
@@ -127,8 +130,8 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			reportConnector = flexReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY)) {
 			reportConnector = swiftReportConnector;
-		}else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY)) {
-				reportConnector = uaeftsReportConnector;
+		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY)) {
+			reportConnector = uaeftsReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY)) {
 			reportConnector = safeWatchReportConnector;
 		} else if (connectorKey.equalsIgnoreCase(MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY)) {
