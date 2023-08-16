@@ -29,6 +29,7 @@ import com.mashreq.paymentTracker.service.PaymentInvestigationGatewayService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
+import com.mashreq.paymentTracker.type.PaymentType;
 
 public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
 
@@ -176,6 +177,26 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 			paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput, componentList,
 					reportContext, reportOutputList);
 			processFlex(paymentInvestigationReportInput, componentList, reportContext, reportOutputList);
+			PaymentType paymentType = paymentInvestigationReportInput.getPaymentType();
+			if (paymentType == PaymentType.OUTWARD) {
+				// core record not found
+				if (!paymentInvestigationReportInput.isCoreRecordFound()) {
+					paymentInvestigationGatewayService.processChannels(paymentInvestigationReportInput,reportContext, componentList, reportOutputList);
+				} else {
+					// core record found
+					if (!paymentInvestigationReportInput.getGatewayDataContext().isGatewayDataFound()) {
+						// process the gateways only based on core record found using which flags
+						if (paymentInvestigationReportInput.isCoreRecordFoundUsingSourceRef()) {
+							paymentInvestigationReportInput
+									.setUserReferenceNum(paymentInvestigationReportInput.getCoreReferenceNum());
+							paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,
+									componentList, reportContext, reportOutputList);
+						}
+					}
+					// ideally process only one channel
+					paymentInvestigationGatewayService.processChannels(paymentInvestigationReportInput,reportContext, componentList, reportOutputList);
+				}
+			}
 			return null;
 		}
 

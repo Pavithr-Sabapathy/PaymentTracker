@@ -324,15 +324,7 @@ public class FircosoftReportConnector extends ReportConnector {
 		}
 
 	}
-
-	private ReportComponentDetailDTO getMatchedInstanceComponentDetail(
-			Set<ReportComponentDetailDTO> componentDetailList, String componentDetailKey) {
-		return componentDetailList.stream()
-				.filter(ComponentDetail -> ComponentDetail.getQueryKey().equalsIgnoreCase(componentDetailKey)).findAny()
-				.orElse(null);
-
-	}
-
+	
 	private List<String> getReferenceNums(GatewayDataContext gatewayDataContext) {
 
 		List<String> referenceNumList = new ArrayList<String>();

@@ -148,4 +148,18 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 		return components;
 	}
 
+	@Override
+	public void processChannels(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		processMatrixSystem(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+	}
+
+	private void processMatrixSystem(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		processComponent(paymentInvestigationReportInput, componentList, reportContext,
+				MashreqFederatedReportConstants.COMPONENT_MATRIX_PAYMENT_KEY, reportOutputList);
+	}
+
 }

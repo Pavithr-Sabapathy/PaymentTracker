@@ -16,4 +16,8 @@ public interface PaymentInvestigationGatewayService {
 	void processGateway(PaymentInvestigationReportInput paymentInvestigationReportInput, List<Components> componentList,
 			ReportContext reportContext, List<PaymentInvestigationReportOutput> reportOutputList);
 
+	public void processChannels(
+			PaymentInvestigationReportInput paymentInvestigationReportInput, ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList);
+
 }

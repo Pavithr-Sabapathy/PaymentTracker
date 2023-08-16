@@ -3,6 +3,7 @@ package com.mashreq.paymentTracker.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
@@ -73,4 +74,11 @@ public abstract class ReportConnector {
 
 	}
 
+	public ReportComponentDetailDTO getMatchedInstanceComponentDetail(
+			Set<ReportComponentDetailDTO> componentDetailList, String componentDetailKey) {
+		return componentDetailList.stream()
+				.filter(ComponentDetail -> ComponentDetail.getQueryKey().equalsIgnoreCase(componentDetailKey)).findAny()
+				.orElse(null);
+
+	}
 }

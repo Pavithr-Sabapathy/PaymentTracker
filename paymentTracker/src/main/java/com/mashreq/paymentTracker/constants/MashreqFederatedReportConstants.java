@@ -18,6 +18,7 @@ public class MashreqFederatedReportConstants {
 	public static final List<String> SAFEWATCH_STATUS_MODIF_TYPES = new ArrayList<String>();
 	public static final List<String> COMPLIANCE_DONT_KNOW_STATUS_LIST = new ArrayList<String>();
 	public static final List<String> FLEX_TRN_CODES_LIST = new ArrayList<String>();
+	public static final List<String> MATRIX_TRN_CODES_LIST = new java.util.ArrayList<String>();
 
 	static {
 		INCOMING_PAYMENT_CODES_LIST.add("O 103");
@@ -35,6 +36,9 @@ public class MashreqFederatedReportConstants {
 		FLEX_TRN_CODES_LIST.add("714");
 		FLEX_TRN_CODES_LIST.add("715");
 		FLEX_TRN_CODES_LIST.add("015");
+
+		MATRIX_TRN_CODES_LIST.add("FC|99");
+		MATRIX_TRN_CODES_LIST.add("FC|98");
 
 		List<String> hostages = new ArrayList<String>();
 		hostages.add("HO Compliance Checker");
@@ -358,4 +362,14 @@ public class MashreqFederatedReportConstants {
 	public static final String FLEX_BOOKED_STATUS = "BOOK";
 	public static final String FLEX_LIQUIDATED_STATUS = "LIQD";
 	public static final String FLEX_ACCOUNTING_CREDITED_STATUS = "Customer account credited";
+
+	// component detail keys
+	public static final String MATRIX_PORTAL_TXN_MASTER_KEY = "od-txn-master";
+	public static final String MATRIX_PORTAL_TXN_MASTER_HB_KEY = "od-txn-master-hb";
+
+	public static final String MATRIX_PAYMENT_PS0808TB_KEY = "ps080tb";
+	public static final String MATRIX_PAYMENT_TXN_MST_PAY_KEY = "txn-mst-pay";
+	public static final String MATRIX_PAYMENT_ACCOUNTING_STAGING_INTERNAL_KEY = "acc-staging-internal";
+	public static final String MATRIX_PAYMENT_ACCOUNTING_STAGING_INTERNAL_CORE_REF_KEY = "acc-staging-internal-core-ref";
+
 }
