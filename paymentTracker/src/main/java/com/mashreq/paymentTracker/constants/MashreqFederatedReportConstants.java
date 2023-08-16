@@ -241,7 +241,7 @@ public class MashreqFederatedReportConstants {
 	public static final String NO_REPORTS = "No Report Found";
 	public static final String PENDING_ACTIVITY_STATUS = "Pending";
 
-	public static final String DATE_FORMATS_KEY = "federated-reports.static-values.mashreq.date-formats.format";
+	public static final String DATE_FORMATS_KEY = "date-formats.format";
 	public static final String VALUE_DATE_FORMAT_KEY = "dd-MMM-yyyy";
 	public static final String RETRIEVE_TILL_PROMPT_DEFAULT_VALUE = "60";
 
