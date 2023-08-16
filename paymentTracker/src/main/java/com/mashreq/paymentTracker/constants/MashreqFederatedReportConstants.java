@@ -254,6 +254,7 @@ public class MashreqFederatedReportConstants {
 	public static final String COMPONENT_SNAPP_KEY = "snapp";
 	public static final String COMPONENT_SAFE_WATCH_KEY = "safewatch";
 	public static final String COMPONENT_FIRCOSOFT_KEY = "fircosoft";
+	public static final String COMPONENT_MOL_KEY = "mol"; 
 
 	public static final String PAYMENT_TRACKER_REFERENCE_NUM_PROMPT_KEY = "ReferenceNum";
 	public static final String PAYMENT_TRACKER_COUNTRY_CODE_PROMPT_KEY = "CountryCode";
