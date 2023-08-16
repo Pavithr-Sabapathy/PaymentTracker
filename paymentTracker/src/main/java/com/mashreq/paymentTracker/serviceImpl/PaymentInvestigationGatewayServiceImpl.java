@@ -1,5 +1,6 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +21,8 @@ import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.service.PaymentInvestigationGatewayService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportConnector;
+import com.mashreq.paymentTracker.service.ReportOutput;
+import com.mashreq.paymentTracker.type.EDMSProcessType;
 import com.mashreq.paymentTracker.utility.CheckType;
 
 public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigationGatewayService {
@@ -86,19 +89,20 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 		}
 	}
 
-	public void processComponent(PaymentInvestigationReportInput paymentInvestigationReportInput,
-			List<Components> componentList, ReportContext reportContext, String componentKey,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
-
+	public List<? extends ReportOutput> processComponent(
+			PaymentInvestigationReportInput paymentInvestigationReportInput, List<Components> componentList,
+			ReportContext reportContext, String componentKey, List<PaymentInvestigationReportOutput> reportOutputList) {
+		List<? extends ReportOutput> reportOutput = new ArrayList<ReportOutput>();
 		Components matchedComponentsObj = getMatchedComponent(componentList, componentKey);
 		ReportConnector reportConnector = getMatchedReportService(componentKey);
 		if (matchedComponentsObj != null && reportConnector != null) {
 			ReportComponentDTO matchedComponentsDTO = populateReportComponent(matchedComponentsObj);
 			paymentInvestigationReportInput.setComponent(matchedComponentsDTO);
-			reportConnector.processReportComponent(paymentInvestigationReportInput, reportContext);
+			reportOutput = reportConnector.processReportComponent(paymentInvestigationReportInput, reportContext);
 		} else {
 			log.debug("Component Missing/Matched Connector Missing for key " + componentKey);
 		}
+		return reportOutput;
 	}
 
 	private ReportComponentDTO populateReportComponent(Components component) {
@@ -153,13 +157,52 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			ReportContext reportContext, List<Components> componentList,
 			List<PaymentInvestigationReportOutput> reportOutputList) {
 		processMatrixSystem(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+		if (!paymentInvestigationReportInput.isChannelDataFound()) {
+			paymentInvestigationReportInput.setEdmsProcessType(EDMSProcessType.FTO);
+			processEDMS(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+		}
+	}
+
+	private void processEDMS(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		// TODO Auto-generated method stub
+
 	}
 
 	private void processMatrixSystem(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
 			List<PaymentInvestigationReportOutput> reportOutputList) {
-		processComponent(paymentInvestigationReportInput, componentList, reportContext,
-				MashreqFederatedReportConstants.COMPONENT_MATRIX_PAYMENT_KEY, reportOutputList);
+		try {
+			List<? extends ReportOutput> matrixPaymentOutputList = processComponent(paymentInvestigationReportInput,
+					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_MATRIX_PAYMENT_KEY,
+					reportOutputList);
+			matrixPaymentOutputList.stream().forEach(output -> {
+				PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
+				reportOutputList.add(piReportOutput);
+			});
+			if (!matrixPaymentOutputList.isEmpty()) {
+				paymentInvestigationReportInput.setChannelDataFound(true);
+				paymentInvestigationReportInput.getMatrixReportContext().setMatrixDataFound(true);
+			}
+		} catch (Exception exception) {
+
+		}
+
+		try {
+			List<? extends ReportOutput> matrixPortalOutputList = processComponent(paymentInvestigationReportInput,
+					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_MATRIX_PORTAL_KEY,
+					reportOutputList);
+			matrixPortalOutputList.stream().forEach(output -> {
+				PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
+				reportOutputList.add(piReportOutput);
+			});
+			if (!matrixPortalOutputList.isEmpty()) {
+				paymentInvestigationReportInput.setChannelDataFound(true);
+				paymentInvestigationReportInput.getMatrixReportContext().setMatrixDataFound(true);
+			}
+		} catch (Exception exception) {
+		}
 	}
 
 }

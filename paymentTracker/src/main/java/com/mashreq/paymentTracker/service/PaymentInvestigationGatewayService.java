@@ -9,7 +9,7 @@ import com.mashreq.paymentTracker.model.Components;
 
 public interface PaymentInvestigationGatewayService {
 
-	public void processComponent(PaymentInvestigationReportInput paymentInvestigationReportInput,
+	public List<? extends ReportOutput> processComponent(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			List<Components> componentList, ReportContext reportContext, String componentKey,
 			List<PaymentInvestigationReportOutput> reportOutputList);
 
