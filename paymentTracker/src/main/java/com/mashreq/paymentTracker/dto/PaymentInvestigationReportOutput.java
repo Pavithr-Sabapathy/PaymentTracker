@@ -42,6 +42,12 @@ public class PaymentInvestigationReportOutput extends ReportBaseOutput {
 	private transient String customerId;
 	private Long componentDetailId;
 	
+	public PaymentInvestigationReportOutput(Long componentDetailId2) {
+		// TODO Auto-generated constructor stub
+	}
+	public PaymentInvestigationReportOutput() {
+		// TODO Auto-generated constructor stub
+	}
 	public Timestamp getLandingTime() {
 		return landingTime;
 	}
