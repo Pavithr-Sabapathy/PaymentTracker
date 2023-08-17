@@ -176,7 +176,7 @@ class FlexFederatedReportServiceTest {
 		ArrayList<Components> componentList = new ArrayList<>();
 		componentList.add(components);
 		assertThrows(ResourceNotFoundException.class, () -> flexFederatedReportServiceImpl
-				.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class)));
+				.processReport(advanceSearchReportInput, mock(ReportContext.class)));
 		verify(components).getActive();
 		verify(components).getComponentKey();
 	}
@@ -232,9 +232,10 @@ class FlexFederatedReportServiceTest {
 
 		components.setComponentDetailsList(componentDetailList);
 		componentList.add(components);
-		//List<AdvanceSearchReportOutput> respones = flexFederatedReportServiceImpl
-		//		.processFlexDetailReport(advanceSearchReportInput, componentList, mock(ReportContext.class));
-		//assertNotNull(respones);
+		// List<AdvanceSearchReportOutput> respones = flexFederatedReportServiceImpl
+		// .processFlexDetailReport(advanceSearchReportInput, componentList,
+		// mock(ReportContext.class));
+		// assertNotNull(respones);
 	}
 
 	@Test

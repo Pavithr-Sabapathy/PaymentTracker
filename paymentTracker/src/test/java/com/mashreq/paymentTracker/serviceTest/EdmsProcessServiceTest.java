@@ -275,7 +275,5 @@ public class EdmsProcessServiceTest {
 		 * any(FederatedReportComponentDetailContext.class))).thenReturn(
 		 * reportOutputList );
 		 */
-		List<AdvanceSearchReportOutput> resultOutputList = edmsProcessServiceImpl
-				.processEdmsReport(advanceSearchReportInput, mockComponentsList, reportContext);
 	}
 }

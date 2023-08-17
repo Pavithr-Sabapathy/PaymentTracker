@@ -61,7 +61,7 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 	private UAEFTSReportConnector uaeftsReportConnector;
 
 	@Override
-	protected ReportInput populateBaseInputContext(ReportContext reportContext) {
+	public ReportInput populateBaseInputContext(ReportContext reportContext) {
 
 		ReportInstanceDTO reportInstance = reportContext.getReportInstance();
 		List<ReportPromptsInstanceDTO> list = reportInstance.getPromptsList();
@@ -115,7 +115,7 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 	}
 
 	@Override
-	protected ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
+	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
 		List<ReportExecuteResponseColumnDefDTO> reportExecuteResponseCloumnDefList = null;
 		List<Map<String, Object>> messageData = null;
