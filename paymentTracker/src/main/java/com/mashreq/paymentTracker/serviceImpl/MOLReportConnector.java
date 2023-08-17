@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.jdom.Document;
 import org.jdom.Element;
-import org.xml.sax.InputSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.jdom.Document;
+import org.xml.sax.InputSource;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
 import com.mashreq.paymentTracker.dto.FlexDetailedReportInput;
@@ -45,10 +45,58 @@ public class MOLReportConnector extends ReportConnector {
 			MOLDetailedFederatedReportInput molDetailedFederatedReportInput = (MOLDetailedFederatedReportInput) reportInput;
 			return molDetailedReport(molDetailedFederatedReportInput, reportContext);
 		} else if (reportInput instanceof PaymentInvestigationReportInput paymentInvestigationReportInput) {
-
+			return processPaymentInvestigationReport(paymentInvestigationReportInput, reportContext);
 		}
 
 		return null;
+	}
+
+	private List<? extends ReportOutput> processPaymentInvestigationReport(
+			PaymentInvestigationReportInput paymentInvestigationReportInput, ReportContext reportContext) {
+		List<PaymentInvestigationReportOutput> outputList = new ArrayList<PaymentInvestigationReportOutput>();
+		ReportComponentDTO componentObj = paymentInvestigationReportInput.getComponent();
+		if (null != componentObj) {
+			Set<ReportComponentDetailDTO> componentDetailList = componentObj.getReportComponentDetails();
+			if (!componentDetailList.isEmpty()) {
+				PaymentInvestigationReportOutput molData = processComponentDetailForSingleRecord(componentDetailList,
+						paymentInvestigationReportInput, MashreqFederatedReportConstants.MOL_AUTH_DATA_KEY,
+						reportContext);
+				if (molData != null) {
+					paymentInvestigationReportInput.setMolRecord(molData);
+					outputList.add(molData);
+				}
+			}
+		}
+		return outputList;
+	}
+
+	private PaymentInvestigationReportOutput processComponentDetailForSingleRecord(
+			Set<ReportComponentDetailDTO> componentDetailList,
+			PaymentInvestigationReportInput paymentInvestigationReportInput, String componentDetailKey,
+			ReportContext reportContext) {
+
+		PaymentInvestigationReportOutput componentDetailOutput = null;
+		ReportComponentDetailDTO matchedComponentDetail = getMatchedInstanceComponentDetail(componentDetailList,
+				componentDetailKey);
+		if (matchedComponentDetail != null) {
+			ReportComponentDetailContext context = populateReportComponentDetailContext(matchedComponentDetail,
+					paymentInvestigationReportInput, reportContext);
+
+			List<ReportDefaultOutput> outputList = queryExecutorService.executeQuery(matchedComponentDetail, context);
+
+			componentDetailOutput = populateReportOutputForSingleRecord(outputList, componentDetailKey);
+		} else {
+			log.debug("Component Detail missing for " + componentDetailKey);
+		}
+		return componentDetailOutput;
+
+	}
+
+	public static PaymentInvestigationReportOutput createPaymentInvestigationOutput(ReportDefaultOutput defaultOutput) {
+		PaymentInvestigationReportOutput output = new PaymentInvestigationReportOutput(
+				defaultOutput.getComponentDetailId());
+
+		return output;
 	}
 
 	private List<? extends ReportOutput> molDetailedReport(
