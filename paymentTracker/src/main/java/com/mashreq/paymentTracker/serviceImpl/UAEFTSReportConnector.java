@@ -313,13 +313,6 @@ public class UAEFTSReportConnector extends ReportConnector {
 		}
 	}
 
-	private ReportComponentDetailDTO getMatchedInstanceComponentDetail(
-			Set<ReportComponentDetailDTO> componentDetailList, String componentDetailKey) {
-		return componentDetailList.stream()
-				.filter(ComponentDetail -> ComponentDetail.getQueryKey().equalsIgnoreCase(componentDetailKey)).findAny()
-				.orElse(null);
-	}
-
 	private List<UAEFTSNetworkDataContext> processOutgoingMTFNQuery(ReportComponentDTO component,
 			ReportComponentDetailDTO componentDetail, PaymentInvestigationReportInput piReportInput,
 			String componentDetailKey, ReportContext reportContext, UAEFTSReportDataContext outgoingMessageContext) {

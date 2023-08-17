@@ -62,8 +62,8 @@ public class SwiftReportConnector extends ReportConnector {
 		return null;
 	}
 
-	private void processPaymentInvestigationReport(
-			PaymentInvestigationReportInput piReportInput, ReportContext reportContext) {
+	private void processPaymentInvestigationReport(PaymentInvestigationReportInput piReportInput,
+			ReportContext reportContext) {
 		ReportComponentDTO component = piReportInput.getComponent();
 		Set<ReportComponentDetailDTO> componentDetailList = component.getReportComponentDetails();
 		if (!componentDetailList.isEmpty()) {
@@ -810,14 +810,6 @@ public class SwiftReportConnector extends ReportConnector {
 			});
 		}
 		return swiftReportContextList;
-	}
-
-	private ReportComponentDetailDTO getMatchedInstanceComponentDetail(
-			Set<ReportComponentDetailDTO> componentDetailList, String componentDetailKey) {
-		ReportComponentDetailDTO componentDetailObject = componentDetailList.stream()
-				.filter(componentDetails -> componentDetails.getQueryKey().equalsIgnoreCase(componentDetailKey))
-				.findFirst().orElse(null);
-		return componentDetailObject;
 	}
 
 	private List<SWIFTMessageDetailsReportOutput> processSwiftDetailedReport(

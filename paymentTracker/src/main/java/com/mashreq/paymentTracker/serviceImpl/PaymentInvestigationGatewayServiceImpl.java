@@ -18,7 +18,6 @@ import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.exception.ExceptionCodes;
 import com.mashreq.paymentTracker.exception.ReportConnectorException;
-import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.service.PaymentInvestigationGatewayService;
