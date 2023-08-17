@@ -160,8 +160,61 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 		if (!paymentInvestigationReportInput.isChannelDataFound()) {
 			paymentInvestigationReportInput.setEdmsProcessType(EDMSProcessType.FTO);
 			processEDMS(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+			 if (!paymentInvestigationReportInput.isChannelDataFound()) {
+		            processSnapp( paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+		            if (!paymentInvestigationReportInput.isChannelDataFound()) {
+		               processMOL(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+		}
+			 }
 		}
 	}
+
+	private void processMOL(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		try {
+		 List<? extends ReportOutput> molComponentData=processComponent(paymentInvestigationReportInput,
+					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_MOL_KEY,
+					reportOutputList);
+		 molComponentData.stream().forEach(output -> {
+				PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
+				reportOutputList.add(piReportOutput);
+			});
+		 if (!molComponentData.isEmpty()) {
+			 paymentInvestigationReportInput.setChannelDataFound(true);
+			}
+		} catch (Exception exception) {
+
+		}
+		
+	}
+		 
+	
+		
+		
+	
+
+	private void processSnapp(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		try {
+			 List<? extends ReportOutput> snappComponentData=processComponent(paymentInvestigationReportInput,
+						componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_SNAPP_KEY,
+						reportOutputList);
+			 snappComponentData.stream().forEach(output -> {
+					PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
+					reportOutputList.add(piReportOutput);
+				});
+			 if (!snappComponentData.isEmpty()) {
+				 paymentInvestigationReportInput.setChannelDataFound(true);
+				}
+			} catch (Exception exception) {
+
+			}
+			
+		}
+		
+	
 
 	private void processEDMS(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,

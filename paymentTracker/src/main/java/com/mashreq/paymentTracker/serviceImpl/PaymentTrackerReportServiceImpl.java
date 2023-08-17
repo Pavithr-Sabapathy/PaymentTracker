@@ -16,6 +16,7 @@ import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.MatrixReportContext;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportContext;
@@ -196,11 +197,57 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 					// ideally process only one channel
 					paymentInvestigationGatewayService.processChannels(paymentInvestigationReportInput,reportContext, componentList, reportOutputList);
 				}
-			}
+			}else if(paymentType == PaymentType.INWARD) {
+				if (paymentInvestigationReportInput.isCoreRecordFound()) {
+		            if (!paymentInvestigationReportInput.getGatewayDataContext().isGatewayDataFound()) {
+		               // process the gateways only based on core record found using which flags
+		               if (paymentInvestigationReportInput.isCoreRecordFoundUsingCoreRef()) {
+		            	   paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getSourceReferenceNum());
+		            	   paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,componentList, reportContext, reportOutputList);
+		               }
+		            }
+		         }
+		      }else if (paymentType == PaymentType.INWARD_RESULTING_INTO_OUTWARD) {
+		          if (paymentInvestigationReportInput.isCoreRecordFound()) {
+		              if (paymentInvestigationReportInput.isCoreRecordFoundUsingCoreRef()) {
+		            	  paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getSourceReferenceNum());
+		              } else {
+		            	  paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getCoreReferenceNum());
+		              }
+		              paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,componentList, reportContext, reportOutputList);
+		           }
+		        }
+			// handle MOL case
+		      if (paymentInvestigationReportInput.getMolRecord() != null) {
+		         processFlex(paymentInvestigationReportInput,componentList,reportContext,reportOutputList);
+		      }
+		      // handle matrix specific cases
+		      MatrixReportContext matrixReportContext = paymentInvestigationReportInput.getMatrixReportContext();
+		      if (matrixReportContext.isMatrixDataFound()) {
+		          if (!matrixReportContext.isManualTransaction()) {
+		        	// process flex for only accounting entries
+		              String coreReferenceFoundFromAccStaging = matrixReportContext.getCoreReferenceFoundFromAccStaging();
+		              PaymentInvestigationReportOutput pso80tbRecord = matrixReportContext.getPso80tbRecord();
+		              if (pso80tbRecord != null && coreReferenceFoundFromAccStaging!=null) {
+		            	  paymentInvestigationReportInput.setProcessOnlyFlexAccountingBasedOnDebitAccount(true);
+		            	  processFlex(paymentInvestigationReportInput,componentList,reportContext,reportOutputList);
+		              }
+		              // process the gateways only based on core record found using which flags
+		              if (paymentInvestigationReportInput.getMatrixReportContext().isDataFoundUsingCoreRef()) {
+		            	  paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getMatrixReportContext()
+		                          .getRefFoundUsingCoreRef());
+		            	  paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,componentList, reportContext, reportOutputList);
+		              }
+		           }
+		        }
+		      
+		              }
+		          
+			
 			return null;
 		}
 
-	}
+	
 
 	private void processFlex(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			List<Components> componentList, ReportContext reportContext,
