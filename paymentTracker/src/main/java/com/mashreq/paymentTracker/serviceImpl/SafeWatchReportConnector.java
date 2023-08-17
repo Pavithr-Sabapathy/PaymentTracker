@@ -131,7 +131,8 @@ public class SafeWatchReportConnector extends ReportConnector {
 
 	public static String getActivity(String mesgType, String activityOrigin) {
 		String activity = MashreqFederatedReportConstants.GATEWAY_PAYMENT_SCREENING_PROCESSED_ACTIVITY;
-		if ((!MashreqFederatedReportConstants.INCOMING_PAYMENT_CODES_LIST.contains(mesgType)) && !(MashreqFederatedReportConstants.OUTGOING_PAYMENT_CODES_LIST.contains(mesgType))) {
+		if ((!MashreqFederatedReportConstants.INCOMING_PAYMENT_CODES_LIST.contains(mesgType))
+				&& !(MashreqFederatedReportConstants.OUTGOING_PAYMENT_CODES_LIST.contains(mesgType))) {
 			activity = MashreqFederatedReportConstants.GATEWAY_MESSAGE_SCREENING_PROCESSED_ACTIVITY;
 		}
 		if (activityOrigin.equalsIgnoreCase(MashreqFederatedReportConstants.SAFEWATCH_DEFAULT_COMPLETEDBY)) {
@@ -388,14 +389,6 @@ public class SafeWatchReportConnector extends ReportConnector {
 		}
 		detectionIdPrompt.setValueType(PromptValueType.VALUE);
 		reportComponentDetailContext.getPrompts().add(detectionIdPrompt);
-	}
-
-	private ReportComponentDetailDTO getMatchedInstanceComponentDetail(
-			Set<ReportComponentDetailDTO> componentDetailList, String componentDetailKey) {
-		return componentDetailList.stream()
-				.filter(ComponentDetail -> ComponentDetail.getQueryKey().equalsIgnoreCase(componentDetailKey)).findAny()
-				.orElse(null);
-
 	}
 
 	private List<String> populateDetectionList(GatewayDataContext gatewayDataContext) {
