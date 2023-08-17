@@ -254,7 +254,7 @@ public class MashreqFederatedReportConstants {
 	public static final String COMPONENT_SNAPP_KEY = "snapp";
 	public static final String COMPONENT_SAFE_WATCH_KEY = "safewatch";
 	public static final String COMPONENT_FIRCOSOFT_KEY = "fircosoft";
-	public static final String COMPONENT_MOL_KEY = "mol"; 
+	public static final String COMPONENT_MOL_KEY = "mol";
 
 	public static final String PAYMENT_TRACKER_REFERENCE_NUM_PROMPT_KEY = "ReferenceNum";
 	public static final String PAYMENT_TRACKER_COUNTRY_CODE_PROMPT_KEY = "CountryCode";
@@ -376,5 +376,11 @@ public class MashreqFederatedReportConstants {
 	public static final String EDMS_FTO_TAT_KEY = "fto-tat";
 	public static final String EDMS_RID_TAT_KEY = "rid-tat";
 	public static final String EDMS_EDD_REFERRAL_KEY = "edd-referral";
+	public static final String SYSTEM_NOT_RESPONDED_MESSAGE = "System Not Responded";
+	public static final String INSUFFICIENT_INPUT_MESSAGE = "Insufficient Input";
+	public static final boolean APPLY_COLOR_NOTATION = Boolean.TRUE;
+	// color notation
+	public static final String SYSTEM_NOT_RESPONDED_COLOR = "red";
+	public static final String INSUFFICIENT_INPUT_COLOR = "amber";
 
 }

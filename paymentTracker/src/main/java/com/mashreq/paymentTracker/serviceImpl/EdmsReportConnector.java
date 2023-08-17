@@ -100,6 +100,7 @@ public class EdmsReportConnector extends ReportConnector {
 			ReportComponentDetailContext context = populateReportComponentDetailContext(matchedComponentDetail,
 					paymentInvestigationReportInput, reportContext);
 			List<ReportDefaultOutput> outputList = queryExecutorService.executeQuery(matchedComponentDetail, context);
+			//TODO - Doubt - process result output with deena
 		} else {
 			log.debug("Component Detail missing for " + componentDetailKey);
 		}

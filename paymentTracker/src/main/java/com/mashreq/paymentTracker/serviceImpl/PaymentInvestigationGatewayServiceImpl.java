@@ -16,6 +16,9 @@ import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
+import com.mashreq.paymentTracker.exception.ExceptionCodes;
+import com.mashreq.paymentTracker.exception.ReportConnectorException;
+import com.mashreq.paymentTracker.exception.ReportException;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.service.PaymentInvestigationGatewayService;
@@ -51,47 +54,43 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 	@Override
 	public void processGateway(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			List<Components> componentList, ReportContext reportContext,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
+			List<PaymentInvestigationReportOutput> reportOutputList) throws Exception {
 		GatewayDataContext gatewayDataContext = new GatewayDataContext();
 		paymentInvestigationReportInput.setGatewayDataContext(gatewayDataContext);
-		try {
+		processComponent(paymentInvestigationReportInput, componentList, reportContext,
+				MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY, reportOutputList);
+		if (!gatewayDataContext.isGatewayDataFound()) {
 			processComponent(paymentInvestigationReportInput, componentList, reportContext,
-					MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY, reportOutputList);
-			if (!gatewayDataContext.isGatewayDataFound()) {
+					MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY, reportOutputList);
+			// if record found from swift
+			if (gatewayDataContext.isSwiftDataFound()) {
 				try {
 					processComponent(paymentInvestigationReportInput, componentList, reportContext,
-							MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY, reportOutputList);
-				} catch (Exception e) {
-
-				}
-				// if record found from swift
-				if (gatewayDataContext.isSwiftDataFound()) {
-					try {
-						processComponent(paymentInvestigationReportInput, componentList, reportContext,
-								MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY, reportOutputList);
-					} catch (Exception e) {
-
-					}
-				}
-				if (gatewayDataContext.isGatewayDataFound()) {
-					// handle the fircosoft system.right now the condition is if compliance
-					// information is already there, we will not process that message.
-					try {
-						processComponent(paymentInvestigationReportInput, componentList, reportContext,
-								MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY, reportOutputList);
-					} catch (Exception exception) {
-					}
-
+							MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY, reportOutputList);
+				} catch (ReportConnectorException exception) {
+					populateFailedSystemsData(paymentInvestigationReportInput, exception,
+							MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY);
 				}
 			}
-		} catch (Exception exception) {
+			if (gatewayDataContext.isGatewayDataFound()) {
+				// handle the fircosoft system.right now the condition is if compliance
+				// information is already there, we will not process that message.
+				try {
+					processComponent(paymentInvestigationReportInput, componentList, reportContext,
+							MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY, reportOutputList);
+				} catch (ReportConnectorException exception) {
+					populateFailedSystemsData(paymentInvestigationReportInput, exception,
+							MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY);
+				}
 
+			}
 		}
 	}
 
 	public List<? extends ReportOutput> processComponent(
 			PaymentInvestigationReportInput paymentInvestigationReportInput, List<Components> componentList,
-			ReportContext reportContext, String componentKey, List<PaymentInvestigationReportOutput> reportOutputList) {
+			ReportContext reportContext, String componentKey, List<PaymentInvestigationReportOutput> reportOutputList)
+			throws ReportConnectorException {
 		List<? extends ReportOutput> reportOutput = new ArrayList<ReportOutput>();
 		Components matchedComponentsObj = getMatchedComponent(componentList, componentKey);
 		ReportConnector reportConnector = getMatchedReportService(componentKey);
@@ -160,12 +159,12 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 		if (!paymentInvestigationReportInput.isChannelDataFound()) {
 			paymentInvestigationReportInput.setEdmsProcessType(EDMSProcessType.FTO);
 			processEDMS(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
-			 if (!paymentInvestigationReportInput.isChannelDataFound()) {
-		            processSnapp( paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
-		            if (!paymentInvestigationReportInput.isChannelDataFound()) {
-		               processMOL(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
-		}
-			 }
+			if (!paymentInvestigationReportInput.isChannelDataFound()) {
+				processSnapp(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+				if (!paymentInvestigationReportInput.isChannelDataFound()) {
+					processMOL(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+				}
+			}
 		}
 	}
 
@@ -173,48 +172,40 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			ReportContext reportContext, List<Components> componentList,
 			List<PaymentInvestigationReportOutput> reportOutputList) {
 		try {
-		 List<? extends ReportOutput> molComponentData=processComponent(paymentInvestigationReportInput,
-					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_MOL_KEY,
-					reportOutputList);
-		 molComponentData.stream().forEach(output -> {
+			List<? extends ReportOutput> molComponentData = processComponent(paymentInvestigationReportInput,
+					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_MOL_KEY, reportOutputList);
+			molComponentData.stream().forEach(output -> {
 				PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
 				reportOutputList.add(piReportOutput);
 			});
-		 if (!molComponentData.isEmpty()) {
-			 paymentInvestigationReportInput.setChannelDataFound(true);
+			if (!molComponentData.isEmpty()) {
+				paymentInvestigationReportInput.setChannelDataFound(true);
 			}
 		} catch (Exception exception) {
 
 		}
-		
+
 	}
-		 
-	
-		
-		
-	
 
 	private void processSnapp(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
 			List<PaymentInvestigationReportOutput> reportOutputList) {
 		try {
-			 List<? extends ReportOutput> snappComponentData=processComponent(paymentInvestigationReportInput,
-						componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_SNAPP_KEY,
-						reportOutputList);
-			 snappComponentData.stream().forEach(output -> {
-					PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
-					reportOutputList.add(piReportOutput);
-				});
-			 if (!snappComponentData.isEmpty()) {
-				 paymentInvestigationReportInput.setChannelDataFound(true);
-				}
-			} catch (Exception exception) {
-
+			List<? extends ReportOutput> snappComponentData = processComponent(paymentInvestigationReportInput,
+					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_SNAPP_KEY,
+					reportOutputList);
+			snappComponentData.stream().forEach(output -> {
+				PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
+				reportOutputList.add(piReportOutput);
+			});
+			if (!snappComponentData.isEmpty()) {
+				paymentInvestigationReportInput.setChannelDataFound(true);
 			}
-			
+		} catch (Exception exception) {
+
 		}
-		
-	
+
+	}
 
 	private void processEDMS(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
@@ -266,6 +257,36 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			}
 		} catch (Exception exception) {
 		}
+	}
+
+	public void populateFailedSystemsData(PaymentInvestigationReportInput reportInputContext,
+			ReportConnectorException exception, String sourceSystem) throws Exception {
+
+		PaymentInvestigationReportOutput output = new PaymentInvestigationReportOutput();
+		String activity = null;
+		if (ExceptionCodes.REPORT_EXECUTION_QUERY_EXECUTION_FAILURE == exception.getCode()) {
+			activity = MashreqFederatedReportConstants.SYSTEM_NOT_RESPONDED_MESSAGE;
+			if (MashreqFederatedReportConstants.APPLY_COLOR_NOTATION) {
+				activity = "<font color=" + MashreqFederatedReportConstants.SYSTEM_NOT_RESPONDED_COLOR + ">" + activity
+						+ "</font>";
+				sourceSystem = "<font color=" + MashreqFederatedReportConstants.SYSTEM_NOT_RESPONDED_COLOR + ">"
+						+ sourceSystem + "</font>";
+			}
+
+		} else if (ExceptionCodes.REPORT_EXECUTION_INPUT_VALIDATION_FAILED == exception.getCode()) {
+			activity = MashreqFederatedReportConstants.INSUFFICIENT_INPUT_MESSAGE;
+			if (MashreqFederatedReportConstants.APPLY_COLOR_NOTATION) {
+				activity = "<font color=" + MashreqFederatedReportConstants.INSUFFICIENT_INPUT_COLOR + ">" + activity
+						+ "</font>";
+				sourceSystem = "<font color=" + MashreqFederatedReportConstants.INSUFFICIENT_INPUT_COLOR + ">"
+						+ sourceSystem + "</font>";
+			}
+		} else {
+			throw new Exception();
+		}
+		output.setActivity(activity);
+		output.setSource(sourceSystem);
+		reportInputContext.getFailedSystemOutputs().add(output);
 	}
 
 }

@@ -23,6 +23,7 @@ import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
+import com.mashreq.paymentTracker.exception.ReportConnectorException;
 import com.mashreq.paymentTracker.exception.ResourceNotFoundException;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
@@ -175,83 +176,94 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 			throw new ResourceNotFoundException(ApplicationConstants.REPORT_DOES_NOT_EXISTS + report.getId());
 		} else {
 			PaymentInvestigationReportInput paymentInvestigationReportInput = (PaymentInvestigationReportInput) reportInput;
-			paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput, componentList,
-					reportContext, reportOutputList);
-			processFlex(paymentInvestigationReportInput, componentList, reportContext, reportOutputList);
-			PaymentType paymentType = paymentInvestigationReportInput.getPaymentType();
-			if (paymentType == PaymentType.OUTWARD) {
-				// core record not found
-				if (!paymentInvestigationReportInput.isCoreRecordFound()) {
-					paymentInvestigationGatewayService.processChannels(paymentInvestigationReportInput,reportContext, componentList, reportOutputList);
-				} else {
-					// core record found
-					if (!paymentInvestigationReportInput.getGatewayDataContext().isGatewayDataFound()) {
-						// process the gateways only based on core record found using which flags
-						if (paymentInvestigationReportInput.isCoreRecordFoundUsingSourceRef()) {
+			try {
+				paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput, componentList,
+						reportContext, reportOutputList);
+				processFlex(paymentInvestigationReportInput, componentList, reportContext, reportOutputList);
+				PaymentType paymentType = paymentInvestigationReportInput.getPaymentType();
+				if (paymentType == PaymentType.OUTWARD) {
+					// core record not found
+					if (!paymentInvestigationReportInput.isCoreRecordFound()) {
+						paymentInvestigationGatewayService.processChannels(paymentInvestigationReportInput,
+								reportContext, componentList, reportOutputList);
+					} else {
+						// core record found
+						if (!paymentInvestigationReportInput.getGatewayDataContext().isGatewayDataFound()) {
+							// process the gateways only based on core record found using which flags
+							if (paymentInvestigationReportInput.isCoreRecordFoundUsingSourceRef()) {
+								paymentInvestigationReportInput
+										.setUserReferenceNum(paymentInvestigationReportInput.getCoreReferenceNum());
+								paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,
+										componentList, reportContext, reportOutputList);
+							}
+						}
+						// ideally process only one channel
+						paymentInvestigationGatewayService.processChannels(paymentInvestigationReportInput,
+								reportContext, componentList, reportOutputList);
+					}
+				} else if (paymentType == PaymentType.INWARD) {
+					if (paymentInvestigationReportInput.isCoreRecordFound()) {
+						if (!paymentInvestigationReportInput.getGatewayDataContext().isGatewayDataFound()) {
+							// process the gateways only based on core record found using which flags
+							if (paymentInvestigationReportInput.isCoreRecordFoundUsingCoreRef()) {
+								paymentInvestigationReportInput
+										.setUserReferenceNum(paymentInvestigationReportInput.getSourceReferenceNum());
+								paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,
+										componentList, reportContext, reportOutputList);
+							}
+						}
+					}
+				} else if (paymentType == PaymentType.INWARD_RESULTING_INTO_OUTWARD) {
+					if (paymentInvestigationReportInput.isCoreRecordFound()) {
+						if (paymentInvestigationReportInput.isCoreRecordFoundUsingCoreRef()) {
+							paymentInvestigationReportInput
+									.setUserReferenceNum(paymentInvestigationReportInput.getSourceReferenceNum());
+						} else {
 							paymentInvestigationReportInput
 									.setUserReferenceNum(paymentInvestigationReportInput.getCoreReferenceNum());
+						}
+						paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,
+								componentList, reportContext, reportOutputList);
+					}
+				}
+				// handle MOL case
+				if (paymentInvestigationReportInput.getMolRecord() != null) {
+					processFlex(paymentInvestigationReportInput, componentList, reportContext, reportOutputList);
+				}
+				// handle matrix specific cases
+				MatrixReportContext matrixReportContext = paymentInvestigationReportInput.getMatrixReportContext();
+				if (matrixReportContext.isMatrixDataFound()) {
+					if (!matrixReportContext.isManualTransaction()) {
+						// process flex for only accounting entries
+						String coreReferenceFoundFromAccStaging = matrixReportContext
+								.getCoreReferenceFoundFromAccStaging();
+						PaymentInvestigationReportOutput pso80tbRecord = matrixReportContext.getPso80tbRecord();
+						if (pso80tbRecord != null && coreReferenceFoundFromAccStaging != null) {
+							paymentInvestigationReportInput.setProcessOnlyFlexAccountingBasedOnDebitAccount(true);
+							processFlex(paymentInvestigationReportInput, componentList, reportContext,
+									reportOutputList);
+						}
+						// process the gateways only based on core record found using which flags
+						if (paymentInvestigationReportInput.getMatrixReportContext().isDataFoundUsingCoreRef()) {
+							paymentInvestigationReportInput.setUserReferenceNum(
+									paymentInvestigationReportInput.getMatrixReportContext().getRefFoundUsingCoreRef());
 							paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,
 									componentList, reportContext, reportOutputList);
 						}
 					}
-					// ideally process only one channel
-					paymentInvestigationGatewayService.processChannels(paymentInvestigationReportInput,reportContext, componentList, reportOutputList);
 				}
-			}else if(paymentType == PaymentType.INWARD) {
-				if (paymentInvestigationReportInput.isCoreRecordFound()) {
-		            if (!paymentInvestigationReportInput.getGatewayDataContext().isGatewayDataFound()) {
-		               // process the gateways only based on core record found using which flags
-		               if (paymentInvestigationReportInput.isCoreRecordFoundUsingCoreRef()) {
-		            	   paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getSourceReferenceNum());
-		            	   paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,componentList, reportContext, reportOutputList);
-		               }
-		            }
-		         }
-		      }else if (paymentType == PaymentType.INWARD_RESULTING_INTO_OUTWARD) {
-		          if (paymentInvestigationReportInput.isCoreRecordFound()) {
-		              if (paymentInvestigationReportInput.isCoreRecordFoundUsingCoreRef()) {
-		            	  paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getSourceReferenceNum());
-		              } else {
-		            	  paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getCoreReferenceNum());
-		              }
-		              paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,componentList, reportContext, reportOutputList);
-		           }
-		        }
-			// handle MOL case
-		      if (paymentInvestigationReportInput.getMolRecord() != null) {
-		         processFlex(paymentInvestigationReportInput,componentList,reportContext,reportOutputList);
-		      }
-		      // handle matrix specific cases
-		      MatrixReportContext matrixReportContext = paymentInvestigationReportInput.getMatrixReportContext();
-		      if (matrixReportContext.isMatrixDataFound()) {
-		          if (!matrixReportContext.isManualTransaction()) {
-		        	// process flex for only accounting entries
-		              String coreReferenceFoundFromAccStaging = matrixReportContext.getCoreReferenceFoundFromAccStaging();
-		              PaymentInvestigationReportOutput pso80tbRecord = matrixReportContext.getPso80tbRecord();
-		              if (pso80tbRecord != null && coreReferenceFoundFromAccStaging!=null) {
-		            	  paymentInvestigationReportInput.setProcessOnlyFlexAccountingBasedOnDebitAccount(true);
-		            	  processFlex(paymentInvestigationReportInput,componentList,reportContext,reportOutputList);
-		              }
-		              // process the gateways only based on core record found using which flags
-		              if (paymentInvestigationReportInput.getMatrixReportContext().isDataFoundUsingCoreRef()) {
-		            	  paymentInvestigationReportInput.setUserReferenceNum(paymentInvestigationReportInput.getMatrixReportContext()
-		                          .getRefFoundUsingCoreRef());
-		            	  paymentInvestigationGatewayService.processGateway(paymentInvestigationReportInput,componentList, reportContext, reportOutputList);
-		              }
-		           }
-		        }
-		      
-		              }
-		          
-			
-			return null;
-		}
 
-	
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
 
 	private void processFlex(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			List<Components> componentList, ReportContext reportContext,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
+			List<PaymentInvestigationReportOutput> reportOutputList) throws ReportConnectorException {
 		paymentInvestigationGatewayService.processComponent(paymentInvestigationReportInput, componentList,
 				reportContext, MashreqFederatedReportConstants.COMPONENT_FLEX_KEY, reportOutputList);
 	}
