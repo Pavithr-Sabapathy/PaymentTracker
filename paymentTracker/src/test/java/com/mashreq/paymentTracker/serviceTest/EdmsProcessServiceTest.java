@@ -4,6 +4,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -23,6 +25,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
+import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportDefaultInput;
 import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
@@ -41,8 +44,10 @@ import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
+import com.mashreq.paymentTracker.serviceImpl.CannedReportServiceImpl;
 import com.mashreq.paymentTracker.serviceImpl.EdmsProcessServiceImpl;
 import com.mashreq.paymentTracker.type.CountryType;
+import com.mashreq.paymentTracker.utility.CheckType;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -63,6 +68,9 @@ public class EdmsProcessServiceTest {
 	@Autowired
 	EdmsProcessServiceImpl edmsProcessServiceImpl;
 
+	@MockBean
+	CannedReportServiceImpl cannedReportService;
+	
 	@MockBean
 	private LinkReportService linkReportService;
 
@@ -131,149 +139,48 @@ public class EdmsProcessServiceTest {
 		ReportInput response = edmsProcessServiceImpl.populateBaseInputContext(reportContext);
 		assertNotNull(response);
 	}
-
+	
 	@Test
-	void testProcessReport() {
+    public void testProcessReport() throws Exception {
+        ReportInput reportInput = new FederatedReportDefaultInput();
+        ReportContext reportContext = new ReportContext();
+        ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
+        reportInstanceDTO.setReportName("TestReport");
+        reportContext.setReportInstance(reportInstanceDTO);
 
-		List<ReportDefaultOutput> mockOutputList = new ArrayList<ReportDefaultOutput>();
-		ReportDefaultOutput reportOutput = new ReportDefaultOutput();
-		reportOutput.setComponentDetailId(1L);
-		reportOutput.setRowData(null);
-		mockOutputList.add(reportOutput);
+        Report report = new Report();
+        report.setId(1L);
 
-		FederatedReportDefaultInput mockFederatedReportDefaultInput = new FederatedReportDefaultInput();
+        CannedReport cannedReport = new CannedReport();
+        cannedReport.setId(1L);
 
-		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
-		reportInstanceDTO
-				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-		reportInstanceDTO.setId(1L);
-		reportInstanceDTO.setModuleId(1L);
-		reportInstanceDTO.setPromptsList(new ArrayList<>());
-		reportInstanceDTO.setReportId(1L);
-		reportInstanceDTO.setReportInstanceComponents(new HashSet<>());
-		reportInstanceDTO.setReportInstanceMetrics(new HashSet<>());
-		reportInstanceDTO.setReportInstancePrompts(new HashSet<>());
-		reportInstanceDTO.setReportName("Report Name");
-		reportInstanceDTO.setRoleId(1L);
-		reportInstanceDTO.setRoleName("Role Name");
-		reportInstanceDTO.setUserId(1L);
-		reportInstanceDTO.setUserName("janedoe");
-
-		ReportInstanceDTO reportInstance = new ReportInstanceDTO();
-		reportInstance
-				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-		reportInstance.setId(1L);
-		reportInstance.setModuleId(1L);
-		reportInstance.setPromptsList(new ArrayList<>());
-		reportInstance.setReportId(1L);
-		reportInstance.setReportInstanceComponents(new HashSet<>());
-		reportInstance.setReportInstanceMetrics(new HashSet<>());
-		reportInstance.setReportInstancePrompts(new HashSet<>());
-		reportInstance.setReportName("Report Name");
-		reportInstance.setRoleId(1L);
-		reportInstance.setRoleName("Role Name");
-		reportInstance.setUserId(1L);
-		reportInstance.setUserName("janedoe");
-
-		ReportContext reportContext = new ReportContext();
-		reportContext.setCountry(CountryType.UAE);
-		reportContext.setExecutionId(1L);
-		reportContext.setLinkInstanceId(1L);
-		reportContext.setLinkReference("Link Reference");
-		reportContext.setLinkedReport(true);
-		reportContext.setModuleId(1L);
-		reportContext.setReportId(1L);
-		reportContext.setReportInstance(reportInstance);
-		reportContext.setReportName("Report Name");
-		reportContext.setRoleId(1L);
-		reportContext.setRoleName("Role Name");
-		reportContext.setUserId(1L);
-		reportContext.setUserName("janedoe");
-
-		Report report = new Report();
-		report.setId(1L);
-
-		Components mockComponents = new Components();
+        Components mockComponents = new Components();
 		mockComponents.setId(1L);
 		mockComponents.setActive("Y");
 		mockComponents.setComponentKey("uaefts");
 		mockComponents.setComponentName("AdvanceSearch");
 		mockComponents.setId(1L);
-		mockComponents.setReport(report);
+		mockComponents.setReport(report);;
 
-		ComponentDetails mockComponentDetails = new ComponentDetails();
-		mockComponentDetails.setComponents(mockComponents);
-		mockComponentDetails.setId(1L);
-		mockComponentDetails.setQuery("Select * from conf_rpt_Comp");
-		mockComponentDetails.setQueryKey("uaefts-ccn");
-		List<ComponentDetails> mockComponentDetailsList = new ArrayList<ComponentDetails>();
-		mockComponentDetailsList.add(mockComponentDetails);
+        List<Components> componentList = new ArrayList<>();
+        componentList.add(mockComponents);
 
-		mockComponents.setComponentDetailsList(mockComponentDetailsList);
-		List<Components> mockComponentsList = new ArrayList<Components>();
-		mockComponentsList.add(mockComponents);
+        List<ReportDefaultOutput> outputList = new ArrayList<>();
 
-		ArrayList<LinkedReportResponseDTO> linkedReportResponseDTOList = new ArrayList<>();
-		linkedReportResponseDTOList.add(new LinkedReportResponseDTO(1L, "Link Name", "Link Description", "Report Name",
-				0, 0, "Linked Report Name", "Source Metric Name", 0, "Active", null, null, 0, 0, null, 0));
+        when(reportConfigurationService.fetchReportByName("TestReport")).thenReturn(report);
+        when(cannedReportService.populateCannedReportInstance(report)).thenReturn(cannedReport);
+        when(componentsDAO.findAllByreportId(1L)).thenReturn(componentList);
+        when(reportOutputExecutor.populateRowData(outputList, report)).thenReturn(new ArrayList<>());
+        when(reportOutputExecutor.populateColumnDef(report)).thenReturn(new ArrayList<>());
 
-		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
-		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
-		when(queryExecutorService.executeQuery(any(ReportComponentDetailDTO.class),
-				any(ReportComponentDetailContext.class))).thenReturn(mockOutputList);
-		ReportExecuteResponseData actualProcessFlexReportResult = edmsProcessServiceImpl
-				.processReport(mockFederatedReportDefaultInput, reportContext);
-		assertNotNull(actualProcessFlexReportResult);
-	}
+        ReportExecuteResponseData responseData = edmsProcessServiceImpl.processReport(reportInput, reportContext);
 
-	@Test
-	void testProcessEdmsReport() {
-		AdvanceSearchReportInput advanceSearchReportInput = mock(AdvanceSearchReportInput.class);
-		ReportContext reportContext = new ReportContext();
-		reportContext.setCountry(CountryType.UAE);
-		reportContext.setExecutionId(1L);
-		reportContext.setLinkInstanceId(1L);
-		reportContext.setLinkReference("Link Reference");
-		reportContext.setLinkedReport(true);
-		reportContext.setModuleId(1L);
-		reportContext.setReportId(1L);
-		reportContext.setReportInstance(null);
-		reportContext.setReportName("Report Name");
-		reportContext.setRoleId(1L);
-		reportContext.setRoleName("Role Name");
-		reportContext.setUserId(1L);
-		reportContext.setUserName("janedoe");
+        assertNotNull(responseData);
 
-		Report report = new Report();
-		report.setId(1L);
-
-		Components mockComponents = new Components();
-		mockComponents.setId(1L);
-		mockComponents.setActive("Y");
-		mockComponents.setComponentKey("edms");
-		mockComponents.setComponentName("AdvanceSearch");
-		mockComponents.setId(1L);
-		mockComponents.setReport(report);
-
-		ComponentDetails mockComponentDetails = new ComponentDetails();
-		mockComponentDetails.setComponents(mockComponents);
-		mockComponentDetails.setId(1L);
-		mockComponentDetails.setQuery("Select * from conf_rpt_Comp");
-		mockComponentDetails.setQueryKey("uaefts-ccn");
-		List<ComponentDetails> mockComponentDetailsList = new ArrayList<ComponentDetails>();
-		mockComponentDetailsList.add(mockComponentDetails);
-
-		mockComponents.setComponentDetailsList(mockComponentDetailsList);
-		List<Components> mockComponentsList = new ArrayList<Components>();
-		mockComponentsList.add(mockComponents);
-		List<ReportDefaultOutput> reportOutputList = new ArrayList<ReportDefaultOutput>();
-		ReportDefaultOutput mockReportOutput = new ReportDefaultOutput();
-		mockReportOutput.setComponentDetailId(1L);
-		reportOutputList.add(mockReportOutput);
-		/*
-		 * when(queryExecutorService.executeQuery(any(ReportComponentDetailDTO.class),
-		 * any(FederatedReportComponentDetailContext.class))).thenReturn(
-		 * reportOutputList );
-		 */
-	}
+        verify(reportConfigurationService, times(1)).fetchReportByName("TestReport");
+        verify(cannedReportService, times(1)).populateCannedReportInstance(report);
+        verify(componentsDAO, times(1)).findAllByreportId(1L);
+        verify(reportOutputExecutor, times(1)).populateRowData(outputList, report);
+        verify(reportOutputExecutor, times(1)).populateColumnDef(report);
+    }
 }

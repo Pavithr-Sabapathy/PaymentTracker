@@ -382,5 +382,8 @@ public class MashreqFederatedReportConstants {
 	// color notation
 	public static final String SYSTEM_NOT_RESPONDED_COLOR = "red";
 	public static final String INSUFFICIENT_INPUT_COLOR = "amber";
+	public static final String NO_VIOLATION_ACTIVITY_STATUS = "No Violation";
+	public static final String REAL_VIOLATION_ACTIVITY_STATUS = "Real Violation";
+	public static final String COMPLIANCE_SOURCE_SYSTEM = "Compliance";
 
 }
