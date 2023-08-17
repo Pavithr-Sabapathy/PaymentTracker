@@ -13,6 +13,8 @@ import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
+import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
@@ -22,11 +24,12 @@ import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConnector;
 import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutput;
+import com.mashreq.paymentTracker.type.EDMSProcessType;
 import com.mashreq.paymentTracker.utility.UtilityClass;
 
 @Service
 public class EdmsReportConnector extends ReportConnector {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(EdmsReportConnector.class);
 	private static final String FILENAME = "EdmsReportConnector";
 
@@ -37,8 +40,71 @@ public class EdmsReportConnector extends ReportConnector {
 	public List<? extends ReportOutput> processReportComponent(ReportInput reportInput, ReportContext reportContext) {
 		if (reportInput instanceof AdvanceSearchReportInput advanceSearchInput) {
 			return processEdmsAdvanceSearchReport(advanceSearchInput, reportContext);
+		} else if (reportInput instanceof PaymentInvestigationReportInput paymentInvestigationReportInput) {
+			return processPaymentInvestigationReport(paymentInvestigationReportInput, reportContext);
 		}
 		return null;
+	}
+
+	private List<? extends ReportOutput> processPaymentInvestigationReport(
+			PaymentInvestigationReportInput paymentInvestigationReportInput, ReportContext reportContext) {
+		List<PaymentInvestigationReportOutput> outputList = new ArrayList<PaymentInvestigationReportOutput>();
+		ReportComponentDTO componentObj = paymentInvestigationReportInput.getComponent();
+		Set<ReportComponentDetailDTO> componentDetailList = componentObj.getReportComponentDetails();
+		if (!componentDetailList.isEmpty()) {
+			if (paymentInvestigationReportInput.getEdmsProcessType() == EDMSProcessType.FTO) {
+				List<PaymentInvestigationReportOutput> edmsFTOTATRecords = processComponentDetail(componentDetailList,
+						paymentInvestigationReportInput, MashreqFederatedReportConstants.EDMS_FTO_TAT_KEY,
+						reportContext);
+				if (!edmsFTOTATRecords.isEmpty()) {
+					outputList.addAll(edmsFTOTATRecords);
+					// ideally we should get only 1 FTO record, copy the information to pi object
+					// related to gov check
+					paymentInvestigationReportInput.setGovCheck(edmsFTOTATRecords.get(0).getGovCheck());
+					paymentInvestigationReportInput
+							.setGovCheckReference(edmsFTOTATRecords.get(0).getGovCheckReference());
+				}
+			} else if (paymentInvestigationReportInput.getEdmsProcessType() == EDMSProcessType.RID) {
+				if (!paymentInvestigationReportInput.getReferenceList().isEmpty()) {
+					List<PaymentInvestigationReportOutput> edmsRIDTATRecords = processComponentDetail(
+							componentDetailList, paymentInvestigationReportInput,
+							MashreqFederatedReportConstants.EDMS_RID_TAT_KEY, reportContext);
+					if (!edmsRIDTATRecords.isEmpty()) {
+						outputList.addAll(edmsRIDTATRecords);
+					}
+				}
+			} else if (paymentInvestigationReportInput.getEdmsProcessType() == EDMSProcessType.EDD) {
+				if (!paymentInvestigationReportInput.getGovCheckReference().isEmpty()) {
+					List<PaymentInvestigationReportOutput> edmsEDDReferralRecords = processComponentDetail(
+							componentDetailList, paymentInvestigationReportInput,
+							MashreqFederatedReportConstants.EDMS_EDD_REFERRAL_KEY, reportContext);
+					if (!edmsEDDReferralRecords.isEmpty()) {
+						outputList.addAll(edmsEDDReferralRecords);
+					}
+				}
+			}
+		}
+		return outputList;
+
+	}
+
+	private List<PaymentInvestigationReportOutput> processComponentDetail(
+			Set<ReportComponentDetailDTO> componentDetailList,
+			PaymentInvestigationReportInput paymentInvestigationReportInput, String componentDetailKey,
+			ReportContext reportContext) {
+
+		List<PaymentInvestigationReportOutput> componentDetailOutput = new ArrayList<PaymentInvestigationReportOutput>();
+		ReportComponentDetailDTO matchedComponentDetail = getMatchedInstanceComponentDetail(componentDetailList,
+				componentDetailKey);
+		if (matchedComponentDetail != null) {
+			ReportComponentDetailContext context = populateReportComponentDetailContext(matchedComponentDetail,
+					paymentInvestigationReportInput, reportContext);
+			List<ReportDefaultOutput> outputList = queryExecutorService.executeQuery(matchedComponentDetail, context);
+		} else {
+			log.debug("Component Detail missing for " + componentDetailKey);
+		}
+		return componentDetailOutput;
+
 	}
 
 	private List<? extends ReportOutput> processEdmsAdvanceSearchReport(

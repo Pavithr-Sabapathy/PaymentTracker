@@ -372,4 +372,8 @@ public class MashreqFederatedReportConstants {
 	public static final String MATRIX_PAYMENT_ACCOUNTING_STAGING_INTERNAL_KEY = "acc-staging-internal";
 	public static final String MATRIX_PAYMENT_ACCOUNTING_STAGING_INTERNAL_CORE_REF_KEY = "acc-staging-internal-core-ref";
 
+	public static final String EDMS_FTO_TAT_KEY = "fto-tat";
+	public static final String EDMS_RID_TAT_KEY = "rid-tat";
+	public static final String EDMS_EDD_REFERRAL_KEY = "edd-referral";
+
 }

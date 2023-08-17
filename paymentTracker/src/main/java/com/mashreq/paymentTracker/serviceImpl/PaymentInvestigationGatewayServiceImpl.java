@@ -166,8 +166,18 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 	private void processEDMS(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
 			List<PaymentInvestigationReportOutput> reportOutputList) {
-		// TODO Auto-generated method stub
-
+		try {
+			List<? extends ReportOutput> edmsOutputList = processComponent(paymentInvestigationReportInput,
+					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_EMDS_KEY, reportOutputList);
+			edmsOutputList.stream().forEach(output -> {
+				PaymentInvestigationReportOutput piReportOutput = (PaymentInvestigationReportOutput) output;
+				reportOutputList.add(piReportOutput);
+			});
+			if (!edmsOutputList.isEmpty()) {
+				paymentInvestigationReportInput.setChannelDataFound(true);
+			}
+		} catch (Exception exception) {
+		}
 	}
 
 	private void processMatrixSystem(PaymentInvestigationReportInput paymentInvestigationReportInput,

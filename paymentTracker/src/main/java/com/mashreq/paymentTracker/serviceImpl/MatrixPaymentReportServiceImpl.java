@@ -88,7 +88,7 @@ public class MatrixPaymentReportServiceImpl extends ReportConnector {
 					outputList.add(matrixPaymentAccountingStagingInternal);
 					paymentInvestigationReportInput
 							.setCoreReferenceNum(matrixPaymentAccountingStagingInternal.getSourceRefNum());
-					// analysze the manual/non-manual case
+					// analyze the manual/non-manual case
 					analyzeAndMarkManualPayment(matrixReportContext);
 				}
 				// copy the pso80tb properties
