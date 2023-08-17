@@ -92,13 +92,6 @@ public class MOLReportConnector extends ReportConnector {
 
 	}
 
-	public static PaymentInvestigationReportOutput createPaymentInvestigationOutput(ReportDefaultOutput defaultOutput) {
-		PaymentInvestigationReportOutput output = new PaymentInvestigationReportOutput(
-				defaultOutput.getComponentDetailId());
-
-		return output;
-	}
-
 	private List<? extends ReportOutput> molDetailedReport(
 			MOLDetailedFederatedReportInput molDetailedFederatedReportInput, ReportContext reportContext) {
 		List<ReportDefaultOutput> outputList = new ArrayList<ReportDefaultOutput>();
