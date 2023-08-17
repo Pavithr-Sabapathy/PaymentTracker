@@ -19,6 +19,6 @@ public interface PaymentInvestigationGatewayService {
 
 	public void processChannels(
 			PaymentInvestigationReportInput paymentInvestigationReportInput, ReportContext reportContext, List<Components> componentList,
-			List<PaymentInvestigationReportOutput> reportOutputList);
+			List<PaymentInvestigationReportOutput> reportOutputList)throws ReportConnectorException, Exception;
 
 }
