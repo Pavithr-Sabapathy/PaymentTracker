@@ -378,7 +378,7 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 	@Override
 	public void processChannels(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
+			List<PaymentInvestigationReportOutput> reportOutputList)throws Exception {
 		processMatrixSystem(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
 		if (!paymentInvestigationReportInput.isChannelDataFound()) {
 			paymentInvestigationReportInput.setEdmsProcessType(EDMSProcessType.FTO);
@@ -394,7 +394,7 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 
 	private void processMOL(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
+			List<PaymentInvestigationReportOutput> reportOutputList) throws Exception {
 		try {
 			List<? extends ReportOutput> molComponentData = processComponent(paymentInvestigationReportInput,
 					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_MOL_KEY, reportOutputList);
@@ -405,7 +405,9 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			if (!molComponentData.isEmpty()) {
 				paymentInvestigationReportInput.setChannelDataFound(true);
 			}
-		} catch (Exception exception) {
+		} catch (ReportConnectorException exception) {
+			populateFailedSystemsData(paymentInvestigationReportInput, exception,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_MOL);
 
 		}
 
@@ -413,7 +415,7 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 
 	private void processSnapp(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
+			List<PaymentInvestigationReportOutput> reportOutputList) throws Exception {
 		try {
 			List<? extends ReportOutput> snappComponentData = processComponent(paymentInvestigationReportInput,
 					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_SNAPP_KEY,
@@ -425,7 +427,10 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			if (!snappComponentData.isEmpty()) {
 				paymentInvestigationReportInput.setChannelDataFound(true);
 			}
-		} catch (Exception exception) {
+		}catch (ReportConnectorException exception) {
+			populateFailedSystemsData(paymentInvestigationReportInput, exception,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_SNAPP);
+
 
 		}
 
@@ -433,7 +438,7 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 
 	private void processEDMS(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
+			List<PaymentInvestigationReportOutput> reportOutputList) throws Exception {
 		try {
 			List<? extends ReportOutput> edmsOutputList = processComponent(paymentInvestigationReportInput,
 					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_EMDS_KEY, reportOutputList);
@@ -444,13 +449,15 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			if (!edmsOutputList.isEmpty()) {
 				paymentInvestigationReportInput.setChannelDataFound(true);
 			}
-		} catch (Exception exception) {
+		} catch (ReportConnectorException exception) {
+			populateFailedSystemsData(paymentInvestigationReportInput, exception,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_EDMS);
 		}
 	}
 
 	private void processMatrixSystem(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			ReportContext reportContext, List<Components> componentList,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
+			List<PaymentInvestigationReportOutput> reportOutputList) throws Exception {
 		try {
 			List<? extends ReportOutput> matrixPaymentOutputList = processComponent(paymentInvestigationReportInput,
 					componentList, reportContext, MashreqFederatedReportConstants.COMPONENT_MATRIX_PAYMENT_KEY,
@@ -463,7 +470,9 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 				paymentInvestigationReportInput.setChannelDataFound(true);
 				paymentInvestigationReportInput.getMatrixReportContext().setMatrixDataFound(true);
 			}
-		} catch (Exception exception) {
+		} catch (ReportConnectorException exception) {
+			populateFailedSystemsData(paymentInvestigationReportInput, exception,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_MATRIX_PAYMENT);
 
 		}
 
@@ -479,7 +488,9 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 				paymentInvestigationReportInput.setChannelDataFound(true);
 				paymentInvestigationReportInput.getMatrixReportContext().setMatrixDataFound(true);
 			}
-		} catch (Exception exception) {
+		} catch (ReportConnectorException exception) {
+			populateFailedSystemsData(paymentInvestigationReportInput, exception,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_MATRIX_PORTAL);
 		}
 	}
 
