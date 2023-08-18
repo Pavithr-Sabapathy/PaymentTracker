@@ -216,9 +216,6 @@ public class UAEFTSReportServiceTest {
 
 		assertNotNull(actualProcessFlexReportResult);
 
-		// assertEquals("Report Name",
-		// actualProcessFlexReportResult.getMeta().getReportId());
-
 		verify(componentsDAO).findAllByreportId(anyLong());
 		verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
 	}
