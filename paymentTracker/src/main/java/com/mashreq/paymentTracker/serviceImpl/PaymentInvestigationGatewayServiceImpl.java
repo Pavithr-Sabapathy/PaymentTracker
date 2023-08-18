@@ -1,11 +1,8 @@
 package com.mashreq.paymentTracker.serviceImpl;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -14,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.GatewayDataContext;
-import com.mashreq.paymentTracker.dto.GatewayDataMessageContext;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportInput;
 import com.mashreq.paymentTracker.dto.PaymentInvestigationReportOutput;
 import com.mashreq.paymentTracker.dto.ReportComponentDTO;
@@ -60,255 +56,34 @@ public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigat
 			List<PaymentInvestigationReportOutput> reportOutputList) throws Exception {
 		GatewayDataContext gatewayDataContext = new GatewayDataContext();
 		paymentInvestigationReportInput.setGatewayDataContext(gatewayDataContext);
-		try {
-			processComponent(paymentInvestigationReportInput, componentList, reportContext,
-					MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY, reportOutputList);
-		} catch (ReportConnectorException exception) {
-			populateFailedSystemsData(paymentInvestigationReportInput, exception,
-					MashreqFederatedReportConstants.SOURCE_SYSTEM_SWIFT);
-		}
+		processComponent(paymentInvestigationReportInput, componentList, reportContext,
+				MashreqFederatedReportConstants.COMPONENT_SWIFT_KEY, reportOutputList);
 		if (!gatewayDataContext.isGatewayDataFound()) {
-			try {
-				processComponent(paymentInvestigationReportInput, componentList, reportContext,
-						MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY, reportOutputList);
-			} catch (ReportConnectorException exception) {
-				populateFailedSystemsData(paymentInvestigationReportInput, exception,
-						MashreqFederatedReportConstants.SOURCE_SYSTEM_UAEFTS);
-			}
-		}
-		// if record found from swift
-		if (gatewayDataContext.isSwiftDataFound()) {
-			try {
-				processComponent(paymentInvestigationReportInput, componentList, reportContext,
-						MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY, reportOutputList);
-			} catch (ReportConnectorException exception) {
-				populateFailedSystemsData(paymentInvestigationReportInput, exception,
-						MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY);
-			}
-		}
-		if (gatewayDataContext.isGatewayDataFound()) {
-			// handle the fircosoft system.right now the condition is if compliance
-			// information is already there, we will not process that message.
-			try {
-				processComponent(paymentInvestigationReportInput, componentList, reportContext,
-						MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY, reportOutputList);
-			} catch (ReportConnectorException exception) {
-				populateFailedSystemsData(paymentInvestigationReportInput, exception,
-						MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY);
-			}
-
-		}
-		if (gatewayDataContext.isGatewayDataFound()) {
-			// if data has been found from gateways, add that to the output
-			adjustAndAddGatewayDataToOutput(gatewayDataContext, reportOutputList, paymentInvestigationReportInput);
-		}
-	}
-
-	private void adjustAndAddGatewayDataToOutput(GatewayDataContext gatewayDataContext,
-			List<PaymentInvestigationReportOutput> reportOutputList,
-			PaymentInvestigationReportInput paymentInvestigationReportInput) {
-
-		// on outgoing message, update the processing row
-		GatewayDataMessageContext outgoingMessage = gatewayDataContext.getOutgoingMessage();
-		if (outgoingMessage != null) {
-			if (outgoingMessage.getNetworkRecord() != null
-					&& !outgoingMessage.getScreeningProcessedRecord().isEmpty()) {
-				PaymentInvestigationReportOutput complianceRecord = outgoingMessage.getLatestComplianceRecord();
-				// probably compliance record could have no completion date because it is still
-				// stuck there
-				if (complianceRecord.getCompletionTime() != null) {
-					outgoingMessage.getNetworkRecord()
-							.setLandingTime(new Timestamp(complianceRecord.getCompletionTime().getTime()));
+			processComponent(paymentInvestigationReportInput, componentList, reportContext,
+					MashreqFederatedReportConstants.COMPONENT_UAEFTS_KEY, reportOutputList);
+			// if record found from swift
+			if (gatewayDataContext.isSwiftDataFound()) {
+				try {
+					processComponent(paymentInvestigationReportInput, componentList, reportContext,
+							MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY, reportOutputList);
+				} catch (ReportConnectorException exception) {
+					populateFailedSystemsData(paymentInvestigationReportInput, exception,
+							MashreqFederatedReportConstants.COMPONENT_SAFE_WATCH_KEY);
 				}
 			}
-		}
-		// add all the data from all sections to report output
-		if (outgoingMessage != null) {
-			// check whether compliance row is real violation or new, if yes, then don't add
-			// network row.
-			if (checkForRealViolation(outgoingMessage.getLatestComplianceRecord())) {
-				addGateWayDataContextToReportOutputForRealViolationCase(outgoingMessage, reportOutputList);
-			} else {
-				addGateWayDataContextToReportOutput(outgoingMessage, reportOutputList);
-				addScreeningGateWayDataContextToReportOutput(outgoingMessage, reportOutputList);
-			}
-			// set the core ref to context
-			paymentInvestigationReportInput.setCoreReferenceNum(outgoingMessage.getMessageRef());
-		}
-		GatewayDataMessageContext incomingMessage = gatewayDataContext.getIncomingMessage();
-		if (incomingMessage != null) {
-			addGateWayDataContextToReportOutput(incomingMessage, reportOutputList);
-			addScreeningGateWayDataContextToReportOutput(incomingMessage, reportOutputList);
-			// if outgoing message also found, it means this falls into category of outward
-			// coming backto mashreq, we dont need to set source ref
-			if (outgoingMessage == null) {
-				paymentInvestigationReportInput.setSourceReferenceNum(incomingMessage.getMessageRef());
-			}
-		}
-		List<GatewayDataMessageContext> incomingTrchStatusMessage = gatewayDataContext.getIncomingTrchStatusMessages();
-		if (!incomingTrchStatusMessage.isEmpty()) {
-			for (GatewayDataMessageContext trchMessage : incomingTrchStatusMessage) {
-				addGateWayDataContextToReportOutput(trchMessage, reportOutputList);
-			}
-		}
-
-		List<GatewayDataMessageContext> outgoingTrchStatusMessage = gatewayDataContext.getOutgoingTrchStatusMessages();
-		if (!outgoingTrchStatusMessage.isEmpty()) {
-			for (GatewayDataMessageContext trchMessage : outgoingTrchStatusMessage) {
-				addGateWayDataContextToReportOutput(trchMessage, reportOutputList);
-			}
-		}
-
-		List<GatewayDataMessageContext> incomingIpalaStatusMessages = gatewayDataContext
-				.getIncomingIpalaStatusMessages();
-		if (!incomingIpalaStatusMessages.isEmpty()) {
-			for (GatewayDataMessageContext ipalaMessage : incomingIpalaStatusMessages) {
-				addGateWayDataContextToReportOutput(ipalaMessage, reportOutputList);
-			}
-		}
-
-		List<GatewayDataMessageContext> outgoingIpalaStatusMessages = gatewayDataContext
-				.getOutgoingIpalaStatusMessages();
-		if (!outgoingIpalaStatusMessages.isEmpty()) {
-			for (GatewayDataMessageContext ipalaMessage : outgoingIpalaStatusMessages) {
-				addGateWayDataContextToReportOutput(ipalaMessage, reportOutputList);
-			}
-		}
-
-		Map<String, GatewayDataMessageContext> incomingEnquiries = gatewayDataContext.getIncomingEnquiries();
-		if (!incomingEnquiries.isEmpty()) {
-			Collection<GatewayDataMessageContext> values = incomingEnquiries.values();
-			for (GatewayDataMessageContext messageContext : values) {
-				addGateWayDataContextToReportOutput(messageContext, reportOutputList);
-			}
-		}
-		Map<String, GatewayDataMessageContext> outgoingEnquiries = gatewayDataContext.getOutgoingEnquiries();
-		if (!outgoingEnquiries.isEmpty()) {
-			Collection<GatewayDataMessageContext> values = outgoingEnquiries.values();
-			for (GatewayDataMessageContext messageContext : values) {
-				addGateWayDataContextToReportOutput(messageContext, reportOutputList);
-			}
-		}
-
-	}
-
-	private void addGateWayDataContextToReportOutputForRealViolationCase(GatewayDataMessageContext messageContext,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
-
-		if (messageContext.getScreeningRecord() != null) {
-			reportOutputList.add(messageContext.getScreeningRecord());
-		}
-		if (!messageContext.getScreeningProcessedRecord().isEmpty()) {
-			reportOutputList.addAll(messageContext.getScreeningProcessedRecord());
-		}
-
-	}
-
-	private void addScreeningGateWayDataContextToReportOutput(GatewayDataMessageContext gateWayDataMessageContextObj,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
-
-		if (!gateWayDataMessageContextObj.getScreeningProcessedRecord().isEmpty()) {
-			if (gateWayDataMessageContextObj.getScreeningRecord() != null) {
-				reportOutputList.add(gateWayDataMessageContextObj.getScreeningRecord());
-			}
-			if (!gateWayDataMessageContextObj.getScreeningProcessedRecord().isEmpty()) {
-				reportOutputList.addAll(gateWayDataMessageContextObj.getScreeningProcessedRecord());
-			}
-		} else {
-			if (gateWayDataMessageContextObj.getScreeningRecord() != null) {
-				reportOutputList.add(gateWayDataMessageContextObj.getScreeningRecord());
-			}
-			if (gateWayDataMessageContextObj.getScreeningRecord() != null) {
-				if (!checkForRealViolation(gateWayDataMessageContextObj.getScreeningRecord())) {
-					reportOutputList.add(populateNoViolationOutput(gateWayDataMessageContextObj,
-							gateWayDataMessageContextObj.getMessageType()));
+			if (gatewayDataContext.isGatewayDataFound()) {
+				// handle the fircosoft system.right now the condition is if compliance
+				// information is already there, we will not process that message.
+				try {
+					processComponent(paymentInvestigationReportInput, componentList, reportContext,
+							MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY, reportOutputList);
+				} catch (ReportConnectorException exception) {
+					populateFailedSystemsData(paymentInvestigationReportInput, exception,
+							MashreqFederatedReportConstants.COMPONENT_FIRCOSOFT_KEY);
 				}
+
 			}
 		}
-
-	}
-
-	private PaymentInvestigationReportOutput populateNoViolationOutput(GatewayDataMessageContext messageContext,
-			String mesgType) {
-		PaymentInvestigationReportOutput baseRecord = messageContext.getNetworkRecord();
-		if (MashreqFederatedReportConstants.OUTGOING_PAYMENT_CODES_LIST.contains(mesgType)) {
-			baseRecord = messageContext.getScreeningRecord();
-		}
-		PaymentInvestigationReportOutput safeWatchData = clonePaymentInvestigationReportOutput(baseRecord);
-		safeWatchData.setComponentDetailId(-1L);
-		safeWatchData.setActivity(SafeWatchReportConnector.getActivity(mesgType,
-				MashreqFederatedReportConstants.SAFEWATCH_DEFAULT_COMPLETEDBY));
-		safeWatchData.setActivityStatus(MashreqFederatedReportConstants.NO_VIOLATION_ACTIVITY_STATUS);
-		safeWatchData.setSource(MashreqFederatedReportConstants.COMPLIANCE_SOURCE_SYSTEM);
-		return safeWatchData;
-	}
-
-	public PaymentInvestigationReportOutput clonePaymentInvestigationReportOutput(
-			PaymentInvestigationReportOutput toBeCloned) {
-		// TODO Auto-generated method stub
-		PaymentInvestigationReportOutput piReportOutput = new PaymentInvestigationReportOutput();
-		piReportOutput.setComponentDetailId(toBeCloned.getComponentDetailId());
-		piReportOutput.setActivityStatus(toBeCloned.getActivityStatus());
-		piReportOutput.setAmount(toBeCloned.getAmount());
-		piReportOutput.setBeneficaryAccount(toBeCloned.getBeneficaryAccount());
-		piReportOutput.setBeneficaryDetail(toBeCloned.getBeneficaryDetail());
-		piReportOutput.setCompletedBy(toBeCloned.getCompletedBy());
-		piReportOutput.setCompletionTime(toBeCloned.getCompletionTime());
-		piReportOutput.setCurrency(toBeCloned.getCurrency());
-		piReportOutput.setDebitAccount(toBeCloned.getDebitAccount());
-		piReportOutput.setLandingTime(toBeCloned.getLandingTime());
-		piReportOutput.setReceiver(toBeCloned.getReceiver());
-		piReportOutput.setSource(toBeCloned.getSource());
-		piReportOutput.setSourceRefNum(toBeCloned.getSourceRefNum());
-		piReportOutput.setValueDate(toBeCloned.getValueDate());
-		piReportOutput.setWorkstage(toBeCloned.getWorkstage());
-		piReportOutput.setMesgType(toBeCloned.getMesgType());
-		piReportOutput.setDetectionId(toBeCloned.getDetectionId());
-		piReportOutput.setAccountingSource(toBeCloned.getAccountingSource());
-		if (toBeCloned.getDetailedReportType() != null) {
-			piReportOutput.setDetailedReportType(toBeCloned.getDetailedReportType());
-		}
-		piReportOutput.setAid(toBeCloned.getAid());
-		piReportOutput.setUmidh(toBeCloned.getUmidh());
-		piReportOutput.setUmidl(toBeCloned.getUmidl());
-		piReportOutput.setEmailUrl(toBeCloned.getEmailUrl());
-		piReportOutput.setMessageSubFormat(toBeCloned.getMessageSubFormat());
-		piReportOutput.setGovCheck(toBeCloned.getGovCheck());
-		piReportOutput.setGovCheckReference(toBeCloned.getGovCheckReference());
-		return piReportOutput;
-
-	}
-
-	private boolean checkForRealViolation(PaymentInvestigationReportOutput screeningProcessedRecord) {
-		boolean realViolationRecord = false;
-		if (screeningProcessedRecord != null) {
-			if ((MashreqFederatedReportConstants.REAL_VIOLATION_ACTIVITY_STATUS
-					.equalsIgnoreCase(screeningProcessedRecord.getActivityStatus()))
-					|| (MashreqFederatedReportConstants.NEW_ACTIVITY_STATUS
-							.equalsIgnoreCase(screeningProcessedRecord.getActivityStatus()))
-					|| (MashreqFederatedReportConstants.PENDING_ACTIVITY_STATUS
-							.equalsIgnoreCase(screeningProcessedRecord.getActivityStatus()))) {
-				realViolationRecord = true;
-			}
-		}
-		return realViolationRecord;
-	}
-
-	private void addGateWayDataContextToReportOutput(GatewayDataMessageContext messageContext,
-			List<PaymentInvestigationReportOutput> reportOutputList) {
-
-		if (messageContext.getNetworkRecord() != null) {
-			reportOutputList.add(messageContext.getNetworkRecord());
-		}
-		if (messageContext.getNetworkNackRecord() != null) {
-			reportOutputList.add(messageContext.getNetworkNackRecord());
-		}
-		if (messageContext.getCreditConfirmedRecord() != null) {
-			reportOutputList.add(messageContext.getCreditConfirmedRecord());
-		}
-		// if we get no violation which means we didn't get record from safewatch in
-		// that case we should not add screening processed and sent for screening rows
-
 	}
 
 	public List<? extends ReportOutput> processComponent(
