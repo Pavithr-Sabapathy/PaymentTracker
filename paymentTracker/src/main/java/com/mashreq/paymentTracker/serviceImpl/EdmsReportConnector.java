@@ -93,18 +93,126 @@ public class EdmsReportConnector extends ReportConnector {
 			PaymentInvestigationReportInput paymentInvestigationReportInput, String componentDetailKey,
 			ReportContext reportContext) {
 
-		List<PaymentInvestigationReportOutput> componentDetailOutput = new ArrayList<PaymentInvestigationReportOutput>();
+		List<PaymentInvestigationReportOutput> finalOutputList = new ArrayList<PaymentInvestigationReportOutput>();
 		ReportComponentDetailDTO matchedComponentDetail = getMatchedInstanceComponentDetail(componentDetailList,
 				componentDetailKey);
 		if (matchedComponentDetail != null) {
 			ReportComponentDetailContext context = populateReportComponentDetailContext(matchedComponentDetail,
 					paymentInvestigationReportInput, reportContext);
 			List<ReportDefaultOutput> outputList = queryExecutorService.executeQuery(matchedComponentDetail, context);
-			//TODO - Doubt - process result output with deena
+			finalOutputList = populateReportOutput(outputList, componentDetailKey);
 		} else {
 			log.debug("Component Detail missing for " + componentDetailKey);
 		}
-		return componentDetailOutput;
+		return finalOutputList;
+
+	}
+
+	protected List<PaymentInvestigationReportOutput> populateReportOutput(List<ReportDefaultOutput> componentData,
+			String componentDetailKey) {
+		List<PaymentInvestigationReportOutput> reportOutputList = new ArrayList<PaymentInvestigationReportOutput>();
+		if (componentDetailKey.equalsIgnoreCase(MashreqFederatedReportConstants.EDMS_FTO_TAT_KEY)) {
+			reportOutputList = populateInvestigationFTOData(componentData,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_EDMS);
+		} else if (componentDetailKey.equalsIgnoreCase(MashreqFederatedReportConstants.EDMS_RID_TAT_KEY)) {
+			reportOutputList = populateInvestigationRIDData(componentData,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_EDMS);
+		} else if (componentDetailKey.equalsIgnoreCase(MashreqFederatedReportConstants.EDMS_EDD_REFERRAL_KEY)) {
+			reportOutputList = populateInvestigationEDDReferralData(componentData,
+					MashreqFederatedReportConstants.SOURCE_SYSTEM_EDMS);
+		}
+		return reportOutputList;
+	}
+
+	private List<PaymentInvestigationReportOutput> populateInvestigationEDDReferralData(
+			List<ReportDefaultOutput> reportOutputList, String sourceSystem) {
+
+		List<PaymentInvestigationReportOutput> output = new ArrayList<PaymentInvestigationReportOutput>();
+		if (!reportOutputList.isEmpty()) {
+			reportOutputList.stream().forEach(defaultOutput -> {
+				List<Object> rowData = defaultOutput.getRowData();
+				PaymentInvestigationReportOutput reportOutput = new PaymentInvestigationReportOutput();
+				reportOutput.setLandingTime(UtilityClass.getTimeStampRepresentation(rowData.get(0)));
+				reportOutput.setActivity(UtilityClass.getStringRepresentation(rowData.get(1)));
+				reportOutput.setCompletionTime(UtilityClass.getTimeStampRepresentation(rowData.get(2)));
+				reportOutput.setActivityStatus(UtilityClass.getStringRepresentation(rowData.get(3)));
+				reportOutput.setSourceRefNum(UtilityClass.getStringRepresentation(rowData.get(4)));
+				reportOutput.setCurrency(UtilityClass.getStringRepresentation(rowData.get(5)));
+				reportOutput.setAmount(UtilityClass.getStringRepresentation(rowData.get(6)));
+				reportOutput.setValueDate(UtilityClass.getStringRepresentation(rowData.get(7)));
+				reportOutput.setDebitAccount(UtilityClass.getStringRepresentation(rowData.get(8)));
+				reportOutput.setReceiver(UtilityClass.getStringRepresentation(rowData.get(9)));
+				reportOutput.setBeneficaryAccount(UtilityClass.getStringRepresentation(rowData.get(10)));
+				reportOutput.setBeneficaryDetail(UtilityClass.getStringRepresentation(rowData.get(11)));
+				reportOutput.setWorkstage(UtilityClass.getStringRepresentation(rowData.get(12)));
+				reportOutput.setCompletedBy(UtilityClass.getStringRepresentation(rowData.get(13)));
+				reportOutput.setSource(sourceSystem + "-" + MashreqFederatedReportConstants.EDMS_EDD_REFERRAL_CHANNEL);
+				output.add(reportOutput);
+			});
+		}
+		return output;
+
+	}
+
+	private List<PaymentInvestigationReportOutput> populateInvestigationRIDData(
+			List<ReportDefaultOutput> reportOutputList, String sourceSystem) {
+
+		List<PaymentInvestigationReportOutput> output = new ArrayList<PaymentInvestigationReportOutput>();
+		if (!reportOutputList.isEmpty()) {
+			reportOutputList.stream().forEach(defaultOutput -> {
+
+				List<Object> rowData = defaultOutput.getRowData();
+				PaymentInvestigationReportOutput reportOutput = new PaymentInvestigationReportOutput();
+				reportOutput.setLandingTime(UtilityClass.getTimeStampRepresentation(rowData.get(0)));
+				reportOutput.setActivity(UtilityClass.getStringRepresentation(rowData.get(1)));
+				reportOutput.setCompletionTime(UtilityClass.getTimeStampRepresentation(rowData.get(2)));
+				reportOutput.setActivityStatus(UtilityClass.getStringRepresentation(rowData.get(3)));
+				reportOutput.setSourceRefNum(UtilityClass.getStringRepresentation(rowData.get(4)));
+				reportOutput.setCurrency(UtilityClass.getStringRepresentation(rowData.get(5)));
+				reportOutput.setAmount(UtilityClass.getStringRepresentation(rowData.get(6)));
+				reportOutput.setWorkstage(UtilityClass.getStringRepresentation(rowData.get(7)));
+				reportOutput.setCompletedBy(UtilityClass.getStringRepresentation(rowData.get(8)));
+				reportOutput.setPickupTime(UtilityClass.getTimeStampRepresentation(rowData.get(9)));
+				reportOutput.setSource(sourceSystem + "-" + MashreqFederatedReportConstants.EDMS_RID_CHANNEL);
+				output.add(reportOutput);
+
+			});
+		}
+		return output;
+
+	}
+
+	private List<PaymentInvestigationReportOutput> populateInvestigationFTOData(List<ReportDefaultOutput> outputList,
+			String sourceSystem) {
+
+		List<PaymentInvestigationReportOutput> output = new ArrayList<PaymentInvestigationReportOutput>();
+		if (!outputList.isEmpty()) {
+			outputList.stream().forEach(defaultOutput -> {
+				List<Object> rowData = defaultOutput.getRowData();
+				PaymentInvestigationReportOutput reportOutput = new PaymentInvestigationReportOutput();
+				reportOutput.setComponentDetailId(defaultOutput.getComponentDetailId());
+				reportOutput.setLandingTime(UtilityClass.getTimeStampRepresentation(rowData.get(0)));
+				reportOutput.setActivity(UtilityClass.getStringRepresentation(rowData.get(1)));
+				reportOutput.setCompletionTime(UtilityClass.getTimeStampRepresentation(rowData.get(2)));
+				reportOutput.setActivityStatus(UtilityClass.getStringRepresentation(rowData.get(3)));
+				reportOutput.setSourceRefNum(UtilityClass.getStringRepresentation(rowData.get(4)));
+				reportOutput.setCurrency(UtilityClass.getStringRepresentation(rowData.get(5)));
+				reportOutput.setAmount(UtilityClass.getStringRepresentation(rowData.get(6)));
+				reportOutput.setValueDate(UtilityClass.getStringRepresentation(rowData.get(7)));
+				reportOutput.setDebitAccount(UtilityClass.getStringRepresentation(rowData.get(8)));
+				reportOutput.setReceiver(UtilityClass.getStringRepresentation(rowData.get(9)));
+				reportOutput.setBeneficaryAccount(UtilityClass.getStringRepresentation(rowData.get(10)));
+				reportOutput.setBeneficaryDetail(UtilityClass.getStringRepresentation(rowData.get(11)));
+				reportOutput.setWorkstage(UtilityClass.getStringRepresentation(rowData.get(12)));
+				reportOutput.setCompletedBy(UtilityClass.getStringRepresentation(rowData.get(13)));
+				reportOutput.setPickupTime(UtilityClass.getTimeStampRepresentation(rowData.get(14)));
+				reportOutput.setGovCheck(UtilityClass.getStringRepresentation(rowData.get(15)));
+				reportOutput.setGovCheckReference(reportOutput.getSourceRefNum());
+				reportOutput.setSource(sourceSystem);
+				output.add(reportOutput);
+			});
+		}
+		return output;
 
 	}
 

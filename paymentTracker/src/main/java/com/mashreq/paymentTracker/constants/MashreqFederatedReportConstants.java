@@ -255,6 +255,7 @@ public class MashreqFederatedReportConstants {
 	public static final String COMPONENT_SAFE_WATCH_KEY = "safewatch";
 	public static final String COMPONENT_FIRCOSOFT_KEY = "fircosoft";
 	public static final String COMPONENT_MOL_KEY = "mol";
+	public static final String COMPONENT_EMAIL_KEY = "email";
 
 	public static final String PAYMENT_TRACKER_REFERENCE_NUM_PROMPT_KEY = "ReferenceNum";
 	public static final String PAYMENT_TRACKER_COUNTRY_CODE_PROMPT_KEY = "CountryCode";
@@ -385,5 +386,10 @@ public class MashreqFederatedReportConstants {
 	public static final String NO_VIOLATION_ACTIVITY_STATUS = "No Violation";
 	public static final String REAL_VIOLATION_ACTIVITY_STATUS = "Real Violation";
 	public static final String COMPLIANCE_SOURCE_SYSTEM = "Compliance";
+	public static final String TRUE = "True";
+	public static final String EMAIL_SOURCE_CONTENT_KEY = "email-source-content";
+	public static final String EDMS_RID_CHANNEL = "RID";
+	public static final String EDMS_EDD_REFERRAL_CHANNEL = "EDD-REFERRAL";
+	public static final String EMAIL_SOURCE_REF_PREFIX = "Download Email";
 
 }

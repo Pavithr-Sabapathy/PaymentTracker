@@ -5,8 +5,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,8 @@ import com.mashreq.paymentTracker.service.PaymentInvestigationGatewayService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportControllerService;
 import com.mashreq.paymentTracker.service.ReportInput;
+import com.mashreq.paymentTracker.service.ReportOutput;
+import com.mashreq.paymentTracker.type.EDMSProcessType;
 import com.mashreq.paymentTracker.type.PaymentType;
 
 public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
@@ -253,6 +258,36 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 					}
 				}
 
+				// if role is non-customer only then execute this block
+
+				if (!(paymentInvestigationReportInput.getRoleName()
+						.equalsIgnoreCase(MashreqFederatedReportConstants.CUSTOMER_REPORTING_ROLE)
+						|| paymentInvestigationReportInput.getRoleName()
+								.equalsIgnoreCase(MashreqFederatedReportConstants.CUSTOMER_MATRIX_REPORTING_ROLE))) {
+					// process email and rid which is block four for all the references collected
+					// till now. Plus add the original ref number also requested by user
+					// first process edms rid with list of references, post that add those also to
+					// the list of references so that email query will be with those references also
+					Set<String> referenceList = populateReferenceList(paymentInvestigationReportInput,
+							reportOutputList);
+					if (!referenceList.isEmpty()) {
+						paymentInvestigationReportInput.setReferenceList(referenceList);
+						processEdmsRID(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+
+						// populate the list again
+						referenceList = populateReferenceList(paymentInvestigationReportInput, reportOutputList);
+						paymentInvestigationReportInput.setReferenceList(referenceList);
+						processEmail(paymentInvestigationReportInput, reportContext, componentList, reportOutputList);
+					}
+				}
+
+				// EDMS EDD Referral cases
+				if (MashreqFederatedReportConstants.TRUE
+						.equalsIgnoreCase(paymentInvestigationReportInput.getGovCheck())) {
+					processEdmsEDDReferral(paymentInvestigationReportInput, reportContext, componentList,
+							reportOutputList);
+				}
+
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -261,10 +296,93 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 		return null;
 	}
 
+	private void processEmail(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		try {
+			List<? extends ReportOutput> emailComponentDataList = paymentInvestigationGatewayService.processComponent(
+					paymentInvestigationReportInput, componentList, reportContext,
+					MashreqFederatedReportConstants.COMPONENT_EMAIL_KEY, reportOutputList);
+			for (ReportOutput emailOutput : emailComponentDataList) {
+				PaymentInvestigationReportOutput reportOutput = (PaymentInvestigationReportOutput) emailOutput;
+				reportOutputList.add(reportOutput);
+			}
+
+		} catch (Exception excetion) {
+			// TODO -- Check with global exception
+		}
+	}
+
+	private void processEdmsEDDReferral(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		try {
+			// set the appropriate type for edms
+			paymentInvestigationReportInput.setEdmsProcessType(EDMSProcessType.EDD);
+			List<? extends ReportOutput> edmsEDDReferralList = paymentInvestigationGatewayService.processComponent(
+					paymentInvestigationReportInput, componentList, reportContext,
+					MashreqFederatedReportConstants.COMPONENT_EMDS_KEY, reportOutputList);
+
+			for (ReportOutput edmsEDDReferral : edmsEDDReferralList) {
+				PaymentInvestigationReportOutput reportOutput = (PaymentInvestigationReportOutput) edmsEDDReferral;
+				reportOutputList.add(reportOutput);
+			}
+
+		} catch (Exception excetion) {
+			// TODO -- Check with global exception
+		}
+	}
+
+	private void processEdmsRID(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			ReportContext reportContext, List<Components> componentList,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+		try {
+			// set the appropriate type for edms
+			paymentInvestigationReportInput.setEdmsProcessType(EDMSProcessType.RID);
+			List<? extends ReportOutput> edmsRIDDataList = paymentInvestigationGatewayService.processComponent(
+					paymentInvestigationReportInput, componentList, reportContext,
+					MashreqFederatedReportConstants.COMPONENT_EMDS_KEY, reportOutputList);
+			for (ReportOutput edmsRIDData : edmsRIDDataList) {
+				PaymentInvestigationReportOutput reportOutput = (PaymentInvestigationReportOutput) edmsRIDData;
+				reportOutputList.add(reportOutput);
+			}
+		} catch (Exception excetion) {
+			// TODO -- Check with global exception
+		}
+	}
+
+	private Set<String> populateReferenceList(PaymentInvestigationReportInput paymentInvestigationReportInput,
+			List<PaymentInvestigationReportOutput> reportOutputList) {
+
+		Set<String> referenceList = new HashSet<String>();
+		// add original ref num
+		if (!paymentInvestigationReportInput.getOriginalUserReferenceNum().isEmpty()) {
+			referenceList.add(paymentInvestigationReportInput.getOriginalUserReferenceNum());
+		}
+		if (!reportOutputList.isEmpty()) {
+			for (PaymentInvestigationReportOutput output : reportOutputList) {
+				String sourceRefNum = output.getSourceRefNum();
+				if (null != sourceRefNum) {
+					referenceList.add(sourceRefNum);
+				}
+			}
+		}
+		return referenceList;
+
+	}
+
 	private void processFlex(PaymentInvestigationReportInput paymentInvestigationReportInput,
 			List<Components> componentList, ReportContext reportContext,
 			List<PaymentInvestigationReportOutput> reportOutputList) throws ReportConnectorException {
-		paymentInvestigationGatewayService.processComponent(paymentInvestigationReportInput, componentList,
-				reportContext, MashreqFederatedReportConstants.COMPONENT_FLEX_KEY, reportOutputList);
+		try {
+			List<? extends ReportOutput> flexComponentDataList = paymentInvestigationGatewayService.processComponent(
+					paymentInvestigationReportInput, componentList, reportContext,
+					MashreqFederatedReportConstants.COMPONENT_FLEX_KEY, reportOutputList);
+			for (ReportOutput flexComponentData : flexComponentDataList) {
+				PaymentInvestigationReportOutput reportOutput = (PaymentInvestigationReportOutput) flexComponentData;
+				reportOutputList.add(reportOutput);
+			}
+		} catch (ReportConnectorException exception) {
+		}
 	}
 }
