@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dto.GatewayDataContext;
@@ -27,6 +28,7 @@ import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.type.EDMSProcessType;
 import com.mashreq.paymentTracker.utility.CheckType;
 
+@Service
 public class PaymentInvestigationGatewayServiceImpl implements PaymentInvestigationGatewayService {
 
 	private static final Logger log = LoggerFactory.getLogger(PaymentInvestigationGatewayServiceImpl.class);

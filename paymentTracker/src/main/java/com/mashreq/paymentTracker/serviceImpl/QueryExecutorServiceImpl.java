@@ -157,8 +157,10 @@ public class QueryExecutorServiceImpl implements QueryExecutorService {
 
 					String promptKey = prompts.getPromptKey();
 					String promptValue = prompts.getPromptValue();
-					List<String> promptValueList = Stream.of(promptValue.split(",", -1)).collect(Collectors.toList());
 					if (null != promptKey && updatedSQL.indexOf(promptKey) > 0) {
+						List<String> promptValueList = Stream.of(promptValue.split(",", -1)).collect(Collectors.toList());
+						
+						
 						String noOfQuestionMarks = UtilityClass.populateSeriesOfQuestionSymbol(promptKey,
 								promptValueList);
 						promptKeyValueMap.put(promptKey, promptValueList);
