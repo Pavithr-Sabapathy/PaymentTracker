@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
@@ -38,6 +39,7 @@ import com.mashreq.paymentTracker.service.ReportOutput;
 import com.mashreq.paymentTracker.type.EDMSProcessType;
 import com.mashreq.paymentTracker.type.PaymentType;
 
+@Service("paymentTracker")
 public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl implements ReportControllerService {
 
 	@Autowired
@@ -131,27 +133,31 @@ public class PaymentTrackerReportServiceImpl extends ReportControllerServiceImpl
 		}
 		input.setUserReferenceNum(referenceNumPrompt.getPromptValue());
 		input.setOriginalUserReferenceNum(input.getUserReferenceNum());
+		input.setRoleName(reportInstance.getRoleName());
 		return input;
 	}
 
-	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> promptsList,
-			String advanceSearchFromDatePromptKey) {
-		// TODO Auto-generated method stub
-
-		FederatedReportPromptDTO promptInfo = new FederatedReportPromptDTO();
-		ReportPromptsInstanceDTO matchedPrompt = null;
-		for (ReportPromptsInstanceDTO prompt : promptsList) {
-			if (prompt.getPrompt().getKey().equalsIgnoreCase(advanceSearchFromDatePromptKey)) {
-				matchedPrompt = prompt;
-				break;
+	private FederatedReportPromptDTO getMatchedInstancePrompt(List<ReportPromptsInstanceDTO> reportPromptsList,
+			String promptKey) {
+		FederatedReportPromptDTO federatedReportPromptDTO = new FederatedReportPromptDTO();
+		Optional<ReportPromptsInstanceDTO> promptsOptional = reportPromptsList.stream()
+				.filter(prompts -> prompts.getPrompt().getKey().equalsIgnoreCase(promptKey)).findAny();
+		if (promptsOptional.isPresent()) {
+			ReportPromptsInstanceDTO reportInstancePrompt = promptsOptional.get();
+			if (null != reportInstancePrompt) {
+				List<String> promptsList = new ArrayList<String>();
+				if (null != reportInstancePrompt && null != reportInstancePrompt.getPrompt().getPromptValue()) {
+					promptsList.add(reportInstancePrompt.getPrompt().getPromptValue());
+				}
+				if (null != reportInstancePrompt && !reportInstancePrompt.getPrompt().getValue().isEmpty()) {
+					promptsList.addAll(reportInstancePrompt.getPrompt().getValue());
+				}
+				String promptValue = promptsList.stream().collect(Collectors.joining(","));
+				federatedReportPromptDTO.setPromptKey(reportInstancePrompt.getPrompt().getKey());
+				federatedReportPromptDTO.setPromptValue(promptValue);
 			}
 		}
-		if (matchedPrompt != null) {
-			promptInfo.setPromptKey(matchedPrompt.getPrompt().getKey());
-			promptInfo.setPromptValue(matchedPrompt.getPrompt().getPromptValue());
-			promptInfo.setValueList(matchedPrompt.getPrompt().getValue());
-		}
-		return promptInfo;
+		return federatedReportPromptDTO;
 	}
 
 	@Override
