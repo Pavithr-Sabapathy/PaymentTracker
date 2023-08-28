@@ -55,8 +55,6 @@ public class UAEFTSReportConnector extends ReportConnector {
 	}
 
 	private void processPaymentInvestigationReport(ReportInput reportInput, ReportContext reportContext) {
-
-		List<PaymentInvestigationReportOutput> outputList = new ArrayList<PaymentInvestigationReportOutput>();
 		PaymentInvestigationReportInput piReportInput = (PaymentInvestigationReportInput) reportInput;
 		ReportComponentDTO component = piReportInput.getComponent();
 
@@ -137,7 +135,7 @@ public class UAEFTSReportConnector extends ReportConnector {
 			// process context
 			processUAEFTSContext(uaeftsReportContext, piReportInput, reportContext);
 		}
-
+		
 	}
 
 	private void processComponentDetail(ReportComponentDTO component, Set<ReportComponentDetailDTO> ComponentDetails,
