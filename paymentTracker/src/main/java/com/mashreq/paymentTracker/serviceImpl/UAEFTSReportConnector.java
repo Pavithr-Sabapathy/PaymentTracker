@@ -61,7 +61,7 @@ public class UAEFTSReportConnector extends ReportConnector {
 		ReportComponentDTO component = piReportInput.getComponent();
 
 		Set<ReportComponentDetailDTO> cannedReportInstanceComponentDetails = component.getReportComponentDetails();
-		if (cannedReportInstanceComponentDetails != null) {
+		if (!cannedReportInstanceComponentDetails.isEmpty()) {
 
 			UAEFTSReportContext uaeftsReportContext = new UAEFTSReportContext();
 			// dont process enquiries if role is customer
@@ -440,7 +440,7 @@ public class UAEFTSReportConnector extends ReportConnector {
 			// set internally between tables has to be done before this step
 			updatePrompts(context, uaeftsReportDataContext, componentDetailKey);
 
-			List<ReportDefaultOutput>execute = queryExecutorService.executeQuery(componentDetail, context);
+			List<ReportDefaultOutput> execute = queryExecutorService.executeQuery(componentDetail, context);
 
 			populateActivityLogMessageData(context, uaeftsReportDataContext);
 		}
