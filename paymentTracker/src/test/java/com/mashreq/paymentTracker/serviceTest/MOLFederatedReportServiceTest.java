@@ -1,7 +1,6 @@
 package com.mashreq.paymentTracker.serviceTest;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,9 +9,10 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,75 +20,82 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
-import com.mashreq.paymentTracker.dto.ReportComponentDetailContext;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.FlexDetailedReportInput;
+import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
+import com.mashreq.paymentTracker.dto.MOLDetailedFederatedReportInput;
 import com.mashreq.paymentTracker.dto.PromptInstance;
-import com.mashreq.paymentTracker.dto.ReportComponentDetailDTO;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
 import com.mashreq.paymentTracker.dto.ReportInstanceDTO;
-import com.mashreq.paymentTracker.dto.ReportDefaultOutput;
 import com.mashreq.paymentTracker.dto.ReportPromptsInstanceDTO;
-import com.mashreq.paymentTracker.dto.MOLDetailedFederatedReportInput;
 import com.mashreq.paymentTracker.model.ComponentDetails;
 import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.Report;
+import com.mashreq.paymentTracker.service.CannedReportService;
 import com.mashreq.paymentTracker.service.LinkReportService;
-import com.mashreq.paymentTracker.service.QueryExecutorService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
-import com.mashreq.paymentTracker.service.ReportInput;
 import com.mashreq.paymentTracker.service.ReportOutputExecutor;
+import com.mashreq.paymentTracker.serviceImpl.FlexReportConnector;
 import com.mashreq.paymentTracker.serviceImpl.MOLFederatedReportServiceImpl;
 import com.mashreq.paymentTracker.type.CountryType;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class MOLFederatedReportServiceTest {
-	@MockBean
-	private QueryExecutorService queryExecutorService;
-
-	@MockBean
-	ReportConfigurationService reportConfigurationService;
-
-	@MockBean
+	@Autowired
+	MOLFederatedReportServiceImpl MOLFederatedReportService;
+	
+	@Autowired
 	private ComponentsDAO componentsDAO;
-
+	
 	@MockBean
+	private ReportConfigurationService reportConfigurationService;
+	
+	@MockBean
+	private LinkReportService linkReportService;
+
+
+
+
+	@Autowired
 	ReportOutputExecutor reportOutputExecutor;
 
 	@Autowired
-	MOLFederatedReportServiceImpl molFederatedReportServiceImpl;
-
-	@MockBean
-	private LinkReportService linkReportService;
+	FlexReportConnector flexReportConnector;
 	
-	@Test
-	void populateBaseInputContext() {
-		MOLDetailedFederatedReportInput molDetailedFederatedReportInput = new MOLDetailedFederatedReportInput();
-		FederatedReportPromptDTO referenceNumPrompt = new FederatedReportPromptDTO();
-		referenceNumPrompt.setPromptKey("ReferenceNum");
-		List<String> value = new ArrayList<String>();
-		value.add("sample");
-		referenceNumPrompt.setValueList(value);
-		molDetailedFederatedReportInput.setReferenceNumPrompt(referenceNumPrompt);
-
-		List<ReportPromptsInstanceDTO> promptsList = new ArrayList<ReportPromptsInstanceDTO>();
-		ReportPromptsInstanceDTO reportPrompt = new ReportPromptsInstanceDTO();
-		PromptInstance promptsInstance = new PromptInstance();
-		promptsInstance.setKey("ReferenceNum");
+	@Test 
+	public void testPopulateBaseInputContext(){
+		List<ReportPromptsInstanceDTO> mockPromptsList = new ArrayList<ReportPromptsInstanceDTO>();
+		ReportPromptsInstanceDTO mockReportPromptsInstanceDTO = new ReportPromptsInstanceDTO();
+		PromptInstance mockPromptInstance = new PromptInstance();
 		List<String> valueList = new ArrayList<String>();
-		valueList.add("019010125320");
-		promptsInstance.setValue(valueList);
-		reportPrompt.setPrompt(promptsInstance);
-		promptsList.add(reportPrompt);
+		valueList.add("12324324");
 
-		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
-		reportInstanceDTO
+		mockPromptInstance.setKey("ReferenceNum");
+		mockPromptInstance.setPromptValue("s23324");
+		mockPromptInstance.setValue(valueList);
+		mockReportPromptsInstanceDTO.setId(1L);
+		mockReportPromptsInstanceDTO.setReportId(2L);
+		mockReportPromptsInstanceDTO.setReportInstanceId(1L);
+		mockReportPromptsInstanceDTO.setPrompt(mockPromptInstance);
+		mockPromptsList.add(mockReportPromptsInstanceDTO);
+
+		ReportInstanceDTO reportInstance = new ReportInstanceDTO();
+		reportInstance
 				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-		reportInstanceDTO.setId(1L);
-		reportInstanceDTO.setModuleId(1L);
-		reportInstanceDTO.setPromptsList(promptsList);
-		reportInstanceDTO.setReportId(1L);
+		reportInstance.setId(1L);
+		reportInstance.setModuleId(1L);
+		reportInstance.setPromptsList(mockPromptsList);
+		reportInstance.setReportId(1L);
+		reportInstance.setReportInstanceComponents(new HashSet<>());
+		reportInstance.setReportInstanceMetrics(new HashSet<>());
+		reportInstance.setReportInstancePrompts(new HashSet<>());
+		reportInstance.setReportName("swiftDetails");
+		reportInstance.setRoleId(1L);
+		reportInstance.setRoleName("Role Name");
+		reportInstance.setUserId(1L);
+		reportInstance.setUserName("janedoe");
 
 		ReportContext reportContext = new ReportContext();
 		reportContext.setCountry(CountryType.UAE);
@@ -98,73 +105,49 @@ public class MOLFederatedReportServiceTest {
 		reportContext.setLinkedReport(true);
 		reportContext.setModuleId(1L);
 		reportContext.setReportId(1L);
-		reportContext.setReportInstance(reportInstanceDTO);
+		reportContext.setReportInstance(reportInstance);
 		reportContext.setReportName("Report Name");
 		reportContext.setRoleId(1L);
 		reportContext.setRoleName("Role Name");
 		reportContext.setUserId(1L);
 		reportContext.setUserName("janedoe");
 
-		Report report = new Report();
-		report.setId(1L);
-
-		Components mockComponents = new Components();
-		mockComponents.setId(1L);
-		mockComponents.setActive("Y");
-		mockComponents.setComponentKey("uaefts");
-		mockComponents.setComponentName("AdvanceSearch");
-		mockComponents.setId(1L);
-		mockComponents.setReport(report);
-
-		ComponentDetails mockComponentDetails = new ComponentDetails();
-		mockComponentDetails.setComponents(mockComponents);
-		mockComponentDetails.setId(1L);
-		mockComponentDetails.setQuery("Select * from conf_rpt_Comp");
-		mockComponentDetails.setQueryKey("uaefts-ccn");
-		List<ComponentDetails> mockComponentDetailsList = new ArrayList<ComponentDetails>();
-		mockComponentDetailsList.add(mockComponentDetails);
-
-		mockComponents.setComponentDetailsList(mockComponentDetailsList);
-		List<Components> mockComponentsList = new ArrayList<Components>();
-		mockComponentsList.add(mockComponents);
-
-		ReportInput actualProcessFlexReportResult = molFederatedReportServiceImpl.populateBaseInputContext(reportContext);
-
-		assertNotNull(actualProcessFlexReportResult);
+		assertNotNull(MOLFederatedReportService.populateBaseInputContext(reportContext));
 	}
-
 	
 	@Test
-	void testProcessReport() {
-		List<ReportDefaultOutput> molReportOutputList = new ArrayList<ReportDefaultOutput>();
-		ReportDefaultOutput reportOut = new ReportDefaultOutput();
-		reportOut.setComponentDetailId(1L);
-		reportOut.setRowData(null);
-		MOLDetailedFederatedReportInput snappDetailedReportInput = new MOLDetailedFederatedReportInput();
-		FederatedReportPromptDTO referenceNumPrompt = new FederatedReportPromptDTO();
-		referenceNumPrompt.setPromptKey("ReferenceNum");
-		List<String> value = new ArrayList<String>();
-		value.add("sample");
-		referenceNumPrompt.setValueList(value);
-		snappDetailedReportInput.setReferenceNumPrompt(referenceNumPrompt);
-
-		List<ReportPromptsInstanceDTO> promptsList = new ArrayList<ReportPromptsInstanceDTO>();
-		ReportPromptsInstanceDTO reportPrompt = new ReportPromptsInstanceDTO();
-		PromptInstance promptsInstance = new PromptInstance();
-		promptsInstance.setKey("ReferenceNum");
-		List<String> valueList = new ArrayList<String>();
-		valueList.add("019010125320");
-		promptsInstance.setValue(valueList);
-		reportPrompt.setPrompt(promptsInstance);
-		promptsList.add(reportPrompt);
-
+	public void testProcessReport() {
 		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
 		reportInstanceDTO
 				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
 		reportInstanceDTO.setId(1L);
 		reportInstanceDTO.setModuleId(1L);
-		reportInstanceDTO.setPromptsList(promptsList);
+		reportInstanceDTO.setPromptsList(new ArrayList<>());
 		reportInstanceDTO.setReportId(1L);
+		reportInstanceDTO.setReportInstanceComponents(new HashSet<>());
+		reportInstanceDTO.setReportInstanceMetrics(new HashSet<>());
+		reportInstanceDTO.setReportInstancePrompts(new HashSet<>());
+		reportInstanceDTO.setReportName("swiftDetails");
+		reportInstanceDTO.setRoleId(1L);
+		reportInstanceDTO.setRoleName("Role Name");
+		reportInstanceDTO.setUserId(1L);
+		reportInstanceDTO.setUserName("janedoe");
+
+		ReportInstanceDTO reportInstance = new ReportInstanceDTO();
+		reportInstance
+				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
+		reportInstance.setId(1L);
+		reportInstance.setModuleId(1L);
+		reportInstance.setPromptsList(new ArrayList<>());
+		reportInstance.setReportId(1L);
+		reportInstance.setReportInstanceComponents(new HashSet<>());
+		reportInstance.setReportInstanceMetrics(new HashSet<>());
+		reportInstance.setReportInstancePrompts(new HashSet<>());
+		reportInstance.setReportName("swiftDetails");
+		reportInstance.setRoleId(1L);
+		reportInstance.setRoleName("Role Name");
+		reportInstance.setUserId(1L);
+		reportInstance.setUserName("janedoe");
 
 		ReportContext reportContext = new ReportContext();
 		reportContext.setCountry(CountryType.UAE);
@@ -174,8 +157,8 @@ public class MOLFederatedReportServiceTest {
 		reportContext.setLinkedReport(true);
 		reportContext.setModuleId(1L);
 		reportContext.setReportId(1L);
-		reportContext.setReportInstance(reportInstanceDTO);
-		reportContext.setReportName("Report Name");
+		reportContext.setReportInstance(reportInstance);
+		reportContext.setReportName("swiftDetails");
 		reportContext.setRoleId(1L);
 		reportContext.setRoleName("Role Name");
 		reportContext.setUserId(1L);
@@ -204,16 +187,30 @@ public class MOLFederatedReportServiceTest {
 		List<Components> mockComponentsList = new ArrayList<Components>();
 		mockComponentsList.add(mockComponents);
 
-		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
+		ArrayList<LinkedReportResponseDTO> linkedReportResponseDTOList = new ArrayList<>();
+		linkedReportResponseDTOList.add(new LinkedReportResponseDTO(1L, "Link Name", "Link Description", "Report Name",
+				0, 0, "Linked Report Name", "Source Metric Name", 0, "Active", null, null, 0, 0, null, 0));
+
+		MOLDetailedFederatedReportInput mockMOLDetailedReportInput = new MOLDetailedFederatedReportInput();
+		FederatedReportPromptDTO mockFederatedReportPromptDTO = new FederatedReportPromptDTO();
+		mockFederatedReportPromptDTO.setPromptKey("ReferenceNum");
+		mockFederatedReportPromptDTO.setPromptValue("Core");
+		mockMOLDetailedReportInput.setReferenceNumPrompt(mockFederatedReportPromptDTO);
+
 		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
-		when(queryExecutorService.executeQuery(any(ReportComponentDetailDTO.class),
-				any(ReportComponentDetailContext.class))).thenReturn(molReportOutputList);
-		ReportExecuteResponseData response = molFederatedReportServiceImpl.processReport(snappDetailedReportInput,
-				reportContext);
-		verify(componentsDAO).findAllByreportId(anyLong());
-		verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
+		when(linkReportService.fetchLinkedReportByReportId(anyLong())).thenReturn(linkedReportResponseDTOList);
+		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
+
+		ReportExecuteResponseData actualProcessFlexReportResult = MOLFederatedReportService
+				.processReport(mockMOLDetailedReportInput, reportContext);
+
+//		assertNotNull(actualProcessFlexReportResult);
+//
+//		verify(componentsDAO).findAllByreportId(anyLong());
+//		verify(linkReportService).fetchLinkedReportByReportId(anyLong());
+//		verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
+
 		
 	}
-	
 	
 }

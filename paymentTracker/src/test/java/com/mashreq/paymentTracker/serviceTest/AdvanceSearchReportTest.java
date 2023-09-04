@@ -3,6 +3,7 @@ package com.mashreq.paymentTracker.serviceTest;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +27,7 @@ import com.mashreq.paymentTracker.dto.AdvanceSearchReportInput;
 import com.mashreq.paymentTracker.dto.AdvanceSearchReportOutput;
 import com.mashreq.paymentTracker.dto.CannedReport;
 import com.mashreq.paymentTracker.dto.FederatedReportPromptDTO;
+import com.mashreq.paymentTracker.dto.LinkedReportResponseDTO;
 import com.mashreq.paymentTracker.dto.PromptInstance;
 import com.mashreq.paymentTracker.dto.ReportContext;
 import com.mashreq.paymentTracker.dto.ReportExecuteResponseData;
@@ -36,6 +38,7 @@ import com.mashreq.paymentTracker.model.Components;
 import com.mashreq.paymentTracker.model.ComponentsCountry;
 import com.mashreq.paymentTracker.model.Report;
 import com.mashreq.paymentTracker.service.CannedReportService;
+import com.mashreq.paymentTracker.service.LinkReportService;
 import com.mashreq.paymentTracker.service.MatrixPaymentReportService;
 import com.mashreq.paymentTracker.service.ReportConfigurationService;
 import com.mashreq.paymentTracker.service.ReportInput;
@@ -75,6 +78,9 @@ class AdvanceSearchReportTest {
 
 	@Mock
 	private ModelMapper modelMapper;
+	
+	@MockBean
+	private LinkReportService linkReportService;
 	
 	@Test
 	void testPopulateBaseInput() throws Exception {
@@ -208,6 +214,35 @@ class AdvanceSearchReportTest {
 		valueList.add("019010125320");
 		accountNumPrompt.setValueList(valueList);
 		advanceSearchReportInput.setAccountNumPrompt(accountNumPrompt);
+		
+		FederatedReportPromptDTO transactionStatus = new FederatedReportPromptDTO();
+		transactionStatus.setPromptKey("TransactionStatus");
+		List<String> valueList1 = new ArrayList<String>();
+		valueList.add("019010125320");
+		transactionStatus.setValueList(valueList1);
+		advanceSearchReportInput.setTransactionStatus(transactionStatus);
+		
+		FederatedReportPromptDTO currency = new FederatedReportPromptDTO();
+		currency.setPromptKey("Currency");
+		List<String> valueList2 = new ArrayList<String>();
+		valueList.add("019010125320");
+		currency.setValueList(valueList2);
+		advanceSearchReportInput.setTransactionStatus(currency);
+		
+		FederatedReportPromptDTO amountFrom = new FederatedReportPromptDTO();
+		amountFrom.setPromptKey("AmountFrom");
+		List<String> valueList3 = new ArrayList<String>();
+		valueList.add("019010125320");
+		amountFrom.setValueList(valueList3);
+		advanceSearchReportInput.setTransactionStatus(amountFrom);
+		
+		FederatedReportPromptDTO amountTo = new FederatedReportPromptDTO();
+		amountTo.setPromptKey("AmountTo");
+		List<String> valueList4 = new ArrayList<String>();
+		valueList.add("01901");
+		amountTo.setValueList(valueList4);
+		advanceSearchReportInput.setTransactionStatus(amountTo);
+
 
 		Report report = new Report();
 		report.setId(1L);
@@ -258,8 +293,116 @@ class AdvanceSearchReportTest {
 		Components mockComponents = new Components();
 		mockComponents.setId(1L);
 		mockComponents.setActive("Y");
-		mockComponents.setComponentKey("uaefts");
+		mockComponents.setComponentKey("flex");
 		mockComponents.setComponentName("AdvanceSearch");
+		
+		
+		ComponentsCountry componentsCountry =new ComponentsCountry();
+		mockComponents.setComponentsCountry(componentsCountry);
+		mockComponents.setId(1L);
+		mockComponents.setReport(report);
+		
+		ComponentDetails mockComponentDetails = new ComponentDetails();
+		mockComponentDetails.setComponents(mockComponents);
+		mockComponentDetails.setId(1L);
+		mockComponentDetails.setQuery("Select * from conf_rpt_comp");
+		mockComponentDetails.setQueryKey("flex");
+		List<ComponentDetails> mockComponentDetailsList = new ArrayList<ComponentDetails>();
+		mockComponentDetailsList.add(mockComponentDetails);
+		mockComponents.setComponentDetailsList(mockComponentDetailsList);
+		List<Components> mockComponentsList = new ArrayList<Components>();
+		mockComponentsList.add(mockComponents);
+
+		AdvanceSearchReportOutput mockAdvanceSearchReportOutput = new AdvanceSearchReportOutput();
+		mockAdvanceSearchReportOutput.setAccountNum("123324324");
+		mockAdvanceSearchReportOutput.setActivityName("sample Test case");
+		mockAdvanceSearchReportOutput.setAmount("10000");
+		mockAdvanceSearchReportOutput.setTransactionDate(null);
+		mockAdvanceSearchReportOutput.setInitationSource("FLEX");
+		mockAdvanceSearchReportOutput.setMessageThrough("UAEFTS");
+		mockOutputList.add(mockAdvanceSearchReportOutput);
+		
+		
+		ReportExecuteResponseData reportExcRespData =new ReportExecuteResponseData();
+		
+		when(modelMapper.map(reportExcRespData, ReportContext.class)).thenReturn(reportContext);
+		
+		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
+		
+		when(cannedReportService.populateCannedReportInstance(Mockito.<Report>any())).thenReturn(cannedReport);
+		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
+		
+		ReportExecuteResponseData actualProcessSwiftDetailReportResult = advanceSearchReportServiceImpl
+				.processReport(advanceSearchReportInput, reportContext);
+		assertNotNull(actualProcessSwiftDetailReportResult);
+		verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
+		verify(componentsDAO).findAllByreportId(anyLong());
+		verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
+	}
+	
+	@Test
+	void TestProcessReport1() throws Exception {
+		List<AdvanceSearchReportOutput> mockOutputList = new ArrayList<AdvanceSearchReportOutput>();
+		AdvanceSearchReportInput advanceSearchReportInput = new AdvanceSearchReportInput();
+		FederatedReportPromptDTO accountNumPrompt = new FederatedReportPromptDTO();
+		accountNumPrompt.setPromptKey("AccountNumber");
+		List<String> valueList = new ArrayList<String>();
+		valueList.add("019010125320");
+		accountNumPrompt.setValueList(valueList);
+		advanceSearchReportInput.setAccountNumPrompt(accountNumPrompt);
+
+		Report report = new Report();
+		report.setId(1L);
+
+		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
+		reportInstanceDTO
+				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
+		reportInstanceDTO.setId(1L);
+		reportInstanceDTO.setModuleId(1L);
+		reportInstanceDTO.setPromptsList(new ArrayList<>());
+		reportInstanceDTO.setReportId(1L);
+		reportInstanceDTO.setReportInstanceComponents(new HashSet<>());
+		reportInstanceDTO.setReportInstanceMetrics(new HashSet<>());
+		reportInstanceDTO.setReportInstancePrompts(new HashSet<>());
+		reportInstanceDTO.setReportName("Report Name");
+		reportInstanceDTO.setRoleId(1L);
+		reportInstanceDTO.setRoleName("Role Name");
+		reportInstanceDTO.setUserId(1L);
+		reportInstanceDTO.setUserName("janedoe");
+
+		ReportContext reportContext = new ReportContext();
+		reportContext.setCountry(CountryType.UAE);
+		reportContext.setExecutionId(1L);
+		reportContext.setLinkInstanceId(1L);
+		reportContext.setLinkReference("Link Reference");
+		reportContext.setLinkedReport(true);
+		reportContext.setModuleId(1L);
+		reportContext.setReportId(1L);
+		reportContext.setReportInstance(reportInstanceDTO);
+		reportContext.setReportName("Report Name");
+		reportContext.setRoleId(1L);
+		reportContext.setRoleName("Role Name");
+		reportContext.setUserId(1L);
+		reportContext.setUserName("janedoe");
+
+		CannedReport cannedReport = new CannedReport();
+		cannedReport.setActive(CheckType.NO);
+		cannedReport.setAppId(1L);
+		cannedReport.setCannedReportComponents(new HashSet<>());
+		cannedReport.setCannedReportMetrics(new HashSet<>());
+		cannedReport.setCannedReportPrompts(new HashSet<>());
+		cannedReport.setDeleted(CheckType.NO);
+		cannedReport.setDisplayName("Display Name");
+		cannedReport.setId(1L);
+		cannedReport.setName("Name");
+		cannedReport.setValid(CheckType.NO);
+
+		Components mockComponents = new Components();
+		mockComponents.setId(1L);
+		mockComponents.setActive("Y");
+		mockComponents.setComponentKey("matrix");
+		mockComponents.setComponentName("AdvanceSearch");
+		
 		
 		ComponentsCountry componentsCountry =new ComponentsCountry();
 		mockComponents.setComponentsCountry(componentsCountry);
@@ -290,8 +433,9 @@ class AdvanceSearchReportTest {
 		ReportExecuteResponseData reportExcRespData =new ReportExecuteResponseData();
 		
 		when(modelMapper.map(reportExcRespData, ReportContext.class)).thenReturn(reportContext);
-
+		
 		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
+		
 		when(cannedReportService.populateCannedReportInstance(Mockito.<Report>any())).thenReturn(cannedReport);
 		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
 		
@@ -301,5 +445,116 @@ class AdvanceSearchReportTest {
 		verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
 		verify(componentsDAO).findAllByreportId(anyLong());
 		verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
+	}
+	
+
+	@Test
+	void TestProcessReport2() throws Exception {
+		List<AdvanceSearchReportOutput> mockOutputList = new ArrayList<AdvanceSearchReportOutput>();
+		AdvanceSearchReportInput advanceSearchReportInput = new AdvanceSearchReportInput();
+		FederatedReportPromptDTO accountNumPrompt = new FederatedReportPromptDTO();
+		accountNumPrompt.setPromptKey("AccountNumber");
+		List<String> valueList = new ArrayList<String>();
+		valueList.add("019010125320");
+		accountNumPrompt.setValueList(valueList);
+		advanceSearchReportInput.setAccountNumPrompt(accountNumPrompt);
+
+		Report report = new Report();
+		report.setId(1L);
+
+		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
+		reportInstanceDTO
+				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
+		reportInstanceDTO.setId(1L);
+		reportInstanceDTO.setModuleId(1L);
+		reportInstanceDTO.setPromptsList(new ArrayList<>());
+		reportInstanceDTO.setReportId(1L);
+		reportInstanceDTO.setReportInstanceComponents(new HashSet<>());
+		reportInstanceDTO.setReportInstanceMetrics(new HashSet<>());
+		reportInstanceDTO.setReportInstancePrompts(new HashSet<>());
+		reportInstanceDTO.setReportName("Report Name");
+		reportInstanceDTO.setRoleId(1L);
+		reportInstanceDTO.setRoleName("Role Name");
+		reportInstanceDTO.setUserId(1L);
+		reportInstanceDTO.setUserName("janedoe");
+
+		ReportContext reportContext = new ReportContext();
+		reportContext.setCountry(CountryType.UAE);
+		reportContext.setExecutionId(1L);
+		reportContext.setLinkInstanceId(1L);
+		reportContext.setLinkReference("Link Reference");
+		reportContext.setLinkedReport(true);
+		reportContext.setModuleId(1L);
+		reportContext.setReportId(1L);
+		reportContext.setReportInstance(reportInstanceDTO);
+		reportContext.setReportName("Report Name");
+		reportContext.setRoleId(1L);
+		reportContext.setRoleName("Role Name");
+		reportContext.setUserId(1L);
+		reportContext.setUserName("janedoe");
+
+		CannedReport cannedReport = new CannedReport();
+		cannedReport.setActive(CheckType.NO);
+		cannedReport.setAppId(1L);
+		cannedReport.setCannedReportComponents(new HashSet<>());
+		cannedReport.setCannedReportMetrics(new HashSet<>());
+		cannedReport.setCannedReportPrompts(new HashSet<>());
+		cannedReport.setDeleted(CheckType.NO);
+		cannedReport.setDisplayName("Display Name");
+		cannedReport.setId(1L);
+		cannedReport.setName("Name");
+		cannedReport.setValid(CheckType.NO);
+
+		Components mockComponents = new Components();
+		mockComponents.setId(1L);
+		mockComponents.setActive("Y");
+		mockComponents.setComponentKey("edms");
+		mockComponents.setComponentName("AdvanceSearch");
+		
+		
+		ComponentsCountry componentsCountry =new ComponentsCountry();
+		mockComponents.setComponentsCountry(componentsCountry);
+		mockComponents.setId(1L);
+		mockComponents.setReport(report);
+		
+		ComponentDetails mockComponentDetails = new ComponentDetails();
+		mockComponentDetails.setComponents(mockComponents);
+		mockComponentDetails.setId(1L);
+		mockComponentDetails.setQuery("Select * from conf_rpt_Comp");
+		mockComponentDetails.setQueryKey("uaefts-ccn");
+		List<ComponentDetails> mockComponentDetailsList = new ArrayList<ComponentDetails>();
+		mockComponentDetailsList.add(mockComponentDetails);
+		mockComponents.setComponentDetailsList(mockComponentDetailsList);
+		List<Components> mockComponentsList = new ArrayList<Components>();
+		mockComponentsList.add(mockComponents);
+
+		AdvanceSearchReportOutput mockAdvanceSearchReportOutput = new AdvanceSearchReportOutput();
+		mockAdvanceSearchReportOutput.setAccountNum("123324324");
+		mockAdvanceSearchReportOutput.setActivityName("sample Test case");
+		mockAdvanceSearchReportOutput.setAmount("10000");
+		mockAdvanceSearchReportOutput.setTransactionDate(null);
+		mockAdvanceSearchReportOutput.setInitationSource("FLEX");
+		mockAdvanceSearchReportOutput.setMessageThrough("UAEFTS");
+		mockOutputList.add(mockAdvanceSearchReportOutput);
+		
+		
+		ReportExecuteResponseData reportExcRespData =new ReportExecuteResponseData();
+		
+		when(modelMapper.map(reportExcRespData, ReportContext.class)).thenReturn(reportContext);
+		
+		when(reportConfigurationService.fetchReportByName(Mockito.<String>any())).thenReturn(report);
+		
+		when(cannedReportService.populateCannedReportInstance(Mockito.<Report>any())).thenReturn(cannedReport);
+		when(componentsDAO.findAllByreportId(anyLong())).thenReturn(mockComponentsList);
+		when(reportOutputExecutor.populateColumnDef(report)).thenReturn(new ArrayList<>());
+
+		
+		ReportExecuteResponseData actualProcessSwiftDetailReportResult = advanceSearchReportServiceImpl
+				.processReport(advanceSearchReportInput, reportContext);
+		assertNotNull(actualProcessSwiftDetailReportResult);
+		verify(cannedReportService).populateCannedReportInstance(Mockito.<Report>any());
+		verify(componentsDAO).findAllByreportId(anyLong());
+		verify(reportConfigurationService).fetchReportByName(Mockito.<String>any());
+		verify(reportOutputExecutor, times(1)).populateColumnDef(report);
 	}
 }

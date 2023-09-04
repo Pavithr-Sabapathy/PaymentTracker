@@ -13,6 +13,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -144,12 +145,44 @@ public class SnappReportServicTest {
 
 	@Test
     public void testProcessReport() throws Exception {
-        ReportInput reportInput = new SnappDetailedReportInput();
-        ReportContext reportContext = new ReportContext();
-        ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
-        reportInstanceDTO.setReportName("TestReport");
-        reportContext.setReportInstance(reportInstanceDTO);
+		SnappDetailedReportInput reportInput = new SnappDetailedReportInput();
+		FederatedReportPromptDTO ReferenceNum = new FederatedReportPromptDTO();
+		ReferenceNum.setPromptKey("ReferenceNum");
+		List<String> valueList = new ArrayList<String>();
+		valueList.add("019010125320");
+		ReferenceNum.setValueList(valueList);
+		reportInput.setReferenceNumPrompt(ReferenceNum);
+		
+		ReportInstanceDTO reportInstanceDTO = new ReportInstanceDTO();
+		reportInstanceDTO
+				.setCreationDate(Date.from(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
+		reportInstanceDTO.setId(1L);
+		reportInstanceDTO.setModuleId(1L);
+		reportInstanceDTO.setPromptsList(new ArrayList<>());
+		reportInstanceDTO.setReportId(1L);
+		reportInstanceDTO.setReportInstanceComponents(new HashSet<>());
+		reportInstanceDTO.setReportInstanceMetrics(new HashSet<>());
+		reportInstanceDTO.setReportInstancePrompts(new HashSet<>());
+		reportInstanceDTO.setReportName("TestReport");
+		reportInstanceDTO.setRoleId(1L);
+		reportInstanceDTO.setRoleName("TestReport");
+		reportInstanceDTO.setUserId(1L);
+		reportInstanceDTO.setUserName("janedoe");
 
+		ReportContext reportContext = new ReportContext();
+		reportContext.setCountry(CountryType.UAE);
+		reportContext.setExecutionId(1L);
+		reportContext.setLinkInstanceId(1L);
+		reportContext.setLinkReference("Link Reference");
+		reportContext.setLinkedReport(true);
+		reportContext.setModuleId(1L);
+		reportContext.setReportId(1L);
+		reportContext.setReportInstance(reportInstanceDTO);
+		reportContext.setReportName("TestReport");
+		reportContext.setRoleId(1L);
+		reportContext.setRoleName("TestReport");
+		reportContext.setUserId(1L);
+		reportContext.setUserName("janedoe");
         Report report = new Report();
         report.setId(1L);
 
@@ -166,7 +199,7 @@ public class SnappReportServicTest {
         List<Components> componentList = new ArrayList<>();
         componentList.add(mockComponents);
 
-       // List<? extends ReportOutput> outputList = new ArrayList<>();
+        List<? extends ReportOutput> outputList = new ArrayList<>();
        // outputList.addAll( reportOutput);
 
         List<ReportDefaultOutput> snappReportOutputList = new ArrayList<>();
@@ -174,7 +207,7 @@ public class SnappReportServicTest {
 
         when(reportConfigurationService.fetchReportByName("TestReport")).thenReturn(report);
         when(componentsDAO.findAllByreportId(1L)).thenReturn(componentList);
-       // when(snappReportConnector.processReportComponent(reportInput, reportContext)).thenReturn(outputList);
+        when(snappReportConnector.processReportComponent(reportInput, reportContext)).thenReturn(new ArrayList<>());
         when(reportOutputExecutor.populateRowData(snappReportOutputList, report)).thenReturn(new ArrayList<>());
         when(reportOutputExecutor.populateColumnDef(report)).thenReturn(new ArrayList<>());
 

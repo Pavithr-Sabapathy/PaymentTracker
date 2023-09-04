@@ -149,10 +149,14 @@ public class EdmsProcessServiceTest {
         reportContext.setReportInstance(reportInstanceDTO);
 
         Report report = new Report();
+        report.setReportName("TestReport");
+        report.setActive("Y");
         report.setId(1L);
 
         CannedReport cannedReport = new CannedReport();
         cannedReport.setId(1L);
+        cannedReport.setName("TestReport");
+        
 
         Components mockComponents = new Components();
 		mockComponents.setId(1L);
@@ -160,7 +164,7 @@ public class EdmsProcessServiceTest {
 		mockComponents.setComponentKey("uaefts");
 		mockComponents.setComponentName("AdvanceSearch");
 		mockComponents.setId(1L);
-		mockComponents.setReport(report);;
+		mockComponents.setReport(report);
 
         List<Components> componentList = new ArrayList<>();
         componentList.add(mockComponents);

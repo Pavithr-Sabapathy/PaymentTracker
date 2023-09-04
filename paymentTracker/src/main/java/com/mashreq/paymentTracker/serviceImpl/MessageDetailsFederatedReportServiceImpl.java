@@ -7,12 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.mashreq.paymentTracker.constants.ApplicationConstants;
 import com.mashreq.paymentTracker.constants.MashreqFederatedReportConstants;
 import com.mashreq.paymentTracker.dao.ComponentsDAO;
@@ -49,11 +47,13 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 
 	@Autowired
 	ReportConfigurationService reportConfigurationService;
+	
 	@Autowired
 	CannedReportService cannedReportService;
+	
 	@Autowired
 	private ComponentsDAO componentsDAO;
-
+	
 	@Autowired
 	private SwiftReportConnector swiftReportConnector;
 
@@ -113,7 +113,6 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 
 		return federatedReportPromptDTO;
 	}
-
 	@Override
 	public ReportExecuteResponseData processReport(ReportInput reportInput, ReportContext reportContext) {
 		ReportExecuteResponseData responseData = new ReportExecuteResponseData();
@@ -129,24 +128,20 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 		} else {
 			for (Components component : componentList) {
 				ReportComponentDTO reportComponent = populateReportComponent(component);
-				if (null != reportComponent.getActive() && reportComponent.getActive().equals(CheckType.YES)) {
-
+			//	if (null != reportComponent.getActive() && reportComponent.getActive().equals(CheckType.YES)) {
 					MessageDetailsFederatedReportInput reportInputContext = (MessageDetailsFederatedReportInput) reportInput;
-					FederatedReportQueryData federatedReportQueryData = (FederatedReportQueryData) reportInput;
+					//FederatedReportQueryData federatedReportQueryData = (FederatedReportQueryData) reportInput;
 					List<ReportInstanceComponentDTO> reportInstanceComponentDTO = new ArrayList<ReportInstanceComponentDTO>();
 
-					processComponents(reportInputContext, reportContext, reportInstanceComponentDTO, reportInstanceDTO,
-							federatedReportQueryData);
-				}
+					processComponents(reportInputContext, reportContext, reportInstanceComponentDTO, reportInstanceDTO);
+			//	}
 			}
 			responseData.setColumnDefs(reportExecuteResponseCloumnDefList);
 			responseData.setData(messageData);
-			log.info(FILENAME + "[processSwiftDetailReport Response]-->" + responseData.toString());
+			log.info(FILENAME + "[processMessageDetailReport Response]-->" + responseData.toString());
 		}
 		return responseData;
-
 	}
-
 	private ReportComponentDTO populateReportComponent(Components component) {
 		ReportComponentDTO reportComponentDTO = new ReportComponentDTO();
 		reportComponentDTO.setActive(CheckType.getCheckType(component.getActive()));
@@ -171,26 +166,25 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 	}
 
 	private void processComponents(MessageDetailsFederatedReportInput reportInputContext, ReportContext reportContext,
-			List<ReportInstanceComponentDTO> reportInstanceComponentDTO, ReportInstanceDTO reportInstanceDTO,
-			FederatedReportQueryData federatedReportQueryData) {
+			List<ReportInstanceComponentDTO> reportInstanceComponentDTO, ReportInstanceDTO reportInstanceDTO
+			) {
 
-		if (null != reportInstanceComponentDTO) {
+		//if (null != reportInstanceComponentDTO) {
 			// pick the right component
 			FederatedReportPromptDTO messageThroughPrompt = reportInputContext.getMessageThroughPrompt();
 			String messageThrough = messageThroughPrompt.getPromptValue();
 			if (messageThrough.equalsIgnoreCase(MashreqFederatedReportConstants.MESSAGE_THROUGH_SWIFT)) {
-				processSwiftMessage(reportInputContext, reportContext, reportInstanceComponentDTO,
-						federatedReportQueryData, reportInstanceDTO);
+				processSwiftMessage(reportInputContext, reportContext, reportInstanceComponentDTO, reportInstanceDTO);
 			} else if (messageThrough.equalsIgnoreCase(MashreqFederatedReportConstants.MESSAGE_THROUGH_UAEFTS)) {
 				processUaeftsMessage(reportInputContext, reportContext, reportInstanceComponentDTO,
-						federatedReportQueryData, reportInstanceDTO);
+						 reportInstanceDTO);
 			}
-		}
+		//}
 	}
 
 	private void processUaeftsMessage(MessageDetailsFederatedReportInput reportInputContext,
 			ReportContext reportContext, List<ReportInstanceComponentDTO> reportInstanceComponentDTO,
-			FederatedReportQueryData federatedReportQueryData, ReportInstanceDTO reportInstanceDTO) {
+			 ReportInstanceDTO reportInstanceDTO) {
 
 		ReportInstanceComponentDTO instanceComponent = getMatchedInstanceComponent(reportInstanceComponentDTO,
 				MashreqFederatedReportConstants.PROCESSING_SYSTEM_MESSAGE);
@@ -228,7 +222,7 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 
 	private void processSwiftMessage(MessageDetailsFederatedReportInput reportInputContext, ReportContext reportContext,
 			List<ReportInstanceComponentDTO> reportInstanceComponentDTO,
-			FederatedReportQueryData federatedReportQueryData, ReportInstanceDTO reportInstanceDTO) {
+			 ReportInstanceDTO reportInstanceDTO) {
 
 		ReportInstanceComponentDTO instanceComponent = getMatchedInstanceComponent(reportInstanceComponentDTO,
 				MashreqFederatedReportConstants.PROCESSING_SYSTEM_MESSAGE);
@@ -238,15 +232,15 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 			List<? extends ReportOutput> reportOutput = swiftReportConnector.processReportComponent(reportInputContext,
 					reportContext);
 			if (reportOutput != null) {
-				populateSWIFTDataToObjectForm(reportOutput, federatedReportQueryData);
+				populateSWIFTDataToObjectForm(reportOutput);
 				// transformReportData(reportDefaultOutput,cannedReportMetric);
 			}
 
 		}
 	}
 
-	private void populateSWIFTDataToObjectForm(List<? extends ReportOutput> reportOutput,
-			FederatedReportQueryData federatedReportQueryData) {
+	private void populateSWIFTDataToObjectForm(List<? extends ReportOutput> reportOutput
+			) {
 		List<ReportDefaultOutput> data = new ArrayList<ReportDefaultOutput>();
 		for (ReportOutput componentOut : reportOutput) {
 			SWIFTMessageDetailsReportOutput output = (SWIFTMessageDetailsReportOutput) componentOut;
@@ -257,7 +251,7 @@ public class MessageDetailsFederatedReportServiceImpl extends ReportControllerSe
 			defaultOutput.setRowData(rowData);
 			data.add(defaultOutput);
 		}
-		federatedReportQueryData.setQueryData(data);
+	//	federatedReportQueryData.setQueryData(data);
 
 	}
 }
